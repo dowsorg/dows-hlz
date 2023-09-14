@@ -25,9 +25,13 @@ import org.dows.hep.entity.ExperimentTimerEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author : wuzl
@@ -97,17 +101,22 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         }
         if(null!=schemeSetting) {
             rst.setSchemaDurationMinutes(schemeSetting.getDuration())
-                    .setSchemaEndTime(ShareUtil.XDate.localDT4Date(schemeSetting.getSchemeEndTime()));
+                    .setSchemaEndTime(ShareUtil.XDate.localDT4Date(schemeSetting.getSchemeEndTime()))
+                    .setSchemaAuditEndTime(ShareUtil.XDate.localDT4Date(schemeSetting.getAuditEndTime()));
         }
         if(null==sandSetting){
             return rst.setPeriods(0);
         }
+        rst.setKnowledgeWeight(BigDecimal.valueOf(sandSetting.getKnowledgeWeight()) );
+        rst.setHealthIndexWeight(BigDecimal.valueOf(sandSetting.getHealthIndexWeight()));
+        rst.setMedicalRatioWeight(BigDecimal.valueOf(sandSetting.getMedicalRatioWeight()));
         rst.setDurationMap(sandSetting.getDurationMap());
         rst.setPeriodMap(sandSetting.getPeriodMap());
         Map<String, Double> mockRateMap = new HashMap<>();
         rst.setMockRateMap(mockRateMap);
         Map<Integer, ExperimentSettingCollection.ExperimentPeriodSetting> mapPeriod = new HashMap<>();
-        RangeMap<Integer, Integer> mapPeriodSeconds = TreeRangeMap.create();
+        RangeMap<Integer, Integer> rangePeriodSeconds = TreeRangeMap.create();
+        RangeMap<Integer, Integer> rangePeriodDays = TreeRangeMap.create();
 
         final Integer periods = sandSetting.getPeriods();
         final Integer interval = sandSetting.getInterval().intValue();// sandSetting.getInterval().intValue()/1000
@@ -134,12 +143,14 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
             if (i < periods) {
                 endSeconds += interval;
             }
-            mapPeriodSeconds.put(i < periods ? Range.closedOpen(startSeconds, endSeconds) : Range.closed(startSeconds, endSeconds), i);
+            rangePeriodSeconds.put(i < periods ? Range.closedOpen(startSeconds, endSeconds) : Range.closed(startSeconds, endSeconds), i);
+            rangePeriodDays.put(Range.closed(startDay, endDay),i);
         }
         return rst.setPeriods(periods)
                 .setRawEndSeconds(endSeconds)
                 .setMapPeriod(mapPeriod)
-                .setMapPeriodSeconds(mapPeriodSeconds)
+                .setRangePeriodSeconds(rangePeriodSeconds)
+                .setRangePeriodDays(rangePeriodDays)
                 .setTotalDays(Long.valueOf(endDay))
                 .setTotalSeconds(totalSeconds);
     }
@@ -197,7 +208,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         }
         AssertUtil.getNotNull(cached.getSettingByPeriod(rst.getPeriod()))
                 .orElseThrow(String.format("getTimePointByRealTime-未找到实验第%s期设置", rst.getPeriod()));
-        rst.setCntPauseSeconds(timerCache.getCntPauseSeconds());
+        rst.setCntPauseSeconds(timerCache.getCntPausSeconds(dtNow));
         if (!fillGameDay) {
             return rst;
         }
@@ -213,9 +224,13 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
 
     @Override
     protected boolean isCompleted(ExperimentSettingCollection val) {
-        return ShareUtil.XObject.notEmpty(val)
-                && ShareUtil.XObject.notEmpty(val.getSandStartTime())
-                && ShareUtil.XObject.notEmpty(val.getMapPeriod());
+        if(ShareUtil.XObject.isEmpty(val)){
+            return false;
+        }
+        if(val.hasSchemaMode()){
+            return true;
+        }
+        return ShareUtil.XObject.notEmpty(val.getSandStartTime());
     }
 
     @Override
@@ -223,7 +238,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         if (ShareUtil.XObject.isEmpty(curVal)) {
             return curVal;
         }
-        if (ShareUtil.XObject.isEmpty(curVal.getSandStartTime())) {
+        if (curVal.hasSandMode()&&ShareUtil.XObject.isEmpty(curVal.getSandStartTime())) {
             List<ExperimentTimerEntity> rowsTimer = experimentTimerDao.getByExperimentId(key.getAppId(), key.getExperimentInstanceId(),
                     1, ExperimentTimerEntity::getStartTime, ExperimentTimerEntity::getPauseCount, ExperimentTimerEntity::getState);
             curVal.setSandStartTime(rowsTimer.stream()

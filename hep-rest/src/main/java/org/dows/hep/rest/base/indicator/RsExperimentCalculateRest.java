@@ -6,8 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateMoneyScoreRsResponse;
+import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
-import org.dows.hep.biz.calc.CalcHealthIndexBiz;
+import org.dows.hep.biz.eval.EvalHealthIndexBiz;
 import org.dows.hep.biz.risk.RiskBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.vo.report.PersonRiskFactor;
@@ -27,7 +28,7 @@ public class RsExperimentCalculateRest {
   private final ExperimentScoringBiz experimentScoringBiz;
   private final RiskBiz riskBiz;
 
-  private final CalcHealthIndexBiz calcHealthIndexBiz;
+  private final EvalHealthIndexBiz evalHealthIndexBiz;
 
   @Operation(summary = "获取实验小组干预危险因素")
   @GetMapping("v1/experimentIndicator/personRiskModel/get")
@@ -56,14 +57,22 @@ public class RsExperimentCalculateRest {
   @Operation(summary = "实验-计算健康指数")
   @PostMapping("v1/experimentIndicator/healthScore/calculate")
   public void experimentRsCalculateHealthScore(@RequestBody ExperimentRsCalculateHealthScoreRequestRs experimentRsCalculateHealthScoreRequestRs) throws ExecutionException, InterruptedException {
-    rsExperimentCalculateBiz.experimentRsCalculateHealthScore(experimentRsCalculateHealthScoreRequestRs);
+    //rsExperimentCalculateBiz.experimentRsCalculateHealthScore(experimentRsCalculateHealthScoreRequestRs);
+    evalHealthIndexBiz.evalPersonHealthIndexOld(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+            .builder()
+            .appId(experimentRsCalculateHealthScoreRequestRs.getAppId())
+            .experimentId(experimentRsCalculateHealthScoreRequestRs.getExperimentId())
+            .periods(experimentRsCalculateHealthScoreRequestRs.getPeriods())
+            .experimentPersonIds(experimentRsCalculateHealthScoreRequestRs.getExperimentPersonIdSet())
+            .funcType(EnumEvalFuncType.PERIODEnd)
+            .build());
   }
 
   @Operation(summary = "实验-计算健康指数并且生成报告")
   @PostMapping("v1/experimentIndicator/healthScore/calculateAndCreateReport")
   public void experimentRsCalculateAndCreateReportHealthScore(@RequestBody ExperimentRsCalculateAndCreateReportHealthScoreRequestRs experimentRsCalculateAndCreateReportHealthScoreRequestRs) throws ExecutionException, InterruptedException {
     //rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(experimentRsCalculateAndCreateReportHealthScoreRequestRs);
-    calcHealthIndexBiz.calcPersonHelthIndex(experimentRsCalculateAndCreateReportHealthScoreRequestRs);
+    evalHealthIndexBiz.evalPersonHealthIndexOld(experimentRsCalculateAndCreateReportHealthScoreRequestRs);
   }
 
   @Operation(summary = "计算医疗占比")

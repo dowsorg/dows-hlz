@@ -6,38 +6,77 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.response.ExperimentIndicatorViewBaseInfoRsResponse;
 import org.dows.hep.api.user.experiment.request.*;
 import org.dows.hep.api.user.experiment.response.*;
+import org.dows.hep.biz.user.experiment.ExperimentHealthDocBiz;
 import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
-* @description project descr:实验:机构操作
-* @folder user-hep/机构操作
-*
-* @author lait.zhang
-* @date 2023年4月23日 上午9:44:34
-*/
+ * @author lait.zhang
+ * @description project descr:实验:机构操作
+ * @folder user-hep/机构操作
+ * @date 2023年4月23日 上午9:44:34
+ */
 @RequiredArgsConstructor
 @RestController
 @Tag(name = "机构操作", description = "机构操作")
 public class ExperimentOrgRest {
     private final ExperimentOrgBiz experimentOrgBiz;
 
+    private final ExperimentHealthDocBiz experimentHealthDocBiz;
+
+
     /**
-    * 获取机构人物列表，挂号费用，挂号状态
-    * @param
-    * @return
-    */
+     * 获取健康档案左上基本信息
+     *
+     * @param appId
+     * @param experimentInstanceId
+     * @param experimentPersonId
+     * @return
+     */
+    @Operation(summary = "获取健康档案左上基本信息")
+    @GetMapping("v1/userExperiment/healthDoc/getBaseInfo")
+    public ExperimentIndicatorViewBaseInfoRsResponse getBaseInfo(@RequestParam String appId, @RequestParam String experimentInstanceId, @RequestParam String experimentPersonId) {
+
+        return experimentHealthDocBiz.getBaseInfo(appId, experimentInstanceId, experimentPersonId);
+    }
+
+    /**
+     * 获取人物指标图
+     *
+     * @param appId
+     * @param experimentInstanceId
+     * @param experimentPersonId
+     * @return
+     */
+    @Operation(summary = "获取健康档案人物指标图")
+    @GetMapping("v1/userExperiment/healthDoc/getIndicatorInfo")
+    public ExptHealthDocInfoResponse getIndicatorInfo(@RequestParam String appId, @RequestParam String experimentInstanceId, @RequestParam String experimentPersonId) {
+
+        return experimentHealthDocBiz.getIndicatorInfo(appId, experimentInstanceId, experimentPersonId);
+    }
+
+    /**
+     * 获取机构人物列表，挂号费用，挂号状态
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "获取机构人物列表，挂号费用，挂号状态")
     @PostMapping("v1/userExperiment/experimentOrg/pageOrgPersons")
-    public OrgPersonResponse pageOrgPersons(@RequestBody @Validated FindOrgPersonsRequest findOrgPersons ) {
+    public OrgPersonResponse pageOrgPersons(@RequestBody @Validated FindOrgPersonsRequest findOrgPersons) {
         return experimentOrgBiz.pageOrgPersons(findOrgPersons);
     }
 
     /**
      * 获取实验人物列表
+     *
      * @param
      * @return
      */
@@ -49,6 +88,7 @@ public class ExperimentOrgRest {
 
     /**
      * 获取实验人物所属机构
+     *
      * @param
      * @return
      */
@@ -60,6 +100,7 @@ public class ExperimentOrgRest {
 
     /**
      * 获取实验小组人物数量
+     *
      * @param
      * @return
      */
@@ -70,65 +111,84 @@ public class ExperimentOrgRest {
     }
 
     /**
-    * 挂号：医院，体检中心
-    * @param
-    * @return
-    */
+     * 挂号：医院，体检中心
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "挂号：医院，体检中心")
     @PostMapping("v1/userExperiment/experimentOrg/startOrgFlow")
-    public Boolean startOrgFlow(@RequestBody @Validated StartOrgFlowRequest startOrgFlow, HttpServletRequest request ) {
+    public Boolean startOrgFlow(@RequestBody @Validated StartOrgFlowRequest startOrgFlow, HttpServletRequest request) {
         return experimentOrgBiz.startOrgFlow(startOrgFlow, request);
     }
 
     /**
-    * 获取机构通知列表
-    * @param
-    * @return
-    */
+     * 获取机构通知列表
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "获取机构通知列表")
     @PostMapping("v1/userExperiment/experimentOrg/pageOrgNotice")
-    public Page<OrgNoticeResponse> pageOrgNotice(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice ) {
+    public Page<OrgNoticeResponse> pageOrgNotice(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice) {
         return experimentOrgBiz.pageOrgNotice(findOrgNotice);
+    }
+
+    @Operation(summary = "获取机构人物告警列表是否有告警")
+    @PostMapping("v1/userExperiment/experimentOrg/getOrgAlarm")
+    public Boolean getOrgAlarm(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice) {
+        Page<OrgNoticeResponse> orgNoticeResponsePage = experimentOrgBiz.pageOrgNotice(findOrgNotice);
+        List<OrgNoticeResponse> collect = orgNoticeResponsePage.getRecords().stream()
+                .filter(t -> t.getActionState() == 1)
+                .collect(Collectors.toList());
+        if (collect.size() > 0) {
+            return true;
+        }
+        return false;
     }
 
     @Operation(summary = "获取机构通知详情（主要是事件操作提示+处理措施列表）")
     @PostMapping("v1/userExperiment/experimentOrg/getOrgNotice")
-    public OrgNoticeResponse getOrgNotice(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice) throws JsonProcessingException{
+    public OrgNoticeResponse getOrgNotice(@RequestBody @Validated FindOrgNoticeRequest findOrgNotice) throws JsonProcessingException {
         return experimentOrgBiz.getOrgNotice(findOrgNotice);
     }
+
     @Operation(summary = "处理突发事件")
     @PostMapping("v1/userExperiment/experimentOrg/saveOrgNoticeAction")
-    public OrgNoticeResponse saveOrgNoticeAction(@RequestBody @Validated SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) throws JsonProcessingException{
-        return experimentOrgBiz.saveOrgNoticeAction(saveNoticeAction,request);
+    public OrgNoticeResponse saveOrgNoticeAction(@RequestBody @Validated SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) throws JsonProcessingException {
+        return experimentOrgBiz.saveOrgNoticeAction(saveNoticeAction, request);
     }
 
     /**
-    * 获取机构报告列表
-    * @param
-    * @return
-    */
+     * 获取机构报告列表
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "获取机构报告列表")
     @PostMapping("v1/userExperiment/experimentOrg/pageOrgReport")
-    public Page<OrgFlowReportResponse> pageOrgReport(@RequestBody @Validated FindOrgReportRequest findOrgReport)  {
+    public Page<OrgFlowReportResponse> pageOrgReport(@RequestBody @Validated FindOrgReportRequest findOrgReport) {
         return experimentOrgBiz.pageOrgReport(findOrgReport);
     }
 
     /**
      * 获取机构报告详情
+     *
      * @param orgReportRequest
      * @return
      */
     @Operation(summary = "获取机构报告详情")
     @PostMapping("v1/userExperiment/experimentOrg/getOrgReportInfo")
-    public ExptOrgFlowReportResponse getOrgReportInfo(@RequestBody @Validated ExptOrgFlowReportRequest orgReportRequest){
+    public ExptOrgFlowReportResponse getOrgReportInfo(@RequestBody @Validated ExptOrgFlowReportRequest orgReportRequest) {
         return experimentOrgBiz.getOrgReportInfo(orgReportRequest);
     }
 
     /**
-    * 查看体检报告详情
-    * @param
-    * @return
-    */
+     * 查看体检报告详情
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "查看体检报告详情")
     @GetMapping("v1/userExperiment/experimentOrg/getPhysicalExamReport")
     public PhysicalExamReportInfoResponse getPhysicalExamReport(@Validated String operateFlowId) {
@@ -136,10 +196,11 @@ public class ExperimentOrgRest {
     }
 
     /**
-    * 查看诊疗报告详情
-    * @param
-    * @return
-    */
+     * 查看诊疗报告详情
+     *
+     * @param
+     * @return
+     */
     @Operation(summary = "查看诊疗报告详情")
     @GetMapping("v1/userExperiment/experimentOrg/getTreatReport")
     public TreatReportInfoResponse getTreatReport(@Validated String operateFlowId) {

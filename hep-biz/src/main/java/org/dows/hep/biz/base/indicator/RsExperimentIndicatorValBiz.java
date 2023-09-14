@@ -5,10 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
-import org.dows.hep.entity.ExperimentPersonEntity;
 import org.dows.hep.service.ExperimentIndicatorInstanceRsService;
 import org.dows.hep.service.ExperimentIndicatorValRsService;
-import org.dows.hep.service.ExperimentPersonService;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -26,11 +24,15 @@ public class RsExperimentIndicatorValBiz {
   private final ExperimentIndicatorValRsService experimentIndicatorValRsService;
   private final ExperimentIndicatorInstanceRsService experimentIndicatorInstanceRsService;
 
+
+
   public void populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(
       Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap,
       String experimentPersonId,
       Integer curPeriods
       ) {
+
+
     if (Objects.isNull(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
         || StringUtils.isBlank(experimentPersonId)
         || Objects.isNull(curPeriods)

@@ -141,7 +141,7 @@ public class ExperimentSchemeScoreBiz {
      * @return boolean
      * @author fhb
      * @description 判断是否有评分操作权限
-     * @date 2023/8/1 13:13
+     * @date 2023/8/1 13:14
      */
     public boolean canReview(String exptInstanceId, String accountId) {
         boolean isAdmin = baseBiz.isAdministrator(accountId);

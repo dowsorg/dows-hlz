@@ -19,9 +19,13 @@ import java.util.List;
 @NoArgsConstructor
 @Schema(name = "RiskModelHealthIndexVO 对象", title = "死亡原因健康指数")
 public class RiskModelHealthIndexVO {
+    @Schema(title = "人群id")
+    private String crowdsId;
     @Schema(title = "风险模型id")
     private String riskModelId;
 
+    @Schema(title = "风险模型名称")
+    private String riskModelName;
     @Schema(title = "人群总死亡概率")
     private Integer crowdsDeathRate;
 
@@ -50,6 +54,11 @@ public class RiskModelHealthIndexVO {
     public BigDecimal getDeathRateWeight(){
         return BigDecimalUtil.div(BigDecimal.valueOf(this.getRiskModelDeathRate()),
                 BigDecimal.valueOf(this.getCrowdsDeathRate()), 2, RoundingMode.DOWN);
+    }
+
+    public BigDecimal getDeathRateWeight(BigDecimal total){
+        return BigDecimalUtil.div(BigDecimal.valueOf(this.getRiskModelDeathRate()),
+                total, 2, RoundingMode.DOWN);
     }
 
     public BigDecimal getExistsDeathScore(){

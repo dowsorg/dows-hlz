@@ -67,6 +67,9 @@ public class ExperimentPersonInsuranceEntity implements CrudEntity {
     @Schema(title = "保险失效时间")
     private Date expdate;
 
+    @Schema(title = "保险购买所在天数")
+    private Integer buyGameDay;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

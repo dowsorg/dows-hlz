@@ -44,6 +44,17 @@ public class IndicatorFuncRest {
         return indicatorFuncBiz.getByPidAndAppId(appId, pid);
     }
 
+    @Operation(summary = "根据指标类目获取功能点提示")
+    @GetMapping("v1/baseIndicator/indicatorFunc/getFuncTip")
+    public IndicatorFuncResponse getFuncTip(
+            @RequestParam @Validated String appId,
+            @RequestParam @Validated String indicatorCategoryId,
+            @RequestParam @Validated String indicatorFuncName) {
+        return indicatorFuncBiz.getFuncTip(appId, indicatorCategoryId,indicatorFuncName);
+    }
+
+
+
     @Operation(summary = "删除指标功能")
     @DeleteMapping("v1/baseIndicator/indicatorFunc/delete")
     public void delete(@Validated String indicatorFuncId) {

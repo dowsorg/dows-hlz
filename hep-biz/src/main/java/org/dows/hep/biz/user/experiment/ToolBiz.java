@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -20,33 +19,42 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class ToolBiz {
 
+    public String ping(){
+
+        return "ok";
+    }
+
     public String getWebSocketState(String exptId){
-        ConcurrentMap<Channel, AccountInfo> map=null;
+        Map<Channel, AccountInfo> map=null;
         if(ShareUtil.XObject.notEmpty(exptId)){
-            map=HepClientManager.getUserInfosByExperimentId(exptId);
+            map=new HashMap<>();
+            map.putAll(HepClientManager.getUserInfosByExperimentId(exptId));
         }else {
             map=HepClientManager.getUserInfos();
         }
-        if(ShareUtil.XCollection.isEmpty(map)){
-            return "[]";
-        }
-        Map<Integer,AccountInfo> dump=new HashMap<>();
-        map.forEach((k,v)->dump.put(k.hashCode(),v));
+        int cntUser=HepClientManager.getAuthUserCount();
+        int cntMsg=HepClientManager.getMsgCount();
         StringBuilder sb=new StringBuilder();
+        sb.append(" cntUser:").append(cntUser)
+                .append(" cntMsg:").append(cntMsg)
+                .append( "users:");
+
+        if(ShareUtil.XCollection.isEmpty(map)){
+            return sb.append("[]").toString() ;
+        }
         sb.append("[");
         AtomicReference<String> vExptId=new AtomicReference<>("");
-        dump.forEach((k,v)->{
+        map.forEach((k,v)->{
             sb.append("{");
             if(!vExptId.equals(v.getTenantName())&&ShareUtil.XObject.notEmpty(v.getTenantName()) ){
                 sb.append("expt:").append(v.getTenantName());
                 vExptId.set(v.getTenantName());
             }
-            sb.append(" channel:").append(k);
+            sb.append(" channel:").append(k.hashCode());
             sb.append(" user:").append(v.getAccountName());
             sb.append("},");
         });
         sb.append("]");
-        dump.clear();
         return sb.toString();
     }
 }

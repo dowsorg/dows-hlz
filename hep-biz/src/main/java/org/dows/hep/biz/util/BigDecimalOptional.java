@@ -56,6 +56,15 @@ public class BigDecimalOptional {
         }
         return BigDecimalUtil.roundDecimal(this.value,scale,roundingMode);
     }
+    public String getString(int scale){
+       return getString(scale,RoundingMode.HALF_UP);
+    }
+    public String getString(int scale, RoundingMode roundingMode){
+        if(null==this.value) {
+            return null;
+        }
+        return BigDecimalUtil.formatRoundDecimal(this.value,scale,roundingMode);
+    }
 
     public BigDecimalOptional setValue(BigDecimal val){
         this.value=val;

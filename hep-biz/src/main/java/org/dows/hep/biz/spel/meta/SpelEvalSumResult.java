@@ -33,11 +33,17 @@ public class SpelEvalSumResult {
 
     private BigDecimal max;
 
-    public Double getValdDouble(){
+    public Double getValDouble(){
         if(ShareUtil.XObject.notNumber(val)){
             return 0d;
         }
         return Double.valueOf(val.toString());
+    }
+    public BigDecimal getValDecimal(){
+        if(ShareUtil.XObject.notNumber(val)){
+            return BigDecimal.ZERO;
+        }
+        return BigDecimalUtil.valueOf(val.toString());
     }
     public String getValString(){
         return getString(val);

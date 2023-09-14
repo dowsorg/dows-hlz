@@ -123,6 +123,7 @@ public class IndicatorViewPhysicalExamBiz{
             .collect(Collectors.toList());
     }
 
+    //体格检查
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdateRs(CreateOrUpdateIndicatorViewPhysicalExamRequestRs createOrUpdateIndicatorViewPhysicalExamRequestRs) {
         IndicatorViewPhysicalExamEntity indicatorViewPhysicalExamEntity;

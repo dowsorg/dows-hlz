@@ -2,11 +2,13 @@ package org.dows.hep.biz.event;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentState;
+import org.dows.hep.api.user.experiment.response.ExperimentPeriodsResonse;
 import org.dows.hep.api.user.experiment.response.IntervalResponse;
 import org.dows.hep.api.user.experiment.vo.ExptTimePointVO;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.util.AssertUtil;
+import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -22,6 +25,32 @@ import java.util.Date;
 @Component
 @Slf4j
 public class ExperimentFlowRules {
+
+    public ExperimentPeriodsResonse getExperimentCurrentPeriods(String appId, String experimentInstanceId) {
+        ExperimentPeriodsResonse rst=new ExperimentPeriodsResonse().setExperimentInstanceId(experimentInstanceId);
+        if(ShareUtil.XObject.isEmpty(appId)){
+            appId="3";
+        }
+        ExperimentCacheKey exptKey=ExperimentCacheKey.create(appId,experimentInstanceId);
+        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(exptColl))
+                .throwMessage("未找到实验设置");
+
+        if(!exptColl.hasSandMode()){
+            return rst;
+        }
+        ExperimentTimerCache.CacheData cacheTimer=ExperimentTimerCache.Instance().getCacheData(exptKey);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cacheTimer,()->cacheTimer.getMapTimer()))
+                .throwMessage("未找到沙盘时间设置");
+        ExperimentTimerEntity curTimer=cacheTimer.getCurTimer(LocalDateTime.now());
+        if(ShareUtil.XObject.isEmpty(curTimer)){
+            return rst.setCurrentPeriod(0);
+        }
+        List<ExperimentPeriodsResonse.ExperimentPeriods> periods = ShareUtil.XCollection.map(cacheTimer.getMapTimer().values(), item->
+                CopyWrapper.create(ExperimentPeriodsResonse.ExperimentPeriods::new).endFrom(item));
+        return rst.setCurrentPeriod(curTimer.getPeriod())
+                .setExperimentPeriods(periods);
+    }
 
     public IntervalResponse countdown(String appId, String experimentInstanceId){
 
@@ -49,40 +78,40 @@ public class ExperimentFlowRules {
         return rst;
     }
 
-    public ExptTimePointVO fillTimeState(ExptTimePointVO rst,ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl){
-        if(null==rst){
+    public ExptTimePointVO fillTimeState(ExptTimePointVO rst,ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl) {
+        if (null == rst) {
             return rst;
         }
-        final Date dtNow=new Date();
-        final LocalDateTime ldtNow=ShareUtil.XDate.localDT4Date(dtNow);
-        final long nowTs=dtNow.getTime();
+        final Date dtNow = new Date();
+        final LocalDateTime ldtNow = ShareUtil.XDate.localDT4Date(dtNow);
+        final long nowTs = dtNow.getTime();
         rst.setServerTimeStamp(nowTs);
         //方案设计模式
-        if(exptColl.hasSchemaMode()){
-            if(exptColl.getSchemaEndTime().isBefore(ldtNow)){
+        if (exptColl.hasSchemaMode()) {
+            if (exptColl.getSchemaEndTime().isBefore(ldtNow)) {
                 rst.setSchemeTotalTime(0L);
-            }else {
-                rst.setSchemeTotalTime(Duration.between(ldtNow,exptColl.getSchemaEndTime()).toMillis());
+            } else {
+                rst.setSchemeTotalTime(Duration.between(ldtNow, exptColl.getSchemaEndTime()).toMillis());
             }
             return rst;
         }
-        if(!exptColl.hasSandMode()){
+        if (!exptColl.hasSandMode()) {
             return rst;
         }
-        ExperimentTimerCache.CacheData cacheTimer=ExperimentTimerCache.Instance().getCacheData(exptKey);
-        AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cacheTimer,()->cacheTimer.getMapTimer()))
+        ExperimentTimerCache.CacheData cacheTimer = ExperimentTimerCache.Instance().getCacheData(exptKey);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cacheTimer, () -> cacheTimer.getMapTimer()))
                 .throwMessage("未找到沙盘时间设置");
         //沙盘模式
         rst.setSandTimeUnit("天");
-        for(ExperimentTimerEntity item:cacheTimer.getMapTimer().values()){
-            if(item.getPaused()){
-                if(item.getStartTime().getTime()<=item.getPauseTime().getTime()&&item.getPauseTime().getTime()<=item.getEndTime().getTime()){
+        for (ExperimentTimerEntity item : cacheTimer.getMapTimer().values()) {
+            if (item.getPaused()) {
+                if (item.getStartTime().getTime() <= item.getPauseTime().getTime() && item.getPauseTime().getTime() <= item.getEndTime().getTime()) {
                     // 剩余时间
                     long rs = item.getEndTime().getTime() - item.getPauseTime().getTime();
                     // 持续时间
                     long ds = item.getPeriodDuration() - rs;
                     rst.setSandRemnantSecond(rs / 1000);
-                    rst.setSandDurationSecond(ds / 1000);
+                    rst.setSandDurationSecond(Math.max(0,  ds / 1000));
                     rst.setPeriod(item.getPeriod());
                     rst.setState(item.getState());
                     return rst;
@@ -106,20 +135,23 @@ public class ExperimentFlowRules {
                 long rs = item.getEndTime().getTime() - nowTs + 1;
                 long ds = item.getPeriodDuration() - rs;
                 rst.setSandRemnantSecond(rs / 1000);
-                rst.setSandDurationSecond(ds / 1000);
+                rst.setSandDurationSecond(Math.max(0, ds / 1000));
                 return rst;
             } else if (nowTs >= item.getEndTime().getTime() && nowTs <= item.getEndTime().getTime() + item.getPeriodInterval()) {// // 一期结束倒计时
                 rst.setCountdown(item.getEndTime().getTime() + item.getPeriodInterval() - nowTs);
                 rst.setCountdownType(1);
-                return rst;
+                break;
             }
         }
-        final ExperimentTimerEntity lastTimer=cacheTimer.getTimerByPeriod(cacheTimer.getMapTimer().size());
-        if(lastTimer.getState().equals(EnumExperimentState.FINISH.getState())){
+        final ExperimentTimerEntity lastTimer = cacheTimer.getTimerByPeriod(cacheTimer.getMapTimer().size());
+        if (lastTimer.getState().equals(EnumExperimentState.FINISH.getState())
+                || lastTimer.getEndTime().getTime() + lastTimer.getPeriodInterval() <= nowTs) {
             rst.setState(lastTimer.getState());
             rst.setPeriod(lastTimer.getPeriod());
             rst.setSandRemnantSecond(0L);
             rst.setSandDurationSecond(exptColl.getTotalSeconds());
+            rst.setCountdown(null);
+            rst.setCountdownType(null);
         }
         return rst;
 

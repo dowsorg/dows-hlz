@@ -17,6 +17,7 @@ import org.dows.hep.api.base.intervene.request.FindTreatRequest;
 import org.dows.hep.api.base.intervene.response.*;
 import org.dows.hep.api.base.intervene.vo.FoodCookbookDetailVO;
 import org.dows.hep.api.base.intervene.vo.SportPlanItemVO;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.core.ExptOperateOrgFuncRequest;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.user.experiment.request.*;
@@ -29,6 +30,9 @@ import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
+import org.dows.hep.biz.dao.TreatItemDao;
+import org.dows.hep.biz.eval.EvalPersonBiz;
+import org.dows.hep.biz.eval.SportCalcBiz;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
@@ -84,6 +88,14 @@ public class ExperimentOrgInterveneBiz{
     private final OperateInsuranceService operateInsuranceService;
     private final ExperimentOrgService experimentOrgService;
     private final CaseOrgFeeService caseOrgFeeService;
+
+    private final EvalPersonBiz evalPersonBiz;
+
+    private final PersonIndicatorIdCache personIndicatorIdCache;
+
+    private final TreatItemDao treatItemDao;
+
+    private final SportCalcBiz sportCalcBiz;
 
 
     public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
@@ -240,11 +252,10 @@ public class ExperimentOrgInterveneBiz{
         }catch (Exception ex){
             AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
         }
-        final PersonIndicatorIdCache cacheIndicatorId=PersonIndicatorIdCache.Instance();
         List<SpelEvalSumResult> evalSumResults=new ArrayList<>();
         if(ShareUtil.XObject.notEmpty(snapRst.getStatEnergy())) {
             for (CalcFoodStatVO item : snapRst.getStatEnergy()) {
-                String indicatorId = cacheIndicatorId.getIndicatorIdBySourceId(validator.getExperimentPersonId(), item.getInstanceId());
+                String indicatorId = personIndicatorIdCache.getIndicatorIdBySourceId(validator.getExperimentPersonId(), item.getInstanceId());
                 if (ShareUtil.XObject.isEmpty(indicatorId)) {
                     continue;
                 }
@@ -256,7 +267,7 @@ public class ExperimentOrgInterveneBiz{
         }
 
         Boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false,()->{
-            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(null, evalSumResults, timePoint.getPeriod()))
+            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicatorCurrent(validator.getExperimentPersonId(), null, evalSumResults))
                     .throwMessage("影响指标数据保存失败");
             return true;
         });
@@ -315,183 +326,225 @@ public class ExperimentOrgInterveneBiz{
         }
 
         boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false);
+        if(succFlag){
+            sportCalcBiz.calcSportCostEnergy(validator.getExperimentPersonId(),saveSport.getSportItems(),true);
+        }
         return new SaveExptInterveneResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
     }
 
     public SaveExptTreatResponse saveExptTreatPlan( SaveExptTreatRequest saveTreat, HttpServletRequest request){
+        StringBuilder sb=new StringBuilder().append("EVALTRACE--saveExptTreatPlan");
+        try {
 
-        ExptRequestValidator validator=ExptRequestValidator.create(saveTreat);
-        validator.checkExperimentPerson()
-                .checkExperimentOrg()
-                .checkExperimentInstanceId()
-                .checkIndicatorFunc();
+            ExptRequestValidator validator = ExptRequestValidator.create(saveTreat);
+            validator.checkExperimentPerson()
+                    .checkExperimentOrg()
+                    .checkExperimentInstanceId()
+                    .checkIndicatorFunc();
 
-        saveTreat.setTreatItems(ShareUtil.XObject.defaultIfNull(saveTreat.getTreatItems(), Collections.emptyList()));
-        saveTreat.getTreatItems().forEach(i->{
-            AssertUtil.trueThenThrow(BigDecimalUtil.tryParseDecimalElseZero(i.getWeight()).compareTo(BigDecimal.ZERO)<=0)
-                            .throwMessage(String.format("请输入[%s]的有效用量",i.getTreatItemName()));
-        });
+            saveTreat.setTreatItems(ShareUtil.XObject.defaultIfNull(saveTreat.getTreatItems(), Collections.emptyList()));
+            saveTreat.getTreatItems().forEach(i -> {
+                AssertUtil.trueThenThrow(BigDecimalUtil.tryParseDecimalElseZero(i.getWeight()).compareTo(BigDecimal.ZERO) <= 0)
+                        .throwMessage(String.format("请输入[%s]的有效用量", i.getTreatItemName()));
 
-        //校验操作类型
-        EnumExptOperateType enumOperateType=EnumExptOperateType.ofCategId(validator.getIndicatorCategoryId());
-        AssertUtil.trueThenThrow(enumOperateType==EnumExptOperateType.NONE)
-                .throwMessage("未知的操作类型");
-        AssertUtil.trueThenThrow(enumOperateType.getEndFlag()&&ShareUtil.XObject.isEmpty(saveTreat.getTreatItems()))
-                .throwMessage("请选择项目");
-        //校验登录
-        LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+            });
 
-        //校验挂号
-        final LocalDateTime ldtNow=LocalDateTime.now();
-        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
-        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
-                .requireOrgFlowRunning(timePoint.getPeriod());
-        //校验扣费
-        final List<ExptTreatPlanItemVO> newItems=new ArrayList<>();
-        for(int i=saveTreat.getTreatItems().size()-1;i>=0;i--){
-            ExptTreatPlanItemVO item=saveTreat.getTreatItems().get(i);
-            item.setRawItemId(item.getItemId());
-            if(ShareUtil.XObject.notEmpty(item.getItemId())){
-                continue;
+            //校验操作类型
+            EnumExptOperateType enumOperateType = EnumExptOperateType.ofCategId(validator.getIndicatorCategoryId());
+            AssertUtil.trueThenThrow(enumOperateType == EnumExptOperateType.NONE)
+                    .throwMessage("未知的操作类型");
+            AssertUtil.trueThenThrow(enumOperateType.getEndFlag() && ShareUtil.XObject.isEmpty(saveTreat.getTreatItems()))
+                    .throwMessage("请选择项目");
+            //校验登录
+            LoginContextVO voLogin = ShareBiz.getLoginUser(request);
+
+            //校验挂号
+            final LocalDateTime ldtNow = LocalDateTime.now();
+            final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
+            ExperimentTimePoint timePoint = validator.getTimePoint(true, ldtNow, true);
+            ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(validator)
+                    .requireOrgFlowRunning(timePoint.getPeriod());
+            //校验扣费
+            final List<ExptTreatPlanItemVO> newItems = new ArrayList<>();
+            for (int i = saveTreat.getTreatItems().size() - 1; i >= 0; i--) {
+                ExptTreatPlanItemVO item = saveTreat.getTreatItems().get(i);
+                item.setRawItemId(item.getItemId());
+                if (ShareUtil.XObject.notEmpty(item.getItemId())) {
+                    continue;
+                }
+                item.setItemId(getTimestampId(dateNow, saveTreat.getTreatItems().size() - i)).setDealFlag(0);
+                newItems.add(item);
             }
-            item.setItemId(getTimestampId(dateNow,saveTreat.getTreatItems().size()-i)).setDealFlag(0);
-            newItems.add(item);
-        }
-        BigDecimalOptional cost=BigDecimalOptional.zero();
-        newItems.forEach(i->cost.add(BigDecimalUtil.mul(BigDecimalUtil.tryParseDecimalElseZero(i.getWeight()), BigDecimalUtil.tryParseDecimalElseZero(i.getFee()))));
-        EnumOrgFeeType feeType=enumOperateType == EnumExptOperateType.INTERVENETreatFourLevel?EnumOrgFeeType.YWZLF: EnumOrgFeeType.XLGYF;
-        final boolean costFlag=cost.getValue().compareTo(BigDecimal.ZERO)>0;
-        final ExperimentIndicatorValRsEntity costIndicator=!costFlag?null: experimentIndicatorInstanceRsBiz.getChangeMoney(RsChangeMoneyRequest
-                .builder()
-                .appId(saveTreat.getAppId())
-                .experimentId(saveTreat.getExperimentInstanceId())
-                .experimentPersonId(saveTreat.getExperimentPersonId())
-                .periods(timePoint.getPeriod())
-                .moneyChange(cost.getValue().negate())
-                .assertEnough(true)
-                .build());
-        //计算每次操作应该返回的报销金额
-        BigDecimal reimburse = getExperimentPersonRestitution(cost.getValue(),saveTreat.getExperimentPersonId());
-        final CostRequest costRecord=!costFlag?null:CostRequest.builder()
-                .operateCostId(idGenerator.nextIdStr())
-                .experimentInstanceId(saveTreat.getExperimentInstanceId())
-                .experimentGroupId(validator.getExperimentGroupId())
-                .operatorId(voLogin.getAccountId())
-                .experimentOrgId(saveTreat.getExperimentOrgId())
-                .operateFlowId(flowValidator.getOperateFlowId())
-                .patientId(saveTreat.getExperimentPersonId())
-                .feeName(feeType.getName())
-                .feeCode(feeType.getCode())
-                .cost(cost.getValue())
-                .restitution(reimburse)
-                .period(timePoint.getPeriod())
-                .build();
-        //操作记录
-        IndicatorFuncEntity defOrgFunc=validator.getIndicatorFunc();
-        OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
-                .setIndicatorCategoryId(enumOperateType.getIndicatorCateg().getCode())
-                .setOperateType(enumOperateType.getCode())
-                .setOperateAccountId(voLogin.getAccountId())
-                .setOperateAccountName(voLogin.getAccountName())
-                .setOperateTime(dateNow)
-                .setOperateGameDay(timePoint.getGameDay())
-                .setOperateFlowId(flowValidator.getOperateFlowId())
-                .setReportFlag(enumOperateType.getReportFuncFlag()?1:0)
-                .setReportLabel(validator.getCachedExptOrg().get().getExperimentOrgName())
-                .setReportDescr(defOrgFunc.getName());
-        //保存快照
-        OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
-                .setAppId(validator.getAppId())
-                .setSnapTime(dateNow);
 
-        Map<String, SpelEvalSumResult> mapSum=new HashMap<>();
-        List<SpelEvalResult> evalResults=SpelInvoker.Instance().evalTreatEffect(validator.getExperimentInstanceId(), validator.getExperimentPersonId(),
-                timePoint.getPeriod(), newItems,mapSum);
-        ExptTreatPlanResponse snapRst=new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
-        try{
-            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true))
-                    .setResultJson(JacksonUtil.toJson(evalResults,true));
-        }catch (Exception ex){
-            AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
-        }
-        //挂号报告
-        boolean succFlag=false;
-        ExptOrgFlowReportResponse report=null;
-        if(enumOperateType.getEndFlag()){
-            OperateFlowEntity flow= flowValidator.getExptFlow().get();
-            OperateFlowEntity saveFlow=OperateFlowEntity.builder()
-                    .id(flow.getId())
-                    .operateFlowId(flow.getOperateFlowId())
-                    .operateAccountId(voLogin.getAccountId())
-                    .operateAccountName(voLogin.getAccountName())
+            if (ShareUtil.XObject.notEmpty(newItems)) {
+                List<TreatItemEntity> rowsTreatItem = treatItemDao.getByIds(ShareUtil.XCollection.map(newItems, ExptTreatPlanItemVO::getTreatItemId),
+                        TreatItemEntity::getTreatItemId,
+                        TreatItemEntity::getFee);
+                Map<String, TreatItemEntity> mapTreatItem = ShareUtil.XCollection.toMap(rowsTreatItem, TreatItemEntity::getTreatItemId);
+                newItems.forEach(i -> Optional.ofNullable(mapTreatItem.get(i.getTreatItemId()))
+                        .ifPresent(v -> i.setFee(BigDecimalUtil.formatDecimal(v.getFee()))));
+            }
+            BigDecimalOptional cost = BigDecimalOptional.zero();
+            newItems.forEach(i -> cost.add(BigDecimalUtil.mul(BigDecimalUtil.tryParseDecimalElseZero(i.getWeight()), BigDecimalUtil.tryParseDecimalElseZero(i.getFee()))));
+            EnumOrgFeeType feeType = enumOperateType == EnumExptOperateType.INTERVENETreatFourLevel ? EnumOrgFeeType.YWZLF : EnumOrgFeeType.XLGYF;
+            final boolean costFlag = cost.getValue().compareTo(BigDecimal.ZERO) > 0;
+            final ExperimentIndicatorValRsEntity costIndicator = !costFlag ? null : experimentIndicatorInstanceRsBiz.getChangeMoney(RsChangeMoneyRequest
+                    .builder()
+                    .appId(saveTreat.getAppId())
+                    .experimentId(saveTreat.getExperimentInstanceId())
+                    .experimentPersonId(saveTreat.getExperimentPersonId())
                     .periods(timePoint.getPeriod())
-                    .reportFlag(1)
-                    .reportLabel(validator.getCachedExptOrg().get().getExperimentOrgName())
-                    .reportDescr(defOrgFunc.getName())
-                    .endTime(dateNow)
-                    .operateTime(dateNow)
-                    .operateGameDay(timePoint.getGameDay())
+                    .moneyChange(cost.getValue().negate())
+                    .assertEnough(true)
+                    .build());
+
+
+            //计算每次操作应该返回的报销金额
+            BigDecimal reimburse = getExperimentPersonRestitution(cost.getValue(), saveTreat.getExperimentPersonId());
+            final CostRequest costRecord = !costFlag ? null : CostRequest.builder()
+                    .operateCostId(idGenerator.nextIdStr())
+                    .experimentInstanceId(saveTreat.getExperimentInstanceId())
+                    .experimentGroupId(validator.getExperimentGroupId())
+                    .operatorId(voLogin.getAccountId())
+                    .experimentOrgId(saveTreat.getExperimentOrgId())
+                    .operateFlowId(flowValidator.getOperateFlowId())
+                    .patientId(saveTreat.getExperimentPersonId())
+                    .feeName(feeType.getName())
+                    .feeCode(feeType.getCode())
+                    .cost(cost.getValue())
+                    .restitution(reimburse)
+                    .period(timePoint.getPeriod())
                     .build();
 
-            ExptOrgReportNodeVO node=new ExptOrgReportNodeVO()
-                    .setNodeData(new ExptOrgReportNodeDataVO().setTreatFourLevel(snapRst))
-                    .setIndicatorFuncId(validator.getIndicatorFuncId())
-                    .setIndicatorCategoryId(validator.getIndicatorCategoryId())
-                    .setIndicatorFuncName(validator.getIndicatorFuncName());
-            OperateFlowSnapEntity saveFlowSnap=OperateFlowSnapEntity.builder()
-                    .appId(rowOrgFunc.getAppId())
-                    .snapTime(dateNow)
-                    .build();
-            succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false,()->{
-                AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(evalResults, mapSum.values(), timePoint.getPeriod()))
-                        .throwMessage("影响指标数据保存失败");
-                if(costFlag){
-                    experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);
-                    operateCostBiz.saveCost(costRecord);
-                }
-                return true;
-            });
+            //操作记录
+            IndicatorFuncEntity defOrgFunc = validator.getIndicatorFunc();
+            OperateOrgFuncEntity rowOrgFunc = createRowOrgFunc(validator)
+                    .setIndicatorCategoryId(enumOperateType.getIndicatorCateg().getCode())
+                    .setOperateType(enumOperateType.getCode())
+                    .setOperateAccountId(voLogin.getAccountId())
+                    .setOperateAccountName(voLogin.getAccountName())
+                    .setOperateTime(dateNow)
+                    .setOperateGameDay(timePoint.getGameDay())
+                    .setOperateFlowId(flowValidator.getOperateFlowId())
+                    .setReportFlag(enumOperateType.getReportFuncFlag() ? 1 : 0)
+                    .setReportLabel(validator.getCachedExptOrg().get().getExperimentOrgName())
+                    .setReportDescr(defOrgFunc.getName());
+            //保存快照
+            OperateOrgFuncSnapEntity rowOrgFuncSnap = new OperateOrgFuncSnapEntity()
+                    .setAppId(validator.getAppId())
+                    .setSnapTime(dateNow);
+
+            Map<String, SpelEvalSumResult> mapSum = new HashMap<>();
+            List<SpelEvalResult> evalResults = SpelInvoker.Instance().evalTreatEffect(validator.getExperimentInstanceId(), validator.getExperimentPersonId(),
+                    timePoint.getPeriod(), newItems, mapSum);
+            ExptTreatPlanResponse snapRst = new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
             try {
-                rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
-                        .appId(validator.getAppId())
-                        .experimentId(validator.getExperimentInstanceId())
-                        .periods(timePoint.getPeriod())
-                        .experimentPersonId(validator.getExperimentPersonId())
-                        .build());
+                rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst, true))
+                        .setResultJson(JacksonUtil.toJson(evalResults, true));
             } catch (Exception ex) {
-                log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
-                        validator.getExperimentInstanceId(), validator.getExperimentPersonId()), ex);
+                AssertUtil.justThrow(String.format("记录数据编制失败：%s", ex.getMessage()), ex);
             }
-            try{
-                report= orgReportComposer.composeReport(validator,flowValidator.updateFlowOperate(timePoint),timePoint,node);
-                saveFlowSnap.setRecordJson(JacksonUtil.toJson(report,true));
-            }catch (Exception ex){
-                AssertUtil.justThrow(String.format("机构报告数据编制失败：%s",ex.getMessage()),ex);
-            }
-            saveFlow.setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
-            operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
-        }else{
-            succFlag=operateOrgFuncDao.tranSave(rowOrgFunc,List.of(rowOrgFuncSnap),false,()->{
-                AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(evalResults, mapSum.values(), timePoint.getPeriod()))
-                        .throwMessage("影响指标数据保存失败");
-                if(costFlag){
-                    experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);
-                    operateCostBiz.saveCost(costRecord);
+
+
+            //挂号报告
+            boolean succFlag = false;
+            ExptOrgFlowReportResponse report = null;
+            if (enumOperateType.getEndFlag()) {
+                OperateFlowEntity flow = flowValidator.getExptFlow().get();
+                OperateFlowEntity saveFlow = OperateFlowEntity.builder()
+                        .id(flow.getId())
+                        .operateFlowId(flow.getOperateFlowId())
+                        .operateAccountId(voLogin.getAccountId())
+                        .operateAccountName(voLogin.getAccountName())
+                        .periods(timePoint.getPeriod())
+                        .reportFlag(1)
+                        .reportLabel(validator.getCachedExptOrg().get().getExperimentOrgName())
+                        .reportDescr(defOrgFunc.getName())
+                        .endTime(dateNow)
+                        .operateTime(dateNow)
+                        .operateGameDay(timePoint.getGameDay())
+                        .build();
+
+                ExptOrgReportNodeVO node = new ExptOrgReportNodeVO()
+                        .setNodeData(new ExptOrgReportNodeDataVO().setTreatFourLevel(snapRst))
+                        .setIndicatorFuncId(validator.getIndicatorFuncId())
+                        .setIndicatorCategoryId(validator.getIndicatorCategoryId())
+                        .setIndicatorFuncName(validator.getIndicatorFuncName());
+                OperateFlowSnapEntity saveFlowSnap = OperateFlowSnapEntity.builder()
+                        .appId(rowOrgFunc.getAppId())
+                        .snapTime(dateNow)
+                        .build();
+                succFlag = operateOrgFuncDao.tranSave(rowOrgFunc, List.of(rowOrgFuncSnap), false, () -> {
+                    AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(), evalResults, mapSum.values(), timePoint.getPeriod()))
+                            .throwMessage("影响指标数据保存失败");
+                    if (costFlag) {
+                        experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);
+                        operateCostBiz.saveCost(costRecord);
+                    }
+                    return true;
+                });
+
+                try {
+                    if (ConfigExperimentFlow.SWITCH2EvalCache) {
+
+                        evalPersonBiz.evalOrgFunc(RsExperimentCalculateFuncRequest.builder()
+                                .appId(validator.getAppId())
+                                .experimentId(validator.getExperimentInstanceId())
+                                .periods(timePoint.getPeriod())
+                                .experimentPersonId(validator.getExperimentPersonId())
+                                .funcType(EnumEvalFuncType.FUNCTreat)
+                                .build());
+                    } else {
+                        rsExperimentCalculateBiz.experimentReCalculateFunc(RsExperimentCalculateFuncRequest.builder()
+                                .appId(validator.getAppId())
+                                .experimentId(validator.getExperimentInstanceId())
+                                .periods(timePoint.getPeriod())
+                                .experimentPersonId(validator.getExperimentPersonId())
+                                .build());
+                    }
+                } catch (Exception ex) {
+                    log.error(String.format("saveExptTreatPlan.deal experimentId:%s personId:%s",
+                            validator.getExperimentInstanceId(), validator.getExperimentPersonId()), ex);
+                    AssertUtil.justThrow(String.format("功能点结算失败：%s", ex.getMessage()), ex);
                 }
-                return true;
-            });
+
+
+                try {
+                    report = orgReportComposer.composeReport(validator, flowValidator.updateFlowOperate(timePoint), timePoint, node);
+                    saveFlowSnap.setRecordJson(JacksonUtil.toJson(report, true));
+                } catch (Exception ex) {
+                    AssertUtil.justThrow(String.format("机构报告数据编制失败：%s", ex.getMessage()), ex);
+                }
+                saveFlow.setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
+                operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
+
+            } else {
+                succFlag = operateOrgFuncDao.tranSave(rowOrgFunc, List.of(rowOrgFuncSnap), false, () -> {
+                    AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(), evalResults, mapSum.values(), timePoint.getPeriod()))
+                            .throwMessage("影响指标数据保存失败");
+                    if (costFlag) {
+                        experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);
+                        operateCostBiz.saveCost(costRecord);
+                    }
+                    return true;
+                });
+            }
+
+
+            return new SaveExptTreatResponse()
+                    .setSuccess(succFlag)
+                    .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId())
+                    .setReportInfo(report);
+        }finally {
+            log.error(sb.toString());
+            log.info(sb.toString());
         }
-
-
-
-        return new SaveExptTreatResponse()
-                .setSuccess(succFlag)
-                .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId())
-                .setReportInfo(report);
     }
+
+
+
 
 
     private <T> T getReportSnapData(ExptOperateOrgFuncRequest reqOperateFunc, boolean checkIndicatorFunc, boolean checkOrgFlow, Class<T> clazz, Supplier<T> creator){

@@ -42,14 +42,21 @@ public class PushWebSocketUtil {
     private IdGenerator idGenerator;
 
     public <T> PushWebScoketResult pushCommon(EnumWebSocketType socketType, String experimentId, Set<String> clientIds, T data){
+        return pushCommon(socketType,experimentId,clientIds,data,true);
+    }
+
+    public <T> PushWebScoketResult pushCommon(EnumWebSocketType socketType, String experimentId, Set<String> clientIds, T data,boolean retry){
         return pushCommon(CommonWebSocketEventSource.builder()
                 .socketType(socketType)
                 .experimentInstanceId(experimentId)
                 .clientIds(clientIds)
                 .data(data)
-                .build());
+                .build(),retry);
     }
     public <T> PushWebScoketResult pushCommon(CommonWebSocketEventSource<T> src){
+        return pushCommon(src,true);
+    }
+    public <T> PushWebScoketResult pushCommon(CommonWebSocketEventSource<T> src,boolean retry){
         PushWebScoketResult rst=new PushWebScoketResult();
         try {
             if (ShareUtil.XObject.isEmpty(src)) {
@@ -77,8 +84,11 @@ public class PushWebSocketUtil {
                 }
                 rst.getHitClients().add(clientId);
                 rst.getMissClients().remove(clientId);
-                //HepClientManager.sendInfo(k,MessageCode.MESS_CODE, wsPack);
-                HepClientManager.sendInfoRetry(k, MessageCode.MESS_CODE, wsPack, idGenerator.nextIdStr(), null);
+                if(retry) {
+                    HepClientManager.sendInfoRetry(k, MessageCode.MESS_CODE, wsPack, idGenerator.nextIdStr(), null);
+                }else{
+                    HepClientManager.sendInfo(k,MessageCode.MESS_CODE, wsPack);
+                }
 
             });
         }catch (Exception ex){
@@ -126,7 +136,7 @@ public class PushWebSocketUtil {
 
     }
 
-    //region
+    //region oldPush
     public PushWebScoketResult pushPeriodNotice(String experimentId, Set<String> clientIds,ExperimentPeriodMessage periodMessage){
         NoticeContent noticeContent = NoticeContent.builder()
                 .payload(periodMessage)

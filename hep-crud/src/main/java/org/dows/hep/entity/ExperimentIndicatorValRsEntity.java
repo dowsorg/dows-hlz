@@ -70,4 +70,9 @@ public class ExperimentIndicatorValRsEntity implements CrudEntity {
   @TableField(fill = FieldFill.INSERT)
   @Schema(title = "时间戳")
   private Date dt;
+
+  @JsonIgnore
+  @Schema(title = "指标对象")
+  @TableField(exist = false)
+  private transient ExperimentIndicatorInstanceRsEntity indicatorInstance;
 }

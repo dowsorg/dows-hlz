@@ -2,6 +2,7 @@ package org.dows.hep.api.user.experiment.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import org.dows.hep.api.enums.EnumExperimentMode;
 
 import java.util.Arrays;
@@ -9,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
+@Accessors(chain = true)
 public class ExperimentPeriodsResonse {
 
     @Schema(title = "实验实列ID")

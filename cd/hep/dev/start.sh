@@ -5,6 +5,7 @@
 #echo $var | sh
 
 
+
 docker_username="findsoft@dows"
 docker_password="findsoft123456"
 docker_registry="registry.cn-hangzhou.aliyuncs.com"

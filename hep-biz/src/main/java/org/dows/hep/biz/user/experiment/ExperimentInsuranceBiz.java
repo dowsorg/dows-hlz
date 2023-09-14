@@ -10,10 +10,12 @@ import org.dows.hep.api.enums.EnumOrgFeeType;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonInsuranceRequest;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
-import org.dows.hep.biz.util.ShareBiz;
-import org.dows.hep.biz.util.TimeUtil;
+import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +63,28 @@ public class ExperimentInsuranceBiz {
      */
     @DSTransactional
     public Boolean isPurchaseInsure(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest, HttpServletRequest request) {
+
+        ExperimentPersonInsuranceEntity insuranceEntity = experimentPersonInsuranceService.lambdaQuery()
+                .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
+                .eq(ExperimentPersonInsuranceEntity::getOperateOrgId,experimentPersonInsuranceRequest.getOperateOrgId())
+                .one();
+        if(null!=insuranceEntity){
+            return true;
+        }
+        ExptRequestValidator validator = ExptRequestValidator.create("3",
+                        experimentPersonInsuranceRequest.getExperimentInstanceId(),
+                        experimentPersonInsuranceRequest.getExperimentGroupId(),
+                        experimentPersonInsuranceRequest.getOperateOrgId(),
+                        experimentPersonInsuranceRequest.getExperimentPersonId())
+                .checkExperimentPerson()
+                .checkExperimentOrg()
+                .checkExperimentInstance();
+        ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(validator);
+        Double bxf = flowValidator.getOrgFee4Bxf().orElse(0d);
+        experimentPersonInsuranceRequest.setInsuranceAmount(BigDecimalUtil.valueOf(bxf));
+
         //1、扣除购买保险费
         experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest.builder()
                 .appId(experimentPersonInsuranceRequest.getAppId())
@@ -166,18 +191,19 @@ public class ExperimentInsuranceBiz {
                 }
             }
         }
-        ExperimentPersonInsuranceEntity insuranceEntity = experimentPersonInsuranceService.lambdaQuery()
-                .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
-                .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
-                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
-                .eq(ExperimentPersonInsuranceEntity::getOperateOrgId,experimentPersonInsuranceRequest.getOperateOrgId())
-                .one();
+
         Boolean flag;
+        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId()),
+                LocalDateTime.now(), true);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
+                .throwMessage("未找到实验时间设置");
+        Integer buyDay=nowPoint.getGameDay();
         if(insuranceEntity != null && !ReflectUtil.isObjectNull(insuranceEntity)){
             //更新
             flag = experimentPersonInsuranceService.lambdaUpdate()
                     .set(ExperimentPersonInsuranceEntity::getIndate,new Date())
                     .set(ExperimentPersonInsuranceEntity::getExpdate,expdate)
+                    .set(ExperimentPersonInsuranceEntity::getBuyGameDay,buyDay)
                     .set(ExperimentPersonInsuranceEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
                     .eq(ExperimentPersonInsuranceEntity::getId,insuranceEntity.getId())
                     .update();
@@ -195,6 +221,7 @@ public class ExperimentInsuranceBiz {
                     .reimburseRatio(reimburseRatio)
                     .indate(new Date())
                     .expdate(expdate)
+                    .buyGameDay(buyDay)
                     .build();
             flag = experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
         }
@@ -361,12 +388,17 @@ public class ExperimentInsuranceBiz {
             map.put("result",false);
             return map;
         }
-        //如果还未过期
-        Boolean flag = TimeUtil.isBeforeTime(new Date(), entity.getExpdate());
-        if(flag){
+        int intervalDays=0;
+        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId()),
+                LocalDateTime.now(), true);
+        if(ShareUtil.XObject.notEmpty(nowPoint)){
+            intervalDays=Math.max(360,360+entity.getBuyGameDay()-nowPoint.getGameDay());
+        }
+        if(intervalDays>0){
             long interval = (entity.getExpdate().getTime() - new Date().getTime())/1000;
             map.put("result", true);
             map.put("interval",interval);
+            map.put("intervalDays",intervalDays);
         }else{
             map.put("result", false);
         }

@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author fhb
@@ -63,11 +64,12 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
 
     private final OSSBiz ossBiz;
     private final ReportOSSHelper ossHelper;
-    private final ReportPdfHelper reportPdfHelper;
+    private final SchemeReportPdfHelper schemeReportPdfHelper;
+    private final SandReportPdfHelper sandReportPdfHelper;
     private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
 
-    private static final String SCHEME_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "方案设计实验报告" + File.separator;
+    private static final String LOCAL_SCHEME_REPORT = SystemConstant.PDF_REPORT_TMP_PATH + "方案设计实验报告" + File.separator;
 
     @Data
     @Builder
@@ -215,45 +217,51 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
         // 不重新生成并且旧数据存在 --> 直接返回
         if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
+                    .parent(exptInstanceId)
                     .name(fileName)
                     .path(reportOfGroup)
                     .build();
             return ExptGroupReportVO.builder()
                     .exptGroupId(exptGroupId)
                     .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                    .paths(List.of(reportFile))
+                    .reportFiles(List.of(reportFile))
                     .build();
         }
 
         /*2.使用新数据*/
         // 生成 pdf 并上传文件
-        Path path = Paths.get(SCHEME_REPORT_HOME_DIR, fileName);
-        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
+        Path path = Paths.get(LOCAL_SCHEME_REPORT, fileName);
+        Path uploadPath = Paths.get(exptInstanceId, fileName);
+        OssInfo ossInfo = schemeReportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path, uploadPath);
+        String fileUri = ossHelper.getUrlPath(ossInfo, exptInstanceId);
 
         // 记录一份数据
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
-            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                    .fileName(fileName)
-                    .fileType("pdf")
-                    .fileUri(ossHelper.getUrlPath(ossInfo))
-                    .build();
-            MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                    .bizCode("EXPT")
-                    .title(fileName)
-                    .materialsAttachments(List.of(attachment))
-                    .build();
-            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            CompletableFuture.runAsync(() -> {
+                MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                        .fileName(fileName)
+                        .fileType("pdf")
+                        .fileUri(fileUri)
+                        .build();
+                MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                        .bizCode("EXPT")
+                        .title(fileName)
+                        .materialsAttachments(List.of(attachment))
+                        .build();
+                recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            });
         }
 
         // 构造返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
+                .parent(exptInstanceId)
                 .name(ossInfo.getName())
-                .path(ossHelper.getUrlPath(ossInfo))
+                .path(fileUri)
                 .build();
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
                 .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                .paths(List.of(reportFile))
+                .reportFiles(List.of(reportFile))
                 .build();
     }
 

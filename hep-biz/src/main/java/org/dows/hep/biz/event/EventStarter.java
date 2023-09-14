@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.dao.ExperimentInstanceDao;
-import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +28,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
     public static EventStarter Instance(){
         return s_instnace;
     }
-    private final static long DELAYSeconds4UserEvent =180;
+    private final static long DELAYSeconds4UserEvent =150;
 
     private final static long DELAYSeconds4SysEvent=30;
 
@@ -45,9 +43,9 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
 
 
     public void start(){
-        if(startedFlag){
+        /*if(startedFlag){
             return;
-        }
+        }*/
         final Set<String> sysIds=new HashSet<>();
         final Set<String> userIds=new HashSet<>();
         try {
@@ -58,15 +56,15 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
                     ExperimentInstanceEntity::getExperimentInstanceId,
                     ExperimentInstanceEntity::getModel,
                     ExperimentInstanceEntity::getState);
-            final LocalDateTime nextTime4User=LocalDateTime.now().plusSeconds(DELAYSeconds4UserEvent);
-            final LocalDateTime nextTime4Sys=LocalDateTime.now().plusSeconds(DELAYSeconds4SysEvent);
+
             rowsExperiment.forEach(i -> {
                 sysIds.add(i.getExperimentInstanceId());
-                EventScheduler.Instance().scheduleSysEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()),nextTime4Sys);
+                EventScheduler.Instance().scheduleSysEvent(i.getAppId(), i.getExperimentInstanceId(),DELAYSeconds4SysEvent);
                 if(null!=i.getModel() &&i.getModel().equals(EnumExperimentMode.SAND.getCode())
                     &&i.getState()==EnumExperimentState.ONGOING.getState()){
                     userIds.add(i.getExperimentInstanceId());
-                    EventScheduler.Instance().scheduleTimeBasedEvent(new ExperimentCacheKey(i.getAppId(), i.getExperimentInstanceId()), nextTime4User);
+                    EventScheduler.Instance().scheduleTimeBasedEvent(i.getAppId(), i.getExperimentInstanceId(), DELAYSeconds4UserEvent);
+                    EventScheduler.Instance().scheduleFollowUpPlan(i.getAppId(), i.getExperimentInstanceId(), DELAYSeconds4UserEvent);
                 }
             });
             log.info(String.format("EventStarter.start succ. cntSys:%s cntUser:%s sysIds:%s userIds:%s",

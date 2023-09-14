@@ -3,6 +3,7 @@ package org.dows.hep.api.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,9 +21,18 @@ public enum EnumIndicatorType {
   HEALTH_POINT(5, "健康指数"),
   AGE(6, "年龄"),
   DURATION(7, "持续天数"),
+  SPORT_ENERGY(8,"运动消耗热量"),
+  //FOOD_ENERGY(9,"饮食摄入热量"),
   ;
 
   public final static Map<Integer, EnumIndicatorType> kTypeVEnumIndicatorTypeMap = new HashMap<>();
+
+  public static EnumIndicatorType of(Integer code){
+    return Arrays.stream( EnumIndicatorType.values())
+            .filter(i->i.getType().equals(code))
+            .findFirst()
+            .orElse(USER_CREATED);
+  }
 
   private final Integer type;
   private final String desc;

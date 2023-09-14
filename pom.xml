@@ -42,6 +42,9 @@
         <module>hep-job</module>
         <module>hep-task</module>
         <module>hep-calc</module>
+        <module>hep-edw</module>
+        <module>hep-indicator</module>
+        <module>hep-experiment</module>
     </modules>
 
     <dependencyManagement>
@@ -77,6 +80,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.dows.saas</groupId>
+                <artifactId>hep-edw</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
                 <artifactId>hep-feign</artifactId>
                 <groupId>org.dows.saas</groupId>
                 <version>1.0.0-SNAPSHOT</version>
@@ -102,6 +111,11 @@
             <dependency>
                 <groupId>org.dows.saas</groupId>
                 <artifactId>hep-event</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dows.saas</groupId>
+                <artifactId>hep-task</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>

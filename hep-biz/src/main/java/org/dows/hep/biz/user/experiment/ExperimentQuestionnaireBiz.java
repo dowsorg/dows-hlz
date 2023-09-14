@@ -105,7 +105,7 @@ public class ExperimentQuestionnaireBiz {
                     .eq(ExperimentQuestionnaireEntity::getExperimentInstanceId, request.getExperimentInstanceId())
                     .eq(ExperimentQuestionnaireEntity::getExperimentOrgId, request.getExperimentOrgId())
                     .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
-                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId, request.getExperimentAccountId())
+//                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId, request.getExperimentAccountId())
                     .list();
             if (CollUtil.isEmpty(list)) {
                 return new ExperimentQuestionnaireResponse();
@@ -132,7 +132,7 @@ public class ExperimentQuestionnaireBiz {
                     .eq(ExperimentQuestionnaireEntity::getPeriodSequence, currentPeriod)
                     .eq(ExperimentQuestionnaireEntity::getExperimentOrgId, request.getExperimentOrgId())
                     .eq(ExperimentQuestionnaireEntity::getExperimentGroupId, request.getExperimentGroupId())
-                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())
+//                    .eq(ExperimentQuestionnaireEntity::getExperimentAccountId,  request.getExperimentAccountId())
                     .oneOpt()
                     .orElse(null);
             if (BeanUtil.isEmpty(entity)) {
@@ -275,7 +275,7 @@ public class ExperimentQuestionnaireBiz {
         ExperimentQuestionnaireEntity questionnaireEntity = experimentQuestionnaireService.lambdaQuery()
                 .eq(ExperimentQuestionnaireEntity::getExperimentQuestionnaireId, experimentQuestionnaireId)
                 .oneOpt()
-                .orElseThrow(() -> new BizException(ExperimentESCEnum.SCHEME_NOT_NULL));
+                .orElseThrow(() -> new BizException("知识考点数据为空"));
 
         // check auth
         String experimentAccountId = questionnaireEntity.getExperimentAccountId();
@@ -286,7 +286,7 @@ public class ExperimentQuestionnaireBiz {
         // check state
         Integer state = questionnaireEntity.getState();
         if (Objects.equals(ExptQuestionnaireStateEnum.SUBMITTED.getCode(), state)) {
-            throw new BizException(ExperimentESCEnum.SCHEME_HAS_BEEN_SUBMITTED);
+            throw new BizException("知识考点已经提交");
         }
     }
 

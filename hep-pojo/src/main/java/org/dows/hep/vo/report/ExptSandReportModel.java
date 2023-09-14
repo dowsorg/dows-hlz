@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -121,7 +122,7 @@ public class ExptSandReportModel implements ExptReportModel {
         //干预后风险指标
         private PersonRiskFactor interveneAfters;
         //服务记录
-        private List<ServiceLog> serviceLogs;
+        private List<ServiceLog> serviceLogs = new ArrayList<>();
     }
 
 /*    @Data

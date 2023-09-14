@@ -14,13 +14,16 @@ server:
             worker: 32
 #    servlet:
 #        context-path: /hep
+soft:
+    info:
+        anonymous-paths: /login;/doc;/swagger;/api-docs;/hepapi;/report;/anonymous;/countdown;
 
 
 spring:
     application:
         name: hep-admin
     profiles:
-        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket
+        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket,hep-pdf
         active: prd
 
     jackson:

@@ -8,12 +8,13 @@ import org.dows.hep.properties.OSSProperties;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
  * @author fhb
  * @version 1.0
- * @description 为报告提供 oss 服务, 解耦出来, 以防 oss 服务变更
+ * @description 为报告提供 oss uat, 解耦出来, 以防 oss 服务变更
  * @date 2023/7/21 9:57
  **/
 @Slf4j
@@ -36,6 +37,19 @@ public class ReportOSSHelper {
      */
     public OssInfo upload(File file, String targetName, boolean isOverride) {
         return ossClient.upLoad(file, targetName, isOverride);
+    }
+
+    /**
+     * @param is - 长传的流
+     * @param targetName - 目标名
+     * @param isOverride - 是否覆盖
+     * @return org.dows.framework.oss.api.OssInfo
+     * @author fhb
+     * @description 上传文件
+     * @date 2023/9/8 20:05
+     */
+    public OssInfo upload(InputStream is, String targetName, boolean isOverride) {
+        return ossClient.upLoad(is, targetName, isOverride);
     }
 
     /**

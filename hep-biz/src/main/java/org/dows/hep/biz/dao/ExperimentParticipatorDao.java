@@ -43,6 +43,7 @@ public class ExperimentParticipatorDao extends BaseDao<ExperimentParticipatorSer
                                                                 SFunction<ExperimentParticipatorEntity,?>...cols){
         return service.lambdaQuery()
                 .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                .ne(ExperimentParticipatorEntity::getParticipatorType,0)
                 .select(cols)
                 .list();
     }

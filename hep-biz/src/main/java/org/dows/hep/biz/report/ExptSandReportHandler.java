@@ -26,10 +26,13 @@ import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
+import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewSupportExamRsBiz;
 import org.dows.hep.biz.risk.RiskBiz;
+import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.properties.FindSoftProperties;
 import org.dows.hep.service.*;
@@ -44,6 +47,7 @@ import java.math.RoundingMode;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -69,11 +73,13 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     private final RiskBiz riskBiz;
 
     private final ReportOSSHelper ossHelper;
-    private final ReportPdfHelper reportPdfHelper;
+    private final SchemeReportPdfHelper schemeReportPdfHelper;
+    private final SandReportPdfHelper sandReportPdfHelper;
     private final ReportRecordHelper recordHelper;
     private final FindSoftProperties findSoftProperties;
+    private final ExperimentOrgBiz experimentOrgBiz;
 
-    private static final String SAND_REPORT_HOME_DIR = SystemConstant.PDF_REPORT_TMP_PATH + "沙盘模拟实验报告" + File.separator;
+    private static final String LOCAL_SAND_REPORT = SystemConstant.PDF_REPORT_TMP_PATH + "沙盘模拟实验报告" + File.separator;
 
     @Data
     @Builder
@@ -160,7 +166,12 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         ExptBaseInfoModel baseInfoVO = generateBaseInfoVO(findSoftProperties);
         ExptSandReportModel.GroupInfo groupInfo = generateGroupInfo(exptGroupId, exptData);
         ExptSandReportModel.ScoreInfo scoreInfo = generateScoreInfo(exptGroupId, exptData);
-        List<ExptSandReportModel.NpcData> npcDataList = generateNpcInfo(exptGroupId, exptData);
+        List<ExptSandReportModel.NpcData> npcDataList = new LinkedList<>();
+        try {
+            npcDataList = generateNpcInfo(exptGroupId, exptData);
+        } catch (Exception e) {
+            log.error(String.format("获取npc数据异常，异常为%s", e));
+        }
         List<List<ExptSandReportModel.KnowledgeAnswer>> periodQuestions = generatePeriodQuestionnaires(exptGroupId, exptData);
 
         return ExptSandReportModel.builder()
@@ -230,46 +241,52 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         // 不重新生成并且旧数据存在 --> 直接返回
         if (!regenerate && StrUtil.isNotBlank(reportOfGroup)) {
             ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
+                    .parent(exptInstanceId)
                     .name(fileName)
                     .path(reportOfGroup)
                     .build();
             return ExptGroupReportVO.builder()
                     .exptGroupId(exptGroupId)
                     .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                    .paths(List.of(reportFile))
+                    .reportFiles(List.of(reportFile))
                     .build();
         }
 
 
         /*2.使用新数据*/
         // 生成 pdf 并上传文件
-        Path path = Paths.get(SAND_REPORT_HOME_DIR, fileName);
-        OssInfo ossInfo = reportPdfHelper.convertAndUpload(pdfVO, schemeFlt, path);
+        Path path = Paths.get(LOCAL_SAND_REPORT, fileName);
+        Path uploadPath = Paths.get(exptInstanceId, fileName);
+        OssInfo ossInfo = sandReportPdfHelper.convertAndUpload(exptInstanceId, exptGroupId, uploadPath);
+        String fileUri = ossInfo.getPath();
 
         // 记录一份数据
         if (StrUtil.isNotBlank(ossInfo.getPath())) {
-            MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
-                    .fileName(fileName)
-                    .fileType("pdf")
-                    .fileUri(ossHelper.getUrlPath(ossInfo))
-                    .build();
-            MaterialsRequest materialsRequest = MaterialsRequest.builder()
-                    .bizCode("EXPT")
-                    .title(fileName)
-                    .materialsAttachments(List.of(attachment))
-                    .build();
-            recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            CompletableFuture.runAsync(() -> {
+                MaterialsAttachmentRequest attachment = MaterialsAttachmentRequest.builder()
+                        .fileName(fileName)
+                        .fileType("pdf")
+                        .fileUri(fileUri)
+                        .build();
+                MaterialsRequest materialsRequest = MaterialsRequest.builder()
+                        .bizCode("EXPT")
+                        .title(fileName)
+                        .materialsAttachments(List.of(attachment))
+                        .build();
+                recordHelper.record(exptInstanceId, exptGroupId, ExptReportTypeEnum.GROUP, materialsRequest);
+            });
         }
 
         // 构建返回信息
         ExptGroupReportVO.ReportFile reportFile = ExptGroupReportVO.ReportFile.builder()
+                .parent(exptInstanceId)
                 .name(ossInfo.getName())
-                .path(ossHelper.getUrlPath(ossInfo))
+                .path(fileUri)
                 .build();
         return ExptGroupReportVO.builder()
                 .exptGroupId(exptGroupId)
                 .exptGroupNo(Integer.valueOf(pdfVO.getGroupInfo().getGroupNo()))
-                .paths(List.of(reportFile))
+                .reportFiles(List.of(reportFile))
                 .build();
     }
 
@@ -599,8 +616,17 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         String experimentInstanceId = exptData.getExptInfo().getExperimentInstanceId();
 
         // 获取NPC指标数据
-        Map<Integer, List<PersonRiskFactor>> collect = riskBiz.get(experimentInstanceId, exptGroupId, null).stream()
-                .collect(Collectors.groupingBy(PersonRiskFactor::getPeriod));
+        Map<Integer, List<PersonRiskFactor>> collect = new HashMap<>();
+        try {
+            collect = riskBiz.get(experimentInstanceId, exptGroupId, null).stream()
+                    .collect(Collectors.groupingBy(PersonRiskFactor::getPeriod));
+        } catch (Exception e) {
+            log.error(String.format("生成报告时，获取 NPC 数据异常，异常是：%s", e));
+            return result;
+        }
+        if (ShareUtil.XObject.isEmpty(collect)) {
+            return result;
+        }
         // 获取第0期
         List<PersonRiskFactor> personRiskFactors1 = collect.get(0);
         // 取最后一期
@@ -618,6 +644,22 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
             ExptSandReportModel.NpcData npcData1 = npcData.get(personRiskFactor.getPersonId());
             if (npcData1 != null) {
                 npcData1.setInterveneAfters(personRiskFactor);
+            }
+        }
+
+        Set<String> strings = npcData.keySet();
+        for (String personId : strings) {
+            // todo 获取实验人物的服务记录
+            List<OperateFlowEntity> operateFlowEntities = experimentOrgBiz
+                    .listFlowLog(experimentInstanceId, personId);
+            ExptSandReportModel.NpcData npcData1 = npcData.get(personId);
+
+            for (OperateFlowEntity operateFlowEntity : operateFlowEntities) {
+                ExptSandReportModel.ServiceLog serviceLog = new ExptSandReportModel.ServiceLog();
+                serviceLog.setDt(DateUtil.formatDateTime(operateFlowEntity.getOperateTime()));
+                serviceLog.setLable(operateFlowEntity.getFlowName());
+                serviceLog.setDescr(operateFlowEntity.getReportLabel());
+                npcData1.getServiceLogs().add(serviceLog);
             }
         }
         return result;

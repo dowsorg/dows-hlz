@@ -320,6 +320,11 @@ public class ExperimentTimerBiz {
      * @return
      */
     public ExperimentPeriodsResonse getExperimentCurrentPeriods(String appId, String experimentInstanceId) {
+        if(ConfigExperimentFlow.SWITCH2SysEvent){
+            return experimentFlowRules.getExperimentCurrentPeriods(appId,experimentInstanceId);
+        }
+
+
         long currentTimeMillis = System.currentTimeMillis();
         List<ExperimentTimerEntity> list = this.getPeriodsTimerList(experimentInstanceId);
         ExperimentTimerEntity experimentTimerEntity = list.stream()

@@ -70,12 +70,11 @@ public class HepOrgOperateRest {
     @Operation(summary = "转移人员")
     @PutMapping("v1/userOrganization/hepOrgOperate/transferPerson")
     public Boolean transferPerson(@RequestBody TransferPersonelRequest transferPersonelRequest,
-                                  @RequestParam String appId,
                                   @RequestParam String operateAccountId,
                                   @RequestParam String operateAccountName,
                                   @RequestParam Integer periods
     ) {
-        return hepOrgOperateBiz.transferPerson(transferPersonelRequest,appId,operateAccountId,operateAccountName,periods);
+        return hepOrgOperateBiz.transferPerson(transferPersonelRequest,operateAccountId,operateAccountName,periods);
     }
 
     /**
