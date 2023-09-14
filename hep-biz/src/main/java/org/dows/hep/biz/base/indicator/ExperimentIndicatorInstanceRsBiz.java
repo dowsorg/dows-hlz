@@ -61,7 +61,7 @@ public class ExperimentIndicatorInstanceRsBiz {
 
 
     public String getHealthPoint(Integer periods, String experimentPersonId) {
-        if(ConfigExperimentFlow.SWITCH2EvalCache){
+        if (ConfigExperimentFlow.SWITCH2EvalCache) {
             return queryPersonBiz.getHealthPoint(periods, experimentPersonId);
         }
         String healthPoint = "1";
@@ -87,7 +87,7 @@ public class ExperimentIndicatorInstanceRsBiz {
 
     @Transactional(rollbackFor = Exception.class)
     public boolean saveChangeMoney(ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity) {
-        if(ConfigExperimentFlow.SWITCH2EvalCache){
+        if (ConfigExperimentFlow.SWITCH2EvalCache) {
             return queryPersonBiz.saveChangeMoney(experimentIndicatorValRsEntity);
         }
         if (null == experimentIndicatorValRsEntity) {
@@ -97,7 +97,7 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     public ExperimentIndicatorValRsEntity getChangeMoney(RsChangeMoneyRequest rsChangeMoneyRequest) {
-        if(ConfigExperimentFlow.SWITCH2EvalCache){
+        if (ConfigExperimentFlow.SWITCH2EvalCache) {
             return queryPersonBiz.getChangeMoney(rsChangeMoneyRequest);
         }
         String appId = rsChangeMoneyRequest.getAppId();
@@ -285,8 +285,8 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     public GroupAverageHealthPointResponse groupAverageHealth(String experimentId, String experimentGroupId, Integer periods) {
-        if(ConfigExperimentFlow.SWITCH2EvalCache){
-            return queryPersonBiz.groupAverageHealth(experimentId,experimentGroupId,periods);
+        if (ConfigExperimentFlow.SWITCH2EvalCache) {
+            return queryPersonBiz.groupAverageHealth(experimentId, experimentGroupId, periods);
         }
         Set<String> experimentPersonIdSet = experimentPersonService.lambdaQuery()
                 .eq(ExperimentPersonEntity::getExperimentGroupId, experimentGroupId)
@@ -328,16 +328,17 @@ public class ExperimentIndicatorInstanceRsBiz {
         int experimentPersonCount = healthPointExperimentIndicatorInstanceIdSet.size();
         String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.DOWN).toString();
 
-        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentId),
+        ExperimentTimePoint nowPoint = ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3", experimentId),
                 LocalDateTime.now(), false);
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
                 .throwMessage("未找到实验时间设置");
+        //int rank = 0 ;
         AtomicInteger curRank = new AtomicInteger(1);
         /*Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
         experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
                 .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState()==EnumExperimentState.FINISH? periods: (periods - 1))
-                .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
+                .orderByDesc(ExperimentScoringEntity::getId,ExperimentScoringEntity::getTotalScore)
                 .list()
                 .forEach(experimentScoringEntity -> {
                     kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
@@ -347,10 +348,10 @@ public class ExperimentIndicatorInstanceRsBiz {
         }*/
         experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-                .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState()==EnumExperimentState.FINISH? periods: (periods - 1))
-                .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
+                .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState() == EnumExperimentState.FINISH ? periods : (periods - 1))
+                .orderByDesc(ExperimentScoringEntity::getTotalScore, ExperimentScoringEntity::getId)
                 .oneOpt()
-                .ifPresent(i->curRank.set(i.getRankNo()));
+                .ifPresent(i -> curRank.set(i.getRankNo()));
         return GroupAverageHealthPointResponse
                 .builder()
                 .experimentPersonCount(experimentPersonCount)
@@ -360,8 +361,8 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     public Map<String, String> getInitMoneyByPeriods(RsInitMoneyRequest rsInitMoneyRequest) {
-        if(ConfigExperimentFlow.SWITCH2EvalCache){
-            return queryPersonBiz.getSysIndicatorVals(rsInitMoneyRequest.getExperimentPersonIdSet(),EnumIndicatorType.MONEY,true);
+        if (ConfigExperimentFlow.SWITCH2EvalCache) {
+            return queryPersonBiz.getSysIndicatorVals(rsInitMoneyRequest.getExperimentPersonIdSet(), EnumIndicatorType.MONEY, true);
         }
         Integer periods = rsInitMoneyRequest.getPeriods();
         Set<String> experimentPersonIdSet = rsInitMoneyRequest.getExperimentPersonIdSet();
@@ -400,8 +401,8 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     public Map<String, String> getSexByPeriods(RsSexRequest rsSexRequest) {
-        if(ConfigExperimentFlow.SWITCH2EvalCache){
-            return queryPersonBiz.getSysIndicatorVals(rsSexRequest.getExperimentPersonIdSet(),EnumIndicatorType.SEX,false);
+        if (ConfigExperimentFlow.SWITCH2EvalCache) {
+            return queryPersonBiz.getSysIndicatorVals(rsSexRequest.getExperimentPersonIdSet(), EnumIndicatorType.SEX, false);
         }
         /* runsix:result */
         Map<String, String> kExperimentPersonIdVSexMap = new HashMap<>();
@@ -446,8 +447,8 @@ public class ExperimentIndicatorInstanceRsBiz {
     }
 
     public Map<String, String> getAgeByPeriods(RsAgeRequest rsAgeRequest) {
-        if(ConfigExperimentFlow.SWITCH2EvalCache){
-            return queryPersonBiz.getSysIndicatorVals(rsAgeRequest.getExperimentPersonIdSet(),EnumIndicatorType.AGE,false);
+        if (ConfigExperimentFlow.SWITCH2EvalCache) {
+            return queryPersonBiz.getSysIndicatorVals(rsAgeRequest.getExperimentPersonIdSet(), EnumIndicatorType.AGE, false);
         }
         /* runsix:result */
         Map<String, String> kExperimentPersonIdVAgeMap = new HashMap<>();
@@ -526,7 +527,7 @@ public class ExperimentIndicatorInstanceRsBiz {
 
         /* runsix:2.获取所有核心指标的值 */
         Map<String, String> kExperimentIndicatorInstanceIdVCurrentValMap = new HashMap<>();
-        if(!ConfigExperimentFlow.SWITCH2EvalCache) {
+        if (!ConfigExperimentFlow.SWITCH2EvalCache) {
             experimentIndicatorValRsService.lambdaQuery()
                     .eq(ExperimentIndicatorValRsEntity::getPeriods, periods)
                     .in(ExperimentIndicatorValRsEntity::getIndicatorInstanceId, experimentIndicatorInstanceIdSet)
@@ -541,11 +542,11 @@ public class ExperimentIndicatorInstanceRsBiz {
 
         /* runsix:3.组合数据 */
         kExperimentPersonIdVExperimentIndicatorInstanceRsEntityListMap.forEach((experimentPersonId, experimentIndicatorInstanceRsEntityList) -> {
-            EvalPersonOnceHolder evalHolder=null;
-            if(ConfigExperimentFlow.SWITCH2EvalCache){
-                evalHolder= EvalPersonCache.Instance().getCurHolder(experimentPersonId);
+            EvalPersonOnceHolder evalHolder = null;
+            if (ConfigExperimentFlow.SWITCH2EvalCache) {
+                evalHolder = EvalPersonCache.Instance().getCurHolder(experimentPersonId);
             }
-            for(ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity:experimentIndicatorInstanceRsEntityList){
+            for (ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity : experimentIndicatorInstanceRsEntityList) {
                 List<String> resultList = resultMap.get(experimentPersonId);
                 if (Objects.isNull(resultList)) {
                     resultList = new ArrayList<>();
@@ -555,11 +556,11 @@ public class ExperimentIndicatorInstanceRsBiz {
                 String unit = experimentIndicatorInstanceRsEntity.getUnit();
                 String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
                 String currentVal;
-                if(ConfigExperimentFlow.SWITCH2EvalCache){
-                    currentVal=Optional.ofNullable( evalHolder.getIndicator(experimentIndicatorInstanceId))
+                if (ConfigExperimentFlow.SWITCH2EvalCache) {
+                    currentVal = Optional.ofNullable(evalHolder.getIndicator(experimentIndicatorInstanceId))
                             .map(EvalIndicatorValues::getCurVal)
                             .orElse("");
-                }else {
+                } else {
                     currentVal = kExperimentIndicatorInstanceIdVCurrentValMap.get(experimentIndicatorInstanceId);
                 }
                 /* runsix:理论上每个指标都有默认值，如果存在数据错误，就丢掉 */

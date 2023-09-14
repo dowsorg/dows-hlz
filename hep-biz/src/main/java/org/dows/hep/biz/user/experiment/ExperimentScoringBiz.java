@@ -456,7 +456,8 @@ public class ExperimentScoringBiz {
             experimentScoringService.lambdaQuery()
                     .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
                     .eq(ExperimentScoringEntity::getPeriods, periods)
-                    .orderByDesc(ExperimentScoringEntity::getTotalScore, ExperimentScoringEntity::getId)
+                    .eq(ExperimentScoringEntity::getScoringCount,scoringCountAtomicInteger.get() -1)
+                    .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
                     .list()
                     .forEach(experimentScoringEntity -> {
                         kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
