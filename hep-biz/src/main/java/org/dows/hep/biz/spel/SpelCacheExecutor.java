@@ -29,6 +29,9 @@ public class SpelCacheExecutor {
     private final static int CONCURRENTNum=3;
 
     public void start(List<String> ids){
+        if(ShareUtil.XObject.isEmpty(ids)){
+            return;
+        }
         List<List<String>> exptIds= ShareUtil.XCollection.split(ids,CONCURRENTNum);
         exptIds.forEach(item->new SpelCacheLoadThread(new HashSet<>(item)).start());
     }

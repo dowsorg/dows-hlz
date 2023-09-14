@@ -34,7 +34,7 @@ public enum EnumSnapshotType {
     INDICATORInstance("indicator.instance","数据库指标",15,"","indicator_instance",""),
     INDICATORRule("indicator.rule","数据库指标规则",16,"","indicator_rule",""),
 
-    CROWD("crowd","人群",21,"state","crowds_instance",""),
+    CROWD("crowd","人群",21,"","crowds_instance",""),
     RISKModel("crowd.riskmodel","风险模型",22,"status","risk_model",""),
     CASEIndicatorInstance("case.indicator.instance","案例指标",91,"","case_indicator_instance",""),
 
