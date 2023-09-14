@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dows.hep.api.edw.HepOperateTypeEnum;
 
 /**
  * @author fhb
@@ -23,7 +22,7 @@ public class HepOperateGetRequest {
      * 操作类型
      */
     @Schema(title = "操作类型")
-    private HepOperateTypeEnum type;
+    private String type;
 
     /**
      * 实验ID

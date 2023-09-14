@@ -7,5 +7,5 @@ package org.dows.hep.api.edw;
  * @date 2023/9/12 15:47
  **/
 public interface HepOperateType {
-
+    String getType();
 }

@@ -1,11 +1,12 @@
-package org.dows.hep.biz.edw;
+package org.dows.edw.repository;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.edw.request.HepOperateGetRequest;
-import org.dows.hep.api.edw.request.HepOperateSetRequest;
+import org.dows.edw.domain.HepOperateCost;
+import org.dows.hep.api.edw.request.HepOperateCostGetRequest;
+import org.dows.hep.api.edw.request.HepOperateCostSetRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -15,30 +16,28 @@ import org.springframework.stereotype.Service;
 /**
  * @author fhb
  * @version 1.0
- * @description hep `操作类` 保存biz
- * @date 2023/9/12 15:13
+ * @description hep `操作费用类` 保存biz
+ * @date 2023/9/12 15:14
  **/
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class HepOperateSetBiz {
+public class HepOperateCostSetRepository {
 
     private final MongoTemplate mongoTemplate;
     private final FieldDefaultValHandler defaultValHandler;
 
-    private final HepOperateGetBiz hepOperateGetBiz;
+    private final HepOperateCostGetRepository hepOperateCostGetRepository;
 
     /**
      * @param request - 新增或更新请求参数
-     * @param clazz   - 新增或更新对象的Class
-     * @return T
+     * @return HepOperateCost
      * @author fhb
      * @description 新增或更新
      * @date 2023/9/13 11:26
      */
-    public <T> T setOperateEntity(HepOperateSetRequest request, Class<T> clazz) {
-        HepOperateGetRequest hepOperateGetRequest = HepOperateGetRequest.builder()
-                .type(request.getType())
+    public HepOperateCost setOperateEntity(HepOperateCostSetRequest request) {
+        HepOperateCostGetRequest hepOperateCostGetRequest = HepOperateCostGetRequest.builder()
                 .experimentInstanceId(request.getExperimentInstanceId())
                 .experimentGroupId(request.getExperimentGroupId())
                 .operatorId(request.getOperatorId())
@@ -46,39 +45,38 @@ public class HepOperateSetBiz {
                 .flowId(request.getFlowId())
                 .personId(request.getPersonId())
                 .build();
-        T operateEntity = hepOperateGetBiz.getOperateEntity(hepOperateGetRequest, clazz);
+        HepOperateCost operateEntity = hepOperateCostGetRepository.getOperateEntity(hepOperateCostGetRequest);
 
         if (BeanUtil.isNotEmpty(operateEntity)) {
-            updOperateEntity(request, clazz);
+            updOperateEntity(request);
         } else {
-            saveOperateEntity(request, clazz);
+            saveOperateEntity(request);
         }
 
-        return hepOperateGetBiz.getOperateEntity(hepOperateGetRequest, clazz);
+        return hepOperateCostGetRepository.getOperateEntity(hepOperateCostGetRequest);
     }
 
     /**
      * @param request - 新增的请求参数
-     * @param clazz   - 新增对象的Class
-     * @return T
+     * @return HepOperateCost
      * @author fhb
      * @description 新增
      * @date 2023/9/13 11:28
      */
-    public <T> T saveOperateEntity(HepOperateSetRequest request, Class<T> clazz) {
-        T t = buildEntity(request, clazz, true);
-        return mongoTemplate.insert(t);
+    public HepOperateCost saveOperateEntity(HepOperateCostSetRequest request) {
+        HepOperateCost hepOperateCost = buildEntity(request, true);
+        return mongoTemplate.insert(hepOperateCost);
     }
 
     /**
      * @param request - 更新的请求参数
-     * @param clazz   - 更新对象的Class
      * @return com.mongodb.client.result.UpdateResult
      * @author fhb
      * @description 更新
      * @date 2023/9/13 11:29
      */
-    public <T> UpdateResult updOperateEntity(HepOperateSetRequest request, Class<T> clazz) {
+    public UpdateResult updOperateEntity(HepOperateCostSetRequest request) {
+        //hepFollowUpRespository.findAll(Example)
         Criteria criteria = Criteria.where("experimentInstanceId").is(request.getExperimentInstanceId())
                 .and("experimentGroupId").is(request.getExperimentGroupId())
                 .and("operatorId").is(request.getOperatorId())
@@ -87,23 +85,26 @@ public class HepOperateSetBiz {
                 .and("personId").is(request.getPersonId());
         Query query = new Query(criteria);
         Update update = new Update();
-        update.set("data", request.getData());
-        return mongoTemplate.updateMulti(query, update, clazz);
+        update.set("feeName", request.getFeeName());
+        update.set("feeCode", request.getFeeCode());
+        update.set("costType", request.getCostType());
+        update.set("cost", request.getCost());
+        return mongoTemplate.updateMulti(query, update, HepOperateCost.class);
     }
 
-    private <T> T buildEntity(HepOperateSetRequest request, Class<T> clazz, boolean setDefVal) {
+    private HepOperateCost buildEntity(HepOperateCostSetRequest request, boolean setDefVal) {
         // bean copy
-        T t = BeanUtil.copyProperties(request, clazz);
-        if (BeanUtil.isEmpty(t)) {
-            return t;
+        HepOperateCost hepOperateCost = BeanUtil.copyProperties(request, HepOperateCost.class);
+        if (BeanUtil.isEmpty(hepOperateCost)) {
+            return hepOperateCost;
         }
         // 是否需要默认值
         if (!setDefVal) {
-            return t;
+            return hepOperateCost;
         }
 
         // 默认值
-        defaultValHandler.setDefaultValue(t, clazz);
-        return t;
+        defaultValHandler.setDefaultValue(hepOperateCost, HepOperateCost.class);
+        return hepOperateCost;
     }
 }
