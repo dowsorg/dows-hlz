@@ -1,11 +1,13 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.mongodb.client.model.Collation;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.CaseIndicatorInstanceEntity;
 import org.dows.hep.service.CaseIndicatorInstanceService;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,6 +55,19 @@ public class CaseIndicatorInstanceDao extends BaseDao<CaseIndicatorInstanceServi
         return service.lambdaQuery()
                 .eq(CaseIndicatorInstanceEntity::getAppId,appId)
                 .eq(CaseIndicatorInstanceEntity::getPrincipalId,personId)
+                .select(cols)
+                .list();
+    }
+
+    public List<CaseIndicatorInstanceEntity> getByAccountIds(Collection<String> accountIds, SFunction<CaseIndicatorInstanceEntity,?>...cols){
+        if(ShareUtil.XObject.isEmpty(accountIds)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=accountIds.size()==1;
+        return service.lambdaQuery()
+                .eq(oneFlag, getColId(),accountIds.iterator().next())
+                .in(!oneFlag, getColId(),accountIds)
+                .orderByAsc(getColId())
                 .select(cols)
                 .list();
     }

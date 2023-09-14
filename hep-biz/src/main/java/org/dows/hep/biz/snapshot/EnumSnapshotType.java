@@ -29,12 +29,19 @@ public enum EnumSnapshotType {
     SPORTPlanItems("sport.plan.items"," 运动方案项目",13,"","sport_plan_items",""),
 
     TreatItem("treat.item","治疗项目",14,"state","treat_item",""),
+
+
     INDICATORInstance("indicator.instance","数据库指标",15,"","indicator_instance",""),
     INDICATORRule("indicator.rule","数据库指标规则",16,"","indicator_rule",""),
-    CASEIndicatorInstance("case.indicator.instance","案例指标",99,"","case_indicator_instance",""),
-    CASEIndicatorExpression("case.indicator.expression","案例指标公式",99,"","case_indicator_expression",""),
-    CASEIndicatorExpressionItem("case.indicator.expression.item","案例指标公式",99,"","case_indicator_expression_item",""),
-    CASEIndicatorExpressionRef("case.indicator.expression.ref","案例指标公式",99,"","case_indicator_expression_ref",""),
+
+    CROWD("crowd","人群",21,"state","crowds_instance",""),
+    RISKModel("crowd.riskmodel","风险模型",22,"status","risk_model",""),
+    CASEIndicatorInstance("case.indicator.instance","案例指标",91,"","case_indicator_instance",""),
+
+    CASEIndicatorExpressionRef("case.indicator.expression.ref","案例指标公式",93,"","case_indicator_expression_ref",""),
+    CASEIndicatorExpression("case.indicator.expression","案例指标公式",94,"","case_indicator_expression",""),
+    CASEIndicatorExpressionItem("case.indicator.expression.item","案例指标公式",95,"","case_indicator_expression_item",""),
+
     CASEEvent("case.event","案例人物事件",100,"","",""),
 
     ;

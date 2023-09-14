@@ -74,11 +74,11 @@ public class RsUtilBiz {
         multiplyResult =  leOneList.stream().reduce(BigDecimal.ONE, BigDecimal::multiply);
       }
       BigDecimal addResult = gtOneList.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-      sumRiskModeScoreAR.set(addResult.add(multiplyResult).setScale(2, RoundingMode.DOWN));
+      sumRiskModeScoreAR.set(addResult.add(multiplyResult).setScale(2, RoundingMode.HALF_UP));
     }
     BigDecimal beforeMinAndMax = sumRiskModeScoreAR.get();
     if (minScore.compareTo(maxScore) == 0) {sumRiskModeScoreAR.set(BigDecimal.ZERO); return;}
-    sumRiskModeScoreAR.set(BigDecimal.valueOf(100).multiply(beforeMinAndMax.subtract(maxScore)).divide(minScore.subtract(maxScore), 2, RoundingMode.DOWN));
+    sumRiskModeScoreAR.set(BigDecimal.valueOf(100).multiply(beforeMinAndMax.subtract(maxScore)).divide(minScore.subtract(maxScore), 2, RoundingMode.HALF_UP));
   }
 
   public BigDecimal newCalculateFinalHealthScore(
@@ -92,9 +92,9 @@ public class RsUtilBiz {
       finalScoreBigDecimal.set(
           finalScoreBigDecimal.get().add(
               BigDecimal.valueOf(riskDeathProbability)
-                  .divide(BigDecimal.valueOf(totalRiskDeathProbability), 2, RoundingMode.DOWN)
+                  .divide(BigDecimal.valueOf(totalRiskDeathProbability), 2, RoundingMode.HALF_UP)
                   .multiply(totalScore)
-          ).setScale(2, RoundingMode.DOWN)
+          ).setScale(2, RoundingMode.HALF_UP)
       );
     });
     return finalScoreBigDecimal.get();
@@ -214,7 +214,7 @@ public class RsUtilBiz {
       }
       boolean isValDigital = NumberUtils.isCreatable(val);
       if (isValDigital) {
-        context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
+        context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.HALF_UP));
       } else {
         context.setVariable(conditionNameSplitList.get(i), val);
       }
@@ -239,7 +239,7 @@ public class RsUtilBiz {
       }
       boolean isValDigital = NumberUtils.isCreatable(val);
       if (isValDigital) {
-        context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
+        context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.HALF_UP));
       } else {
         context.setVariable(conditionNameSplitList.get(i), val);
       }
@@ -336,7 +336,7 @@ public class RsUtilBiz {
         }
         boolean isValDigital = NumberUtils.isCreatable(val);
         if (isValDigital) {
-          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.HALF_UP));
         } else {
           context.setVariable(resultNameSplitList.get(i), val);
         }
@@ -361,7 +361,7 @@ public class RsUtilBiz {
         }
         boolean isValDigital = NumberUtils.isCreatable(val);
         if (isValDigital) {
-          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.DOWN));
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.HALF_UP));
         } else {
           context.setVariable(resultNameSplitList.get(i), val);
         }

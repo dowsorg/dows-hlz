@@ -53,17 +53,17 @@ public class RiskModelHealthIndexVO {
      */
     public BigDecimal getDeathRateWeight(){
         return BigDecimalUtil.div(BigDecimal.valueOf(this.getRiskModelDeathRate()),
-                BigDecimal.valueOf(this.getCrowdsDeathRate()), 2, RoundingMode.DOWN);
+                BigDecimal.valueOf(this.getCrowdsDeathRate()), 2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getDeathRateWeight(BigDecimal total){
         return BigDecimalUtil.div(BigDecimal.valueOf(this.getRiskModelDeathRate()),
-                total, 2, RoundingMode.DOWN);
+                total, 2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getExistsDeathScore(){
         return BigDecimalUtil.mul(BigDecimal.valueOf(this.getRiskModelDeathRate()),
-                this.getScore(),2, RoundingMode.DOWN);
+                this.getScore(),2, RoundingMode.HALF_UP);
     }
 
 

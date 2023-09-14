@@ -12,22 +12,23 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.dows.hep.ExperimentCrudEntity;
-import org.dows.hep.entity.CaseIndicatorExpressionItemEntity;
+import org.dows.hep.entity.CrowdsInstanceEntity;
+
 
 /**
  * @author : wuzl
- * @date : 2023/7/2 13:42
+ * @date : 2023/9/14 9:42
  */
+
 @Data
 @ToString
 @Accessors(chain = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "SnapCaseIndicatorExpressionItemEntity", title = "案例指标公式细项快照")
-@TableName("snap_case_indicator_expression_item")
-public class SnapCaseIndicatorExpressionItemEntity extends CaseIndicatorExpressionItemEntity implements ExperimentCrudEntity {
-
+@Schema(name = "SnapCrowdsInstance", title = "人群快照")
+@TableName("snap_crowds_instance")
+public class SnapCrowdsInstanceEntity extends CrowdsInstanceEntity implements ExperimentCrudEntity {
     @Schema(title = "实验ID")
     private String experimentInstanceId;
 
@@ -35,10 +36,4 @@ public class SnapCaseIndicatorExpressionItemEntity extends CaseIndicatorExpressi
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "逻辑删除")
     private Boolean deleted;
-
-    @JsonIgnore
-    @TableField(exist = false)
-    @Schema(title = "逻辑删除")
-    private transient boolean isMinOrMax;
-
 }

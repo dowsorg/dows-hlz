@@ -8,10 +8,12 @@ import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.ExperimentPhysicalExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentPhysicalExamReportResponseRs;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumIndicatorExpressionField;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumOrgFeeType;
+import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.eval.QueryPersonBiz;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
@@ -57,6 +59,8 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
 
   private final QueryPersonBiz queryPersonBiz;
 
+  private final EvalPersonBiz evalPersonBiz;
+
   public static ExperimentPhysicalExamReportResponseRs experimentPhysicalExamReport2ResponseRs(ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewPhysicalExamReportRsEntity)) {
       return null;
@@ -78,6 +82,11 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   */
   @Transactional(rollbackFor = Exception.class)
   public void physicalExamCheck(ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
+    if(ConfigExperimentFlow.SWITCH2SpelCache){
+      evalPersonBiz.physicalExamCheck(experimentPhysicalExamCheckRequestRs,request);
+      return;
+    }
+
     Integer periods = experimentPhysicalExamCheckRequestRs.getPeriods();
     String appId = experimentPhysicalExamCheckRequestRs.getAppId();
     String experimentId = experimentPhysicalExamCheckRequestRs.getExperimentId();
@@ -215,7 +224,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
               .operateFlowId(operateFlowId)
               .name(experimentIndicatorViewPhysicalExamRsEntity.getName())
               .fee(experimentIndicatorViewPhysicalExamRsEntity.getFee())
-              .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.DOWN))
+              .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.HALF_UP))
                       .orElse(currentVal))
               .unit(unit)
               .resultExplain(experimentIndicatorViewPhysicalExamRsEntity.getResultAnalysis())
@@ -301,7 +310,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
                   .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
                   .one();
           if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
-            reimburse = reimburse.add(fee.multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN));
+            reimburse = reimburse.add(fee.multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio())).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
           }
         }
       }

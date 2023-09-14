@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.RsCalculatePersonRequestRs;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumIndicatorExpressionField;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
@@ -42,12 +43,19 @@ public class EvalPersonIndicatorBiz {
 
     private final EvalPersonCache evalPersonCache;
 
+    private final EvalPersonIndicatorAdvBiz evalPersonIndicatorAdvBiz;
+
 
     @SneakyThrows
     public void evalPersonIndicator(RsCalculatePersonRequestRs req)  {
-        StringBuilder sb=new StringBuilder("EVALTRACE--evalIndicator--");
+        if(ConfigExperimentFlow.SWITCH2SpelCache){
+            evalPersonIndicatorAdvBiz.evalPersonIndicator(req);
+            return;
+        }
+        StringBuilder sb=new StringBuilder();
+        long ts=logCostTime(sb,"EVALTRACE--evalIndicatorOld--");
         try {
-            long ts=System.currentTimeMillis();
+
             final String experimentId = req.getExperimentId();
             final Set<String> experimentPersonIdSet = experimentPersonCache.getPersondIdSet(experimentId, req.getPersonIdSet());
             if (ShareUtil.XObject.isEmpty(experimentPersonIdSet)) {
@@ -188,6 +196,10 @@ public class EvalPersonIndicatorBiz {
         return curValRef.get();
 
 
+    }
+    private long logCostTime(StringBuilder sb,String start){
+        sb.append(start);
+        return System.currentTimeMillis();
     }
 
     long logCostTime(StringBuilder sb,String func,long ts){

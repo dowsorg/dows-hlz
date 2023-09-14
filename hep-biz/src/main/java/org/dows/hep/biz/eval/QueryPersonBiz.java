@@ -87,7 +87,7 @@ public class QueryPersonBiz {
         }
         moneyVal = optMoney.min(BigDecimalUtil.tryParseDecimalElseNull(min))
                 .max(BigDecimalUtil.tryParseDecimalElseNull(max))
-                .getString(2,RoundingMode.DOWN);
+                .getString(2,RoundingMode.HALF_UP);
         return new ExperimentIndicatorValRsEntity().setIndicatorInstance(experimentIndicatorInstanceRsEntity)
                 .setIndicatorInstanceId(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())
                 .setCurrentVal(moneyVal);
@@ -154,7 +154,7 @@ public class QueryPersonBiz {
             }
         });
 
-        final String avgHp=BigDecimalUtil.formatRoundDecimal(getAvg(valuedHp),2,RoundingMode.DOWN);
+        final String avgHp=BigDecimalUtil.formatRoundDecimal(getAvg(valuedHp),2,RoundingMode.HALF_UP);
         int rank = 0;
         AtomicInteger curRank = new AtomicInteger(1);
         Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
@@ -194,7 +194,7 @@ public class QueryPersonBiz {
         }
         BigDecimalOptional total=BigDecimalOptional.create();
         values.forEach(i->total.add(i));
-        return total.div(BigDecimalUtil.valueOf(values.size()), 2, RoundingMode.DOWN).getValue();
+        return total.div(BigDecimalUtil.valueOf(values.size()), 2, RoundingMode.HALF_UP).getValue();
 
     }
 

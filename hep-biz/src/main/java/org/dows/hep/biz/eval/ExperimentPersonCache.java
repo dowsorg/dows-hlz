@@ -5,6 +5,7 @@ import org.dows.hep.biz.cache.BaseLoadingCache;
 import org.dows.hep.biz.dao.ExperimentGroupDao;
 import org.dows.hep.biz.dao.ExperimentPersonDao;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentGroupEntity;
 import org.dows.hep.entity.ExperimentOrgEntity;
@@ -111,6 +112,28 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
             }
         });
         return rst;
+    }
+
+    public Set<String> getCasePersonIdSet(String experimentId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return Collections.emptySet();
+        }
+        Set<String> rst=new HashSet<>();
+        cached.getMapPersons().values().forEach(i->rst.add(i.getCasePersonId()));
+        return rst;
+    }
+
+    public void remove(String experimentId){
+        remove(ExperimentCacheKey.create("3", experimentId));
+    }
+    public void remove(String appId, String experimentId){
+        remove(ExperimentCacheKey.create(appId, experimentId));
+    }
+
+    private void remove(ExperimentCacheKey key){
+        key.setAppId(ShareBiz.checkAppId(key.getAppId(), key.getExperimentInstanceId()));
+        this.loadingCache().invalidate(key);
     }
 
     @Override
