@@ -174,8 +174,13 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                     .experimentInstanceId(experimentInstanceId)
                     .caseInstanceId(caseInstanceId)
                     .build());
-            /* runsix:复制实验，拿到第0期的数据 */
-            //rsExperimentCalculateBiz.experimentRsCalculateAndCreateReportHealthScore(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+
+
+        }
+
+        //复制操作指标和突发事件
+        SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
+        if(hasSandSettingAtomicBoolean.get()){
             evalHealthIndexBiz.evalPersonHealthIndexOld(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
                     .builder()
                     .appId(appId)
@@ -184,8 +189,6 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                     .funcType(EnumEvalFuncType.START)
                     .build());
         }
-        //复制操作指标和突发事件
-        SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
         if(ConfigExperimentFlow.SWITCH2SysEvent){
             //启用新流程
             EventScheduler.Instance().scheduleSysEvent(appId, experimentInstanceId, 1);
