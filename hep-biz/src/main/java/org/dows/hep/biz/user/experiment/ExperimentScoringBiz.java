@@ -433,12 +433,22 @@ public class ExperimentScoringBiz {
             if (Objects.isNull(groupIdVGroupMoneyScoreBigDecimal)) {
                 groupIdVGroupMoneyScoreBigDecimal = BigDecimal.ZERO;
             }
+
             //总分
+            BigDecimal knowledgeWeight = knowledgeWeightAtomicReference.get();
+            BigDecimal healthIndexWeight = healthIndexWeightAtomicReference.get();
+            BigDecimal medicalRatioWeight = medicalRatioWeightAtomicReference.get();
             BigDecimal totalScoreBigDecimal = getWeightTotalScore(
-                    knowledgeWeightAtomicReference.get(), questionnaireScoreBigDecimal,
-                    healthIndexWeightAtomicReference.get(), groupCompetitiveScoreBigDecimal,
-                    medicalRatioWeightAtomicReference.get(), groupIdVGroupMoneyScoreBigDecimal
+                    knowledgeWeight, questionnaireScoreBigDecimal,
+                    healthIndexWeight, groupCompetitiveScoreBigDecimal,
+                    medicalRatioWeight, groupIdVGroupMoneyScoreBigDecimal
             );
+
+            //权重后得分
+            BigDecimal finalKnowledgeScore = questionnaireScoreBigDecimal.multiply(knowledgeWeight);
+            BigDecimal finalHealthIndexScore = groupCompetitiveScoreBigDecimal.multiply(healthIndexWeight);
+            BigDecimal finalMedicalRatioScoreScore = groupIdVGroupMoneyScoreBigDecimal.multiply(medicalRatioWeight);
+
             //当前期排行
             int rank = 0;
             AtomicInteger curRank = new AtomicInteger(1);
@@ -446,7 +456,7 @@ public class ExperimentScoringBiz {
             experimentScoringService.lambdaQuery()
                     .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
                     .eq(ExperimentScoringEntity::getPeriods, periods)
-                    .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
+                    .orderByDesc(ExperimentScoringEntity::getTotalScore, ExperimentScoringEntity::getId)
                     .list()
                     .forEach(experimentScoringEntity -> {
                         kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
@@ -466,9 +476,9 @@ public class ExperimentScoringBiz {
                     .healthIndexScore(groupCompetitiveScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .totalScore(totalScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
-                    .percentKnowledgeScore(questionnaireScoreBigDecimal.add(totalScoreBigDecimal).setScale(2, RoundingMode.DOWN).toString())
-                    .percentHealthIndexScore(groupCompetitiveScoreBigDecimal.add(totalScoreBigDecimal).setScale(2, RoundingMode.DOWN).toString())
-                    .percentTreatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.add(totalScoreBigDecimal).setScale(2, RoundingMode.DOWN).toString())
+                    .percentKnowledgeScore(finalKnowledgeScore.divide(totalScoreBigDecimal,3,RoundingMode.HALF_UP).toString())
+                    .percentHealthIndexScore(finalHealthIndexScore.divide(totalScoreBigDecimal,3, RoundingMode.HALF_UP).toString())
+                    .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal,3, RoundingMode.HALF_UP).toString())
                     .rank(rank)
                     .scoringCount(scoringCountAtomicInteger.get())
                     .periods(periods)

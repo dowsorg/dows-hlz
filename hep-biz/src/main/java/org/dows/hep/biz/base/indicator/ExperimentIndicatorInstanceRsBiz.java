@@ -332,9 +332,8 @@ public class ExperimentIndicatorInstanceRsBiz {
                 LocalDateTime.now(), false);
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
                 .throwMessage("未找到实验时间设置");
-        int rank = 0;
         AtomicInteger curRank = new AtomicInteger(1);
-        Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
+        /*Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
         experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
                 .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState()==EnumExperimentState.FINISH? periods: (periods - 1))
@@ -345,12 +344,18 @@ public class ExperimentIndicatorInstanceRsBiz {
                 });
         if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
             rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
-        }
+        }*/
+        experimentScoringService.lambdaQuery()
+                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState()==EnumExperimentState.FINISH? periods: (periods - 1))
+                .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
+                .oneOpt()
+                .ifPresent(i->curRank.set(i.getRank()));
         return GroupAverageHealthPointResponse
                 .builder()
                 .experimentPersonCount(experimentPersonCount)
                 .averageHealthPoint(averageHealthPoint)
-                .rank(rank)
+                .rank(curRank.get())
                 .build();
     }
 
