@@ -11,5 +11,10 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-api</artifactId>
+        </dependency>
+
     </dependencies>
 </project>

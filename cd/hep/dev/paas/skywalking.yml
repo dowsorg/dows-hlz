@@ -5,10 +5,6 @@ services:
     image: apache/skywalking-oap-server:9.3.0
     container_name: skywalking-oap
     restart: always
-    depends_on:
-      - es8
-    links:
-      - es8
     ports:
       - 11800:11800
       - 12800:12800
@@ -21,10 +17,12 @@ services:
       SW_STORAGE: elasticsearch
       JAVA_OPTS: "-Xms2048m -Xmx2048m"
       #SW_STORAGE: elasticsearch7
-      SW_STORAGE_ES_CLUSTER_NODES: es8:9200
+      SW_STORAGE_ES_CLUSTER_NODES: elasticsearch:9200
     volumes:
       - /etc/localtime:/etc/localtime:ro
       #- ./config:/skywalking/config
+    networks:
+      - dev_net
 
   skywalking-ui:
     image: apache/skywalking-ui:9.3.0
@@ -42,8 +40,9 @@ services:
       SW_OAP_ADDRESS: http://skywalking-oap:12800
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    networks:
+      - dev_net
 
 networks:
-  default:
-    external:
-      name: prd_net
+  dev_net:
+    external: true
