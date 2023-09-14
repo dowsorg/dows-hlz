@@ -1,4 +1,4 @@
-package org.dows.hep.biz.edw;
+package org.dows.edw.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class HepOperateCostGetBiz {
+public class HepOperateCostGetRepository {
 
     private final MongoTemplate mongoTemplate;
 

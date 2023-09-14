@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.dows.hep.api.edw.HepOperateTypeEnum;
 
 import java.util.Date;
 
@@ -23,7 +22,7 @@ public class HepOperateResponse {
      * 操作类型
      */
     @Schema(title = "操作类型")
-    private HepOperateTypeEnum type;
+    private String type;
 
     /**
      * 实验ID

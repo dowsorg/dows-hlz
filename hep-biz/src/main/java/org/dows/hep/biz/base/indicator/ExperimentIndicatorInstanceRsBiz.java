@@ -350,7 +350,7 @@ public class ExperimentIndicatorInstanceRsBiz {
                 .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState()==EnumExperimentState.FINISH? periods: (periods - 1))
                 .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
                 .oneOpt()
-                .ifPresent(i->curRank.set(i.getRank()));
+                .ifPresent(i->curRank.set(i.getRankNo()));
         return GroupAverageHealthPointResponse
                 .builder()
                 .experimentPersonCount(experimentPersonCount)

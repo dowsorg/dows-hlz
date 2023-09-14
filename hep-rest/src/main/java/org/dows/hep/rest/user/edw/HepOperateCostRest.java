@@ -8,8 +8,8 @@ import org.dows.edw.domain.HepOperateCost;
 import org.dows.hep.api.edw.request.HepOperateCostGetRequest;
 import org.dows.hep.api.edw.request.HepOperateCostSetRequest;
 import org.dows.hep.api.edw.response.HepOperateCostResponse;
-import org.dows.hep.biz.edw.HepOperateCostGetBiz;
-import org.dows.hep.biz.edw.HepOperateCostSetBiz;
+import org.dows.edw.repository.HepOperateCostGetRepository;
+import org.dows.edw.repository.HepOperateCostSetRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "实验操作费用记录", description = "实验操作费用记录")
 public class HepOperateCostRest {
 
-    private final HepOperateCostGetBiz hepOperateCostGetBiz;
-    private final HepOperateCostSetBiz hepOperateCostSetBiz;
+    private final HepOperateCostGetRepository hepOperateCostGetRepository;
+    private final HepOperateCostSetRepository hepOperateCostSetRepository;
 
     /**
      * @param request - 新增或更新请求参数
@@ -41,7 +41,7 @@ public class HepOperateCostRest {
     @Operation(summary = "新增或更新操作费用记录")
     @PostMapping("v1/hepOperateCost/setOperateCost")
     public HepOperateCostResponse setOperateCost(@RequestBody HepOperateCostSetRequest request) {
-        HepOperateCost hepOperateCost = hepOperateCostSetBiz.setOperateEntity(request);
+        HepOperateCost hepOperateCost = hepOperateCostSetRepository.setOperateEntity(request);
 
         if (BeanUtil.isEmpty(hepOperateCost)) {
             return new HepOperateCostResponse();
@@ -61,7 +61,7 @@ public class HepOperateCostRest {
     @Operation(summary = "查询操作费用记录")
     @PostMapping("v1/hepOperateCost/getOperateCost")
     public HepOperateCostResponse getOperateCost(@RequestBody HepOperateCostGetRequest request) {
-        HepOperateCost hepOperateCost = hepOperateCostGetBiz.getOperateEntity(request);
+        HepOperateCost hepOperateCost = hepOperateCostGetRepository.getOperateEntity(request);
 
         if (BeanUtil.isEmpty(hepOperateCost)) {
             return new HepOperateCostResponse();

@@ -479,7 +479,7 @@ public class ExperimentScoringBiz {
                     .percentKnowledgeScore(finalKnowledgeScore.divide(totalScoreBigDecimal,3,RoundingMode.HALF_UP).toString())
                     .percentHealthIndexScore(finalHealthIndexScore.divide(totalScoreBigDecimal,3, RoundingMode.HALF_UP).toString())
                     .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal,3, RoundingMode.HALF_UP).toString())
-                    .rank(rank)
+                    .rankNo(rank)
                     .scoringCount(scoringCountAtomicInteger.get())
                     .periods(periods)
                     .build());

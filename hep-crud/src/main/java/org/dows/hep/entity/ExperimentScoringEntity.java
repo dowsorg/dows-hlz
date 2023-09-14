@@ -75,7 +75,7 @@ public class ExperimentScoringEntity implements CrudEntity {
     @Schema(title = "医疗占比分数百分比")
     private String percentTreatmentPercentScore;
 
-    @Schema(title = "操作准确度百分比")
+    @Schema(title = "操作准确度得分百分比")
     private String percentOperateRightScore;
 
     @Schema(title = "总分")
@@ -88,7 +88,7 @@ public class ExperimentScoringEntity implements CrudEntity {
     private Integer periods;
 
     @Schema(title = "排名")
-    private Integer rank;
+    private Integer rankNo;
 
     @JsonIgnore
     @TableLogic

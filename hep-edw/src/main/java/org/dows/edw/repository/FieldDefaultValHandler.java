@@ -1,4 +1,4 @@
-package org.dows.hep.biz.edw;
+package org.dows.edw.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.dows.edw.FieldFill;
