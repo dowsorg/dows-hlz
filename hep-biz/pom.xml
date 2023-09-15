@@ -10,18 +10,14 @@
     <artifactId>hep-biz</artifactId>
 
     <dependencies>
-        <!--<dependency>
-            <groupId>org.apache.shardingsphere.elasticjob</groupId>
-            <artifactId>elasticjob-lite-spring-boot-starter</artifactId>
-            <version>3.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.zookeeper</groupId>
-            <artifactId>zookeeper</artifactId>
-        </dependency>-->
+
         <dependency>
             <groupId>org.dows.saas</groupId>
             <artifactId>hep-crud</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dows.saas</groupId>
+            <artifactId>hep-edw</artifactId>
         </dependency>
         <dependency>
             <groupId>org.dows.saas</groupId>

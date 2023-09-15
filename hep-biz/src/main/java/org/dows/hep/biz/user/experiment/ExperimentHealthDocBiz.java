@@ -131,8 +131,10 @@ public class ExperimentHealthDocBiz {
 
         return BigDecimalOptional.valueOf(lastMoneyVal).sub(BigDecimalUtil.tryParseDecimalElseNull(money))
                 .div(lastMoneyVal,2)
+                .mul(BigDecimalUtil.ONEHundred)
                 .min(BigDecimal.ZERO)
                 .max(BigDecimalUtil.ONEHundred)
-                .getString(2, RoundingMode.DOWN);
+                .getString(2, RoundingMode.DOWN)
+                .concat("%");
     }
 }

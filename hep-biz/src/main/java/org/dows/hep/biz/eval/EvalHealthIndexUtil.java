@@ -26,7 +26,7 @@ public class EvalHealthIndexUtil {
     final static BigDecimal MAXHealthIndex=BigDecimal.valueOf(100);
 
     final static int SCALE =2;
-    final static RoundingMode ROUNDINGMode =RoundingMode.DOWN;
+    final static RoundingMode ROUNDINGMode =RoundingMode.HALF_UP;
 
     /**
      * 计算人物健康指数
@@ -92,7 +92,7 @@ public class EvalHealthIndexUtil {
             return src.setHealthIndex(BigDecimal.ZERO);
         }
         return src.setHealthIndex(BigDecimalOptional.valueOf(score.subtract(maxScore)).mul(MAXScore)
-                .div(minScore.subtract(maxScore), SCALE, ROUNDINGMode)
+                .div(minScore.subtract(maxScore), 6, ROUNDINGMode)
                 .getValue());
     }
 

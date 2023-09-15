@@ -26,6 +26,9 @@ public class RiskFactorScoreVO {
     @Schema(title = "危险因素id")
     private String riskFactorId;
 
+    @Schema(title = "危险因素名称")
+    private String riskFactorName;
+
     @Schema(title = "危险表达式id")
     private String riskExpressionId;
     @Schema(title = "当前分值")

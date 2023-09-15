@@ -1,6 +1,10 @@
 package org.dows.edw.domain;
 
 import lombok.Data;
+import org.dows.edw.FieldFill;
+import org.dows.edw.LogicDel;
+import org.dows.edw.MongoEntity;
+import org.dows.edw.MongoEntityId;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -10,10 +14,13 @@ import java.time.LocalDateTime;
  * @TableName hep_health_evaluate
  */
 @Data
+@MongoEntity
 public class HepHealthEvaluate implements Serializable {
     /**
      * 健康评估Id
      */
+    @FieldFill
+    @MongoEntityId
     private Long hepHealthEvaluateId;
 
     /**
@@ -94,6 +101,8 @@ public class HepHealthEvaluate implements Serializable {
     /**
      * 逻辑删除
      */
+    @FieldFill
+    @LogicDel
     private Integer deleted;
 
     /**
@@ -104,6 +113,7 @@ public class HepHealthEvaluate implements Serializable {
     /**
      * 时间戳
      */
+    @FieldFill
     private LocalDateTime dt;
 
     private static final long serialVersionUID = 1L;

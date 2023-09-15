@@ -483,7 +483,7 @@ public class RsExperimentIndicatorExpressionBiz {
         String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
         boolean isValDigital = NumberUtils.isCreatable(currentVal);
         if (isValDigital) {
-          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.HALF_UP));
         } else {
           context.setVariable(resultNameSplitList.get(i), currentVal);
         }
@@ -525,7 +525,7 @@ public class RsExperimentIndicatorExpressionBiz {
         String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
         boolean isValDigital = NumberUtils.isCreatable(currentVal);
         if (isValDigital) {
-          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+          context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.HALF_UP));
         } else {
           context.setVariable(resultNameSplitList.get(i), currentVal);
         }
@@ -563,7 +563,7 @@ public class RsExperimentIndicatorExpressionBiz {
         String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
         boolean isValDigital = NumberUtils.isCreatable(currentVal);
         if (isValDigital) {
-          context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+          context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.HALF_UP));
         } else {
           context.setVariable(conditionNameSplitList.get(i), currentVal);
         }
@@ -605,7 +605,7 @@ public class RsExperimentIndicatorExpressionBiz {
         String currentVal = experimentIndicatorValRsEntity.getCurrentVal();
         boolean isValDigital = NumberUtils.isCreatable(currentVal);
         if (isValDigital) {
-          context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.DOWN));
+          context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.HALF_UP));
         } else {
           context.setVariable(conditionNameSplitList.get(i), currentVal);
         }

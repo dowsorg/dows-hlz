@@ -100,6 +100,15 @@ public class TreatItemDao extends BaseSubDao<TreatItemService,TreatItemEntity,Tr
                 .page(page);
     }
 
+    public List<TreatItemEntity> getAll(String appId, Integer state, boolean isAsc, SFunction<TreatItemEntity,?>... cols){
+        return service.lambdaQuery()
+                .eq(null!=getColAppId()&&ShareUtil.XObject.notEmpty(appId),getColAppId(),appId)
+                .eq(ShareUtil.XObject.notEmpty(state), TreatItemEntity::getState,state)
+                .orderBy(true, isAsc, TreatItemEntity::getId)
+                .select(cols)
+                .list();
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public boolean tranSaveWithExpressions(TreatItemEntity lead, List<String> expressionIds){
         AssertUtil.falseThenThrow(coreTranSave(lead,null,false, true))

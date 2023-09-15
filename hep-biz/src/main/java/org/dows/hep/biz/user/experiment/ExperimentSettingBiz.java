@@ -11,6 +11,7 @@ import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentSettingService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;

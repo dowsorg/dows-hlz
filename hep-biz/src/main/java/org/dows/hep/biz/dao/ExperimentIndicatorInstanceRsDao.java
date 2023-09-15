@@ -40,6 +40,16 @@ public class ExperimentIndicatorInstanceRsDao extends BaseDao<ExperimentIndicato
         return null;
     }
 
+    public List<ExperimentIndicatorInstanceRsEntity> getByExperimentId(String experimentId, SFunction<ExperimentIndicatorInstanceRsEntity,?>... cols){
+        if(ShareUtil.XObject.isEmpty(experimentId)){
+            return Collections.emptyList();
+        }
+        return service.lambdaQuery()
+                .eq(ExperimentIndicatorInstanceRsEntity::getExperimentId,experimentId)
+                .orderByAsc(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId,ExperimentIndicatorInstanceRsEntity::getRecalculateSeq)
+                .select(cols)
+                .list();
+    }
     public List<ExperimentIndicatorInstanceRsEntity> getByExperimentPersonId(String experimentPersonId,
                                                                                SFunction<ExperimentIndicatorInstanceRsEntity,?>... cols){
         if(ShareUtil.XObject.isEmpty(experimentPersonId)){

@@ -142,6 +142,7 @@ public class IndicatorViewSupportExamBiz{
             .collect(Collectors.toList());
     }
 
+    // 辅助检查
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdateRs(CreateOrUpdateIndicatorViewSupportExamRequestRs createOrUpdateIndicatorViewSupportExamRequestRs) {
         IndicatorViewSupportExamEntity indicatorViewSupportExamEntity;

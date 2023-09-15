@@ -129,6 +129,7 @@ public class ExperimentGroupingBiz {
         experimentInstanceService.lambdaUpdate()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId , exptId)
                 .set(ExperimentInstanceEntity::getExperimentName, "【系统提示：实验分配失败】" )
+                .set(ExperimentInstanceEntity::getState,EnumExperimentState.FINISH.getState())
                 .update();
 
         experimentGroupService.lambdaUpdate()

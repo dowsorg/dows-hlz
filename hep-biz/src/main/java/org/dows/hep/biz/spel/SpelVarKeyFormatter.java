@@ -6,11 +6,12 @@ package org.dows.hep.biz.spel;
  */
 public class SpelVarKeyFormatter {
     public static final String PREFIX="_";
+    public static final String SUFFIX="_";
 
-    public static String getVariableKey(String src){
+    public static String getVariableKey(String src,boolean last){
         if(src.startsWith(PREFIX)){
             return src;
         }
-        return String.format("%s%s", PREFIX, src);
+        return String.format("%s%s%s", PREFIX, src,last?SUFFIX:"");
     }
 }

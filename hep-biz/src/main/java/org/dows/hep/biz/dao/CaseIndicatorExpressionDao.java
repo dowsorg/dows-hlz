@@ -80,4 +80,32 @@ public class CaseIndicatorExpressionDao extends BaseSubDao<CaseIndicatorExpressi
                 .select(cols)
                 .list();
     }
+
+    public List<CaseIndicatorExpressionEntity> getByExperssionIds(Collection<String> experssionIds, Collection<Integer> sources,  SFunction<CaseIndicatorExpressionEntity,?>... cols) {
+        if (ShareUtil.XObject.isEmpty(experssionIds)) {
+            return Collections.emptyList();
+        }
+        final boolean oneFlag = experssionIds.size() == 1;
+        return service.lambdaQuery()
+                .eq(oneFlag, CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, experssionIds.iterator().next())
+                .in(!oneFlag, CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, experssionIds)
+                .eq(null != sources && sources.size() == 1, CaseIndicatorExpressionEntity::getSource, sources.iterator().next())
+                .in(null != sources && sources.size() > 1, CaseIndicatorExpressionEntity::getSource, sources)
+                .orderByAsc(CaseIndicatorExpressionEntity::getId)
+                .select(cols)
+                .list();
+    }
+
+    public List<CaseIndicatorExpressionEntity> getByIndicatorId(Collection<String> indicatorIds,SFunction<CaseIndicatorExpressionEntity,?>... cols) {
+        if (ShareUtil.XObject.isEmpty(indicatorIds)) {
+            return Collections.emptyList();
+        }
+        final boolean oneFlag = indicatorIds.size() == 1;
+        return service.lambdaQuery()
+                .eq(oneFlag, CaseIndicatorExpressionEntity::getCasePrincipalId, indicatorIds.iterator().next())
+                .in(!oneFlag, CaseIndicatorExpressionEntity::getCasePrincipalId, indicatorIds)
+                .orderByAsc(CaseIndicatorExpressionEntity::getId)
+                .select(cols)
+                .list();
+    }
 }
