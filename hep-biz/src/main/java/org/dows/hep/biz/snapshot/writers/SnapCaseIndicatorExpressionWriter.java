@@ -32,6 +32,14 @@ public class SnapCaseIndicatorExpressionWriter extends BaseSnapshotTableWriter<C
     @Autowired
     private IndicatorExpressionDao indicatorExpressionDao;
 
+    @Autowired
+    private ExperimentPersonDao experimentPersonDao;
+    @Autowired
+    private CasePersonDao casePersonDao;
+
+    @Autowired
+    private CaseIndicatorInstanceDao caseIndicatorInstanceDao;
+
 
 
     @Override
@@ -40,14 +48,28 @@ public class SnapCaseIndicatorExpressionWriter extends BaseSnapshotTableWriter<C
         List<CaseIndicatorExpressionEntity> rst=new ArrayList<>();
         rst.addAll(caseIndicatorExpressionDao.getBySource(List.of(EnumIndicatorExpressionSource.EMERGENCY_TRIGGER_CONDITION.getSource(),
                 EnumIndicatorExpressionSource.EMERGENCY_INFLUENCE_INDICATOR.getSource(),
-                EnumIndicatorExpressionSource.EMERGENCY_ACTION_INFLUENCE_INDICATOR.getSource())));
-        List<IndicatorExpressionEntity> rowsTreatExpression=indicatorExpressionDao.getBySource(List.of(EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL.getSource(),
-                EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL.getSource()));
-        rst.addAll(ShareUtil.XCollection.map(rowsTreatExpression, i->
+                EnumIndicatorExpressionSource.EMERGENCY_ACTION_INFLUENCE_INDICATOR.getSource()
+                )));
+        List<IndicatorExpressionEntity> rowsExpression=indicatorExpressionDao.getBySource(List.of(EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL.getSource(),
+                EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL.getSource(),
+                EnumIndicatorExpressionSource.CROWDS.getSource(),
+                EnumIndicatorExpressionSource.RISK_MODEL.getSource()
+                ));
+        rst.addAll(ShareUtil.XCollection.map(rowsExpression, i->
                 CopyWrapper.create(CaseIndicatorExpressionEntity::new)
                         .endFrom(i)
                         .setCaseIndicatorExpressionId(i.getIndicatorExpressionId())
                         .setCasePrincipalId(i.getPrincipalId())));
+
+        //人物指标
+        List<String> casePersonIds=ShareUtil.XCollection.map(experimentPersonDao.getByExperimentId(req.getAppId(), req.getExperimentInstanceId(), ExperimentPersonEntity::getCasePersonId),
+                ExperimentPersonEntity::getCasePersonId);
+        List<String> caseAccountIds=ShareUtil.XCollection.map(casePersonDao.getByPersonIds(casePersonIds, CasePersonEntity::getAccountId),
+                CasePersonEntity::getAccountId);
+        List<String> refItemIds= ShareUtil.XCollection.map(caseIndicatorInstanceDao.getByAccountIds(caseAccountIds,CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId),
+                CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId);
+        rst.addAll(caseIndicatorExpressionDao.getByIndicatorId(refItemIds));
+
         return rst;
     }
 }

@@ -70,11 +70,18 @@ public class EvalHealthIndexBiz {
 
     private final EvalPersonDao evalPersonDao;
 
+    private final EvalHealthIndexAdvBiz evalHealthIndexAdvBiz;
+
     //region new
     public void evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs req)  {
-        StringBuilder sb=new StringBuilder("EVALTRACE--evalHP--");
+        if(ConfigExperimentFlow.SWITCH2SpelCache){
+            evalHealthIndexAdvBiz.evalPersonHealthIndex(req);
+            return;
+        }
+
+        StringBuilder sb=new StringBuilder();
+        long ts=logCostTime(sb,"EVALTRACE--evalHP--");
         try {
-            long ts=System.currentTimeMillis();
             String appId = req.getAppId();
             Integer originPeriods = req.getPeriods();
             Integer periods = Math.max(1, originPeriods);
@@ -84,7 +91,6 @@ public class EvalHealthIndexBiz {
                 return;
             }
             ts=logCostTime(sb,"1-personid", ts);
-            final boolean isNewPeriod = EnumEvalFuncType.isNewPeriod(req.getFuncType());
             List<ExperimentPersonRiskModelRsEntity> experimentPersonRiskModelRsEntityList = new ArrayList<>();
             List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList = new ArrayList<>();
        /* Map<String, Map<String, String>> kExperimentPersonIdVKIndicatorInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
@@ -394,7 +400,7 @@ public class EvalHealthIndexBiz {
         BigDecimal personHealthIndex = EvalHealthIndexUtil.evalHealthIndex(vosHealthIndex, false);
         evalHolder.get().setEvalRisks(vosHealthIndex).setRisks(voRisks);
         evalHolder.putCurVal(personIndicatorIdCache.getSysIndicatorId(experimentPersonId, EnumIndicatorType.HEALTH_POINT),
-                BigDecimalUtil.formatRoundDecimal(personHealthIndex, 2, RoundingMode.DOWN), false);
+                BigDecimalUtil.formatRoundDecimal(personHealthIndex, 2, RoundingMode.HALF_UP), false);
         evalPointer.sync(req.getFuncType());
 
     }
@@ -649,6 +655,11 @@ public class EvalHealthIndexBiz {
         if (!experimentPersonHealthRiskFactorRsEntityList.isEmpty()) {experimentPersonHealthRiskFactorRsService.saveOrUpdateBatch(experimentPersonHealthRiskFactorRsEntityList);}
     }
     //endregion
+
+    private long logCostTime(StringBuilder sb,String start){
+        sb.append(start);
+        return System.currentTimeMillis();
+    }
 
     long logCostTime(StringBuilder sb,String func,long ts){
         long newTs=System.currentTimeMillis();

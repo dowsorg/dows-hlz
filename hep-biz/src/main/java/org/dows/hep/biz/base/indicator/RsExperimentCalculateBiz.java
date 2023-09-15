@@ -239,7 +239,7 @@ public class RsExperimentCalculateBiz {
         BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
         AtomicReference<BigDecimal> newHealthPointAR = new AtomicReference<>(newHealthPoint);
         rsUtilBiz.healthPointMinAndMax(newHealthPointAR);
-        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPointAR.get().setScale(2, RoundingMode.DOWN).toString());
+        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPointAR.get().setScale(2, RoundingMode.HALF_UP).toString());
         healthExperimentIndicatorValRsEntityList.add(healthExperimentIndicatorValRsEntity);
       });
     });
@@ -462,7 +462,7 @@ public class RsExperimentCalculateBiz {
         BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
         AtomicReference<BigDecimal> newHealthPointAR = new AtomicReference<>(newHealthPoint);
         rsUtilBiz.healthPointMinAndMax(newHealthPointAR);
-        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPointAR.get().setScale(2, RoundingMode.DOWN).toString());
+        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPointAR.get().setScale(2, RoundingMode.HALF_UP).toString());
         healthExperimentIndicatorValRsEntityList.add(healthExperimentIndicatorValRsEntity);
       });
     });
@@ -680,8 +680,8 @@ public class RsExperimentCalculateBiz {
               .experimentRiskModelId(experimentRiskModelId)
               .name(experimentRiskModelRsEntity.getName())
               .riskDeathProbability(experimentRiskModelRsEntity.getRiskDeathProbability())
-              .composeRiskScore(singleRiskModelAR.get().setScale(2, RoundingMode.DOWN).doubleValue())
-              .existDeathRiskScore(singleRiskModelAR.get().multiply(BigDecimal.valueOf(experimentRiskModelRsEntity.getRiskDeathProbability())).setScale(2, RoundingMode.DOWN).doubleValue())
+              .composeRiskScore(singleRiskModelAR.get().setScale(2, RoundingMode.HALF_UP).doubleValue())
+              .existDeathRiskScore(singleRiskModelAR.get().multiply(BigDecimal.valueOf(experimentRiskModelRsEntity.getRiskDeathProbability())).setScale(2, RoundingMode.HALF_UP).doubleValue())
               .build());
         });
         if (kRiskModelIdVRiskDeathProbabilityMap.isEmpty()) {return;}
@@ -689,7 +689,7 @@ public class RsExperimentCalculateBiz {
         BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
         AtomicReference<BigDecimal> newHealthPointAR = new AtomicReference<>(newHealthPoint);
         rsUtilBiz.healthPointMinAndMax(newHealthPointAR);
-        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPointAR.get().setScale(2, RoundingMode.DOWN).toString());
+        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPointAR.get().setScale(2, RoundingMode.HALF_UP).toString());
         healthExperimentIndicatorValRsEntityList.add(healthExperimentIndicatorValRsEntity);
       });
     });
@@ -957,8 +957,8 @@ public class RsExperimentCalculateBiz {
               .experimentRiskModelId(experimentRiskModelId)
               .name(experimentRiskModelRsEntity.getName())
               .riskDeathProbability(experimentRiskModelRsEntity.getRiskDeathProbability())
-              .composeRiskScore(singleRiskModelAR.get().setScale(2, RoundingMode.DOWN).doubleValue())
-              .existDeathRiskScore(singleRiskModelAR.get().multiply(BigDecimal.valueOf(experimentRiskModelRsEntity.getRiskDeathProbability())).setScale(2, RoundingMode.DOWN).doubleValue())
+              .composeRiskScore(singleRiskModelAR.get().setScale(2, RoundingMode.HALF_UP).doubleValue())
+              .existDeathRiskScore(singleRiskModelAR.get().multiply(BigDecimal.valueOf(experimentRiskModelRsEntity.getRiskDeathProbability())).setScale(2, RoundingMode.HALF_UP).doubleValue())
               .build());
         });
         if (kRiskModelIdVRiskDeathProbabilityMap.isEmpty()) {return;}
@@ -966,7 +966,7 @@ public class RsExperimentCalculateBiz {
         BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
         AtomicReference<BigDecimal> newHealthPointAR = new AtomicReference<>(newHealthPoint);
         rsUtilBiz.healthPointMinAndMax(newHealthPointAR);
-        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPointAR.get().setScale(2, RoundingMode.DOWN).toString());
+        healthExperimentIndicatorValRsEntity.setCurrentVal(newHealthPointAR.get().setScale(2, RoundingMode.HALF_UP).toString());
         healthExperimentIndicatorValRsEntityList.add(healthExperimentIndicatorValRsEntity);
       });
     });

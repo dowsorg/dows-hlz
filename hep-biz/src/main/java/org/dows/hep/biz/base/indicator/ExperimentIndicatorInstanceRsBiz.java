@@ -127,7 +127,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         } else if (newMoneyCurrentVal.compareTo(BigDecimal.valueOf(Double.parseDouble(max))) > 0) {
             newMoneyCurrentVal = BigDecimal.valueOf(Double.parseDouble(max));
         }
-        experimentIndicatorValRsEntity.setCurrentVal(newMoneyCurrentVal.setScale(2, RoundingMode.DOWN).toString());
+        experimentIndicatorValRsEntity.setCurrentVal(newMoneyCurrentVal.setScale(2, RoundingMode.HALF_UP).toString());
         return experimentIndicatorValRsEntity;
     }
 
@@ -326,7 +326,7 @@ public class ExperimentIndicatorInstanceRsBiz {
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         int experimentPersonCount = healthPointExperimentIndicatorInstanceIdSet.size();
-        String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.DOWN).toString();
+        String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.HALF_UP).toString();
 
         ExperimentTimePoint nowPoint = ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3", experimentId),
                 LocalDateTime.now(), false);
@@ -348,6 +348,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         }*/
         experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                .eq(ExperimentScoringEntity::getExperimentGroupId,experimentGroupId)
                 .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState() == EnumExperimentState.FINISH ? periods : (periods - 1))
                 .orderByDesc(ExperimentScoringEntity::getTotalScore, ExperimentScoringEntity::getId)
                 .oneOpt()

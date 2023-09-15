@@ -2,12 +2,14 @@ package org.dows.hep.entity.snapshot;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.dows.hep.ExperimentCrudEntity;
 import org.dows.hep.entity.CaseIndicatorExpressionItemEntity;
@@ -33,5 +35,10 @@ public class SnapCaseIndicatorExpressionItemEntity extends CaseIndicatorExpressi
     @TableField(fill = FieldFill.INSERT)
     @Schema(title = "逻辑删除")
     private Boolean deleted;
+
+    @JsonIgnore
+    @TableField(exist = false)
+    @Schema(title = "逻辑删除")
+    private transient boolean isMinOrMax;
 
 }

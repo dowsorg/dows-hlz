@@ -110,13 +110,13 @@ public class EvalCompetitiveScoreBiz {
             if (maxHealthScore.compareTo(defHealthScore) == 0) {
                 resultBigDecimal = currentHealthScore;
             } else {
-                resultBigDecimal = (currentHealthScore.subtract(defHealthScore).divide(maxHealthScore.subtract(defHealthScore), 2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(100 - 60))).add(BigDecimal.valueOf(60));
+                resultBigDecimal = (currentHealthScore.subtract(defHealthScore).divide(maxHealthScore.subtract(defHealthScore), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100 - 60))).add(BigDecimal.valueOf(60));
             }
         } else {
             if (minHealthScore.compareTo(defHealthScore) == 0) {
                 resultBigDecimal = currentHealthScore;
             } else {
-                resultBigDecimal = currentHealthScore.subtract(minHealthScore).divide(defHealthScore.subtract(minHealthScore), 2, RoundingMode.DOWN).multiply(BigDecimal.valueOf(60));
+                resultBigDecimal = currentHealthScore.subtract(minHealthScore).divide(defHealthScore.subtract(minHealthScore), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(60));
             }
         }
         return resultBigDecimal;
@@ -127,7 +127,7 @@ public class EvalCompetitiveScoreBiz {
         }
         BigDecimalOptional total=BigDecimalOptional.create();
         values.forEach(i->total.add(i));
-        return total.div(BigDecimalUtil.valueOf(values.size()), 2, RoundingMode.DOWN).getValue();
+        return total.div(BigDecimalUtil.valueOf(values.size()), 2, RoundingMode.HALF_UP).getValue();
 
     }
 
