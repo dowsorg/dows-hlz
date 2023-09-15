@@ -1,5 +1,7 @@
 package org.dows.hep.api.base.indicator.request;
 
+import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,4 +40,6 @@ public class ExperimentSupportExamCheckRequestRs implements Serializable {
   @Schema(title = "辅助检查id")
   private List<String> experimentIndicatorViewSupportExamIdList;
 
+  @Schema(title = "json辅助检查明细数据")
+  private String data;
 }
