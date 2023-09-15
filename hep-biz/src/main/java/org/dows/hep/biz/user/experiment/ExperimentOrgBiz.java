@@ -306,6 +306,7 @@ public class ExperimentOrgBiz {
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
                 ExperimentOrgNoticeEntity::getExperimentInstanceId,
                 ExperimentOrgNoticeEntity::getExperimentPersonId,
+                ExperimentOrgNoticeEntity::getExperimentOrgId,
                 ExperimentOrgNoticeEntity::getPersonName,
                 ExperimentOrgNoticeEntity::getAvatar,
                 ExperimentOrgNoticeEntity::getPeriods,

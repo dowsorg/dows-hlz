@@ -16,11 +16,9 @@ import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
-import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
-import org.dows.hep.entity.ExperimentPersonEntity;
-import org.dows.hep.entity.ExperimentScoringEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.ExperimentIndicatorValRsService;
+import org.dows.hep.service.ExperimentRankingService;
 import org.dows.hep.service.ExperimentScoringService;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +46,8 @@ public class QueryPersonBiz {
     private final ExperimentScoringService experimentScoringService;
 
     private final RsExperimentIndicatorValBiz rsExperimentIndicatorValBiz;
+
+    private final ExperimentRankingService experimentRankingService;
 
     public String getHealthPoint(Integer periods, String experimentPersonId){
         final String dft="1";
@@ -160,29 +160,40 @@ public class QueryPersonBiz {
         });
 
         final String avgHp=BigDecimalUtil.formatRoundDecimal(getAvg(valuedHp),2,RoundingMode.HALF_UP);
-        AtomicInteger curRank = new AtomicInteger(1);
-        //查询当前计数器
-        Integer scoringCount=experimentScoringService.lambdaQuery()
-                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-                .eq(ExperimentScoringEntity::getPeriods, periods)
-                .orderByDesc(ExperimentScoringEntity::getScoringCount)
-                .select(ExperimentScoringEntity::getScoringCount)
-                .last("limit 1")
-                .oneOpt()
-                .map(ExperimentScoringEntity::getScoringCount)
-                .orElse(null);
         ExperimentTimePoint nowPoint = ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3", experimentId),
                 LocalDateTime.now(), false);
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint)).throwMessage("未找到实验时间设置");
 
-        //查询当前或者前一期排名
-        experimentScoringService.lambdaQuery()
-                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-                .eq(ExperimentScoringEntity::getExperimentGroupId, experimentGroupId)
-                .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState() == EnumExperimentState.FINISH ? periods : (periods - 1))
-                .eq(ShareUtil.XObject.notEmpty(scoringCount), ExperimentScoringEntity::getScoringCount, scoringCount)
-                .oneOpt()
-                .ifPresent(i -> curRank.set(i.getRankNo()));
+        AtomicInteger curRank = new AtomicInteger(0);
+        if(nowPoint.getGameState() == EnumExperimentState.FINISH){
+            experimentRankingService.lambdaQuery()
+                    .eq(ExperimentRankingEntity::getExperimentInstanceId, experimentId)
+                    .eq(ExperimentRankingEntity::getExperimentGroupId,experimentGroupId)
+                    .oneOpt()
+                    .ifPresent(i->curRank.set(i.getRankingIndex()));
+        }
+        if(curRank.get()<=0){
+            final int scorePeriods=nowPoint.getGameState()== EnumExperimentState.FINISH ? periods : (periods - 1);
+            //查询当前计数器
+            Integer scoringCount=experimentScoringService.lambdaQuery()
+                    .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                    .eq(ExperimentScoringEntity::getPeriods, scorePeriods)
+                    .orderByDesc(ExperimentScoringEntity::getScoringCount)
+                    .select(ExperimentScoringEntity::getScoringCount)
+                    .last("limit 1")
+                    .oneOpt()
+                    .map(ExperimentScoringEntity::getScoringCount)
+                    .orElse(null);
+
+            //查询当前或者前一期排名
+            experimentScoringService.lambdaQuery()
+                    .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                    .eq(ExperimentScoringEntity::getExperimentGroupId, experimentGroupId)
+                    .eq(ExperimentScoringEntity::getPeriods, scorePeriods)
+                    .eq(ShareUtil.XObject.notEmpty(scoringCount), ExperimentScoringEntity::getScoringCount, scoringCount)
+                    .oneOpt()
+                    .ifPresent(i -> curRank.set(i.getRankNo()));
+        }
 
         return GroupAverageHealthPointResponse
                 .builder()
