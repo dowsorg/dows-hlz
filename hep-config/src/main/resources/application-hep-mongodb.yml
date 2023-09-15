@@ -15,8 +15,8 @@ spring:
       host: 192.168.1.60
       #collection-name: user
       authentication-database: user
-
-
+mongo:
+  enable: true
 
 ---
 #测试环境
@@ -27,6 +27,8 @@ spring:
   data:
     mongodb:
       uri: mongodb://test:123456@192.168.1.60:27017/hep
+mongo:
+  enable: false
 
 ---
 #开发环境
@@ -37,6 +39,9 @@ spring:
   data:
     mongodb:
       uri: mongodb://uat:123456@192.168.1.60:37017/hep
+mongo:
+  enable: false
+
 ---
 #本地环境
 spring:
@@ -46,3 +51,5 @@ spring:
   data:
     mongodb:
       uri: mongodb://prd:123456@192.168.1.60:47017/hep
+mongo:
+  enable: false

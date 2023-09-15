@@ -1,21 +1,19 @@
 package org.dows.edw.domain;
 
 import lombok.Data;
-import org.dows.edw.FieldFill;
-import org.dows.edw.LogicDel;
-import org.dows.edw.MongoEntity;
-import org.dows.edw.MongoEntityId;
+import org.dows.edw.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * 运动干預
+ *
  * @TableName hep_sport_intervene
  */
 @Data
 @MongoEntity
-public class HepSportIntervene implements Serializable {
+public class HepSportIntervene implements Serializable, HepOperateEntity {
     /**
      * 运动干預ID
      */
