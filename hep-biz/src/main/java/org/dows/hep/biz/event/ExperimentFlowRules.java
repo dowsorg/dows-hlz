@@ -148,8 +148,10 @@ public class ExperimentFlowRules {
                 || lastTimer.getEndTime().getTime() + lastTimer.getPeriodInterval() <= nowTs) {
             rst.setState(lastTimer.getState());
             rst.setPeriod(lastTimer.getPeriod());
-            rst.setSandRemnantSecond(0L);
-            rst.setSandDurationSecond(exptColl.getTotalSeconds());
+            if(!lastTimer.getPaused()) {
+                rst.setSandRemnantSecond(0L);
+                rst.setSandDurationSecond(exptColl.getTotalSeconds());
+            }
             rst.setCountdown(null);
             rst.setCountdownType(null);
         }
