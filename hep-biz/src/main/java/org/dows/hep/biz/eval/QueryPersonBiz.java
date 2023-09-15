@@ -4,9 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.GroupAverageHealthPointResponse;
 import org.dows.hep.api.config.ConfigExperimentFlow;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.biz.base.indicator.RsExperimentIndicatorValBiz;
 import org.dows.hep.biz.eval.data.EvalIndicatorValues;
+import org.dows.hep.biz.event.ExperimentSettingCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.BigDecimalOptional;
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -155,9 +160,8 @@ public class QueryPersonBiz {
         });
 
         final String avgHp=BigDecimalUtil.formatRoundDecimal(getAvg(valuedHp),2,RoundingMode.HALF_UP);
-        int rank = 0;
         AtomicInteger curRank = new AtomicInteger(1);
-        Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
+        //查询当前计数器
         Integer scoringCount=experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
                 .eq(ExperimentScoringEntity::getPeriods, periods)
@@ -167,25 +171,24 @@ public class QueryPersonBiz {
                 .oneOpt()
                 .map(ExperimentScoringEntity::getScoringCount)
                 .orElse(null);
+        ExperimentTimePoint nowPoint = ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3", experimentId),
+                LocalDateTime.now(), false);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint)).throwMessage("未找到实验时间设置");
 
+        //查询当前或者前一期排名
         experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-                .eq(ExperimentScoringEntity::getPeriods, periods - 1)
-                .eq(ShareUtil.XObject.notEmpty(scoringCount),ExperimentScoringEntity::getScoringCount,scoringCount)
-                .orderByDesc(ExperimentScoringEntity::getTotalScore)
-                .list()
-                .forEach(experimentScoringEntity -> {
-                    kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
-                });
+                .eq(ExperimentScoringEntity::getExperimentGroupId, experimentGroupId)
+                .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState() == EnumExperimentState.FINISH ? periods : (periods - 1))
+                .eq(ShareUtil.XObject.notEmpty(scoringCount), ExperimentScoringEntity::getScoringCount, scoringCount)
+                .oneOpt()
+                .ifPresent(i -> curRank.set(i.getRankNo()));
 
-        if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
-            rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
-        }
         return GroupAverageHealthPointResponse
                 .builder()
                 .experimentPersonCount(persons.size())
                 .averageHealthPoint(avgHp)
-                .rank(rank)
+                .rank(curRank.get())
                 .build();
     }
     private BigDecimal getAvg(List<BigDecimal> values){
