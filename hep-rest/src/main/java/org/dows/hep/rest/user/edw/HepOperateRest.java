@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.edw.HepOperateEntity;
 import org.dows.edw.HepOperateTypeEnum;
 import org.dows.hep.api.edw.request.HepOperateGetRequest;
 import org.dows.hep.api.edw.request.HepOperateSetRequest;
@@ -44,7 +45,7 @@ public class HepOperateRest {
     @PostMapping("v1/hepOperate/getOperate")
     public HepOperateResponse getOperate(@RequestBody HepOperateGetRequest request) {
         HepOperateTypeEnum type = HepOperateTypeEnum.valueOf(request.getType());
-        Class<?> clazz = type.getClazz();
+        Class<? extends HepOperateEntity> clazz = type.getClazz();
         Object operateEntity = hepOperateGetRepository.getOperateEntity(request, clazz);
 
         if (Objects.isNull(operateEntity)) {
@@ -66,7 +67,7 @@ public class HepOperateRest {
     @PostMapping("v1/hepOperate/setOperate")
     public HepOperateResponse setOperate(@RequestBody HepOperateSetRequest request) {
         HepOperateTypeEnum type = HepOperateTypeEnum.valueOf(request.getType());
-        Class<?> clazz = type.getClazz();
+        Class<? extends HepOperateEntity> clazz = type.getClazz();
         Object operateEntity = hepOperateSetRepository.setOperateEntity(request, clazz);
 
         if (Objects.isNull(operateEntity)) {

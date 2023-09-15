@@ -7,6 +7,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.edw.HepOperateEntity;
+import org.dows.edw.domain.HepFoodIntervene;
+import org.dows.edw.domain.HepPsychologyIntervene;
+import org.dows.edw.domain.HepSportIntervene;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
@@ -31,6 +35,7 @@ import org.dows.hep.biz.base.intervene.*;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
 import org.dows.hep.biz.dao.TreatItemDao;
+import org.dows.hep.biz.edw.InterveneHandler;
 import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.eval.SportCalcBiz;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
@@ -60,15 +65,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
-* @description project descr:实验:机构操作-操作指标
-*
-* @author lait.zhang
-* @date 2023年4月23日 上午9:44:34
-*/
+ * @author lait.zhang
+ * @description project descr:实验:机构操作-操作指标
+ * @date 2023年4月23日 上午9:44:34
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ExperimentOrgInterveneBiz{
+public class ExperimentOrgInterveneBiz {
     private final FoodCalc4ExptBiz foodCalc4ExptBiz;
     private final OrgReportComposer orgReportComposer;
     private final OperateFlowDao operateFlowDao;
@@ -97,68 +101,78 @@ public class ExperimentOrgInterveneBiz{
 
     private final SportCalcBiz sportCalcBiz;
 
+    private final InterveneHandler interveneHandler;
 
-    public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg ) throws JsonProcessingException {
+
+    public List<Categ4ExptVO> listInterveneCateg4Expt(FindInterveneCateg4ExptRequest findCateg) throws JsonProcessingException {
         ExptRequestValidator.create(findCateg).checkExperimentInstanceId();
-        FindInterveneCategRequest castReq=CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findCateg);
-        List<CategVO> items=interveneCategBiz.listInterveneCateg(castReq);
-        if(ShareUtil.XObject.isEmpty(items)){
+        FindInterveneCategRequest castReq = CopyWrapper.create(FindInterveneCategRequest::new).endFrom(findCateg);
+        List<CategVO> items = interveneCategBiz.listInterveneCateg(castReq);
+        if (ShareUtil.XObject.isEmpty(items)) {
             return Collections.emptyList();
         }
-        return JacksonUtil.deepCopy(items, true,new TypeReference<>() {});
+        return JacksonUtil.deepCopy(items, true, new TypeReference<>() {
+        });
 
     }
 
-    public Page<FoodCookBookResponse> pageFoodCookbook4Expt(FindInterveneList4ExptRequest findFood ){
+    public Page<FoodCookBookResponse> pageFoodCookbook4Expt(FindInterveneList4ExptRequest findFood) {
         ExptRequestValidator.create(findFood).checkExperimentInstanceId();
-        FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
+        FindFoodRequest castReq = CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
         return foodPlanBiz.pageFoodCookbook(castReq);
     }
+
     public FoodCookBookInfoResponse getFoodCookbook4Expt(GetInfo4ExptRequest getInfo) {
         ExptRequestValidator.create(getInfo).checkExperimentInstanceId();
-        return foodPlanBiz.getFoodCookbook(getInfo.getAppId(),getInfo.getInstanceId());
+        return foodPlanBiz.getFoodCookbook(getInfo.getAppId(), getInfo.getInstanceId());
     }
-    public Page<FoodDishesResponse> pageFoodDishes4Expt(FindInterveneList4ExptRequest findFood ) {
+
+    public Page<FoodDishesResponse> pageFoodDishes4Expt(FindInterveneList4ExptRequest findFood) {
         ExptRequestValidator.create(findFood).checkExperimentInstanceId();
-        FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
+        FindFoodRequest castReq = CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
         return foodPlanBiz.pageFoodDishes(castReq);
     }
-    public Page<FoodMaterialResponse> pageFoodMaterial4Expt( FindInterveneList4ExptRequest findFood ) {
+
+    public Page<FoodMaterialResponse> pageFoodMaterial4Expt(FindInterveneList4ExptRequest findFood) {
         ExptRequestValidator.create(findFood).checkExperimentInstanceId();
-        FindFoodRequest castReq=CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
+        FindFoodRequest castReq = CopyWrapper.create(FindFoodRequest::new).endFrom(findFood);
         return foodMaterialBiz.pageFoodMaterial(castReq);
     }
-    public Page<SportPlanResponse> pageSportPlan4Expt(FindInterveneList4ExptRequest findSport ){
+
+    public Page<SportPlanResponse> pageSportPlan4Expt(FindInterveneList4ExptRequest findSport) {
         ExptRequestValidator.create(findSport).checkExperimentInstanceId();
-        FindSportRequest castReq=CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
+        FindSportRequest castReq = CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
         return sportPlanBiz.pageSportPlan(castReq);
     }
+
     public SportPlanInfoResponse getSportPlan4Expt(GetInfo4ExptRequest getInfo) {
         ExptRequestValidator.create(getInfo).checkExperimentInstanceId();
-        return sportPlanBiz.getSportPlan(getInfo.getAppId(),getInfo.getInstanceId());
+        return sportPlanBiz.getSportPlan(getInfo.getAppId(), getInfo.getInstanceId());
     }
-    public Page<SportItemResponse> pageSportItem4Expt(FindInterveneList4ExptRequest findSport ){
+
+    public Page<SportItemResponse> pageSportItem4Expt(FindInterveneList4ExptRequest findSport) {
         ExptRequestValidator.create(findSport).checkExperimentInstanceId();
-        FindSportRequest castReq=CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
+        FindSportRequest castReq = CopyWrapper.create(FindSportRequest::new).endFrom(findSport);
         return sportItemBiz.pageSportItem(castReq);
     }
 
-    public List<Categ4ExptVO> listSportCateg4Expt(FindInterveneCateg4ExptRequest findSport ) throws JsonProcessingException{
+    public List<Categ4ExptVO> listSportCateg4Expt(FindInterveneCateg4ExptRequest findSport) throws JsonProcessingException {
         findSport.setFamily(EnumCategFamily.SPORTItem.getCode());
         findSport.setWithChild(1);
-        FindInterveneCateg4ExptRequest castReq=CopyWrapper.create(FindInterveneCateg4ExptRequest::new).endFrom(findSport);
+        FindInterveneCateg4ExptRequest castReq = CopyWrapper.create(FindInterveneCateg4ExptRequest::new).endFrom(findSport);
         return listInterveneCateg4Expt(castReq);
 
     }
-    public List<Categ4ExptVO> listTreatCateg4Expt( FindInterveneCateg4ExptRequest findTreat ) throws JsonProcessingException {
+
+    public List<Categ4ExptVO> listTreatCateg4Expt(FindInterveneCateg4ExptRequest findTreat) throws JsonProcessingException {
         findTreat.setWithChild(1);
-        FindInterveneCateg4ExptRequest castReq=CopyWrapper.create(FindInterveneCateg4ExptRequest::new).endFrom(findTreat);
+        FindInterveneCateg4ExptRequest castReq = CopyWrapper.create(FindInterveneCateg4ExptRequest::new).endFrom(findTreat);
         return listInterveneCateg4Expt(castReq);
     }
 
-    public List<TreatItemResponse>  listTreatItem4Expt( FindTreatList4ExptRequest findTreat ){
+    public List<TreatItemResponse> listTreatItem4Expt(FindTreatList4ExptRequest findTreat) {
         ExptRequestValidator.create(findTreat).checkExperimentInstanceId();
-        FindTreatRequest castReq=FindTreatRequest.builder()
+        FindTreatRequest castReq = FindTreatRequest.builder()
                 .incIds(findTreat.getIncIds())
                 .appId(findTreat.getAppId())
                 .indicatorFuncId(findTreat.getIndicatorFuncId())
@@ -171,22 +185,25 @@ public class ExperimentOrgInterveneBiz{
     //endregion
 
     //region 实验数据读写
-    public CalcExptFoodCookbookResult calcExptFoodGraph( CalcExptFoodGraphRequest calcFoodGraph ){
+    public CalcExptFoodCookbookResult calcExptFoodGraph(CalcExptFoodGraphRequest calcFoodGraph) {
         ExptRequestValidator.create(calcFoodGraph).checkExperimentInstanceId();
         return foodCalc4ExptBiz.calcFoodGraph4Expt(calcFoodGraph);
     }
-    public CalcExptFoodCookbookResult getExptFoodCookbook(ExptOperateOrgFuncRequest exptOperate ) {
-        return getReportSnapData(exptOperate,false,false, CalcExptFoodCookbookResult.class,CalcExptFoodCookbookResult::new);
+
+    public CalcExptFoodCookbookResult getExptFoodCookbook(ExptOperateOrgFuncRequest exptOperate) {
+        return getReportSnapData(exptOperate, false, false, CalcExptFoodCookbookResult.class, CalcExptFoodCookbookResult::new, HepFoodIntervene.class);
     }
 
-    public ExptSportPlanResponse getExptSportPlan(ExptOperateOrgFuncRequest exptOperate ) {
-        return getReportSnapData(exptOperate, false, false, ExptSportPlanResponse.class, ExptSportPlanResponse::new);
+    public ExptSportPlanResponse getExptSportPlan(ExptOperateOrgFuncRequest exptOperate) {
+        return getReportSnapData(exptOperate, false, false, ExptSportPlanResponse.class, ExptSportPlanResponse::new, HepSportIntervene.class);
     }
-    public ExptTreatPlanResponse getExptTreatPlan(ExptOperateOrgFuncRequest exptOperate){
-        return getReportSnapData(exptOperate,false,true, ExptTreatPlanResponse.class,ExptTreatPlanResponse::new);
+
+    public ExptTreatPlanResponse getExptTreatPlan(ExptOperateOrgFuncRequest exptOperate) {
+        return getReportSnapData(exptOperate, false, true, ExptTreatPlanResponse.class, ExptTreatPlanResponse::new, HepPsychologyIntervene.class);
     }
+
     public SaveExptInterveneResponse saveExptFoodCookbook(SaveExptFoodRequest saveFood, HttpServletRequest request) {
-        ExptRequestValidator validator=ExptRequestValidator.create(saveFood)
+        ExptRequestValidator validator = ExptRequestValidator.create(saveFood)
                 .checkExperimentPerson()
                 .checkExperimentOrgId()
                 .checkExperimentInstanceId();
@@ -196,15 +213,15 @@ public class ExperimentOrgInterveneBiz{
         EnumFoodMealTime mealTime;
         EnumFoodDetailType detailType;
         for (FoodCookbookDetailVO item : saveFood.getDetails()) {
-            detailType=EnumFoodDetailType.of(item.getInstanceType());
-            AssertUtil.trueThenThrow( EnumFoodDetailType.NONE==detailType)
+            detailType = EnumFoodDetailType.of(item.getInstanceType());
+            AssertUtil.trueThenThrow(EnumFoodDetailType.NONE == detailType)
                     .throwMessage(String.format("不存在的明细类型"));
             mealTime = EnumFoodMealTime.of(item.getMealTime());
             AssertUtil.trueThenThrow(mealTime == EnumFoodMealTime.NONE)
                     .throwMessage("不存在的餐次");
             //生成食材描述
-            if(EnumFoodDetailType.MATERIAL==detailType){
-                item.setMaterialsDesc(String.format("%s100g",item.getInstanceName()));
+            if (EnumFoodDetailType.MATERIAL == detailType) {
+                item.setMaterialsDesc(String.format("%s100g", item.getInstanceName()));
             }
             mapDetails.computeIfAbsent(mealTime, k -> new ArrayList<>()).add(item.getInstanceId());
         }
@@ -216,22 +233,22 @@ public class ExperimentOrgInterveneBiz{
 
 
         //校验操作类型
-        final EnumExptOperateType operateType=EnumExptOperateType.INTERVENEFood;
+        final EnumExptOperateType operateType = EnumExptOperateType.INTERVENEFood;
         //校验登录
-        LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+        LoginContextVO voLogin = ShareBiz.getLoginUser(request);
         //校验挂号
-        final LocalDateTime ldtNow=LocalDateTime.now();
-        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
-        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
+        final LocalDateTime ldtNow = LocalDateTime.now();
+        final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint = validator.getTimePoint(true, ldtNow, true);
+        ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(validator)
                 .checkOrgFlow(false);
 
         //计算营养统计，膳食宝塔
-        CalcExptFoodCookbookResult snapRst= foodCalc4ExptBiz.calcFoodGraph4ExptCookbook(validator.getAppId(), saveFood.getDetails());
+        CalcExptFoodCookbookResult snapRst = foodCalc4ExptBiz.calcFoodGraph4ExptCookbook(validator.getAppId(), saveFood.getDetails());
         snapRst.setDetails(saveFood.getDetails());
         //保存操作记录
 
-        OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
+        OperateOrgFuncEntity rowOrgFunc = createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
                 .setOperateType(operateType.getCode())
                 .setOperateAccountId(voLogin.getAccountId())
@@ -240,20 +257,20 @@ public class ExperimentOrgInterveneBiz{
                 .setOperateGameDay(timePoint.getGameDay())
                 .setPeriods(timePoint.getPeriod())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
-                .setReportFlag(operateType.getReportFuncFlag()?1:0)
+                .setReportFlag(operateType.getReportFuncFlag() ? 1 : 0)
                 .setReportLabel("饮食干预")
                 .setReportDescr("制定了一个食谱");
         //保存快照
-        OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
+        OperateOrgFuncSnapEntity rowOrgFuncSnap = new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
                 .setSnapTime(dateNow);
-        try{
-            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true));
-        }catch (Exception ex){
-            AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
+        try {
+            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst, true));
+        } catch (Exception ex) {
+            AssertUtil.justThrow(String.format("记录数据编制失败：%s", ex.getMessage()), ex);
         }
-        List<SpelEvalSumResult> evalSumResults=new ArrayList<>();
-        if(ShareUtil.XObject.notEmpty(snapRst.getStatEnergy())) {
+        List<SpelEvalSumResult> evalSumResults = new ArrayList<>();
+        if (ShareUtil.XObject.notEmpty(snapRst.getStatEnergy())) {
             for (CalcFoodStatVO item : snapRst.getStatEnergy()) {
                 String indicatorId = personIndicatorIdCache.getIndicatorIdBySourceId(validator.getExperimentPersonId(), item.getInstanceId());
                 if (ShareUtil.XObject.isEmpty(indicatorId)) {
@@ -266,43 +283,54 @@ public class ExperimentOrgInterveneBiz{
             }
         }
 
-        Boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false,()->{
-            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicatorCurrent(validator.getExperimentPersonId(), null, evalSumResults))
-                    .throwMessage("影响指标数据保存失败");
-            return true;
-        });
+        // flag-change-begin
+//        Boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false,()->{
+//            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicatorCurrent(validator.getExperimentPersonId(), null, evalSumResults))
+//                    .throwMessage("影响指标数据保存失败");
+//            return true;
+//        });
+        // flag-change-partLine
+        boolean succFlag = interveneHandler.write(rowOrgFunc,
+                Arrays.asList(rowOrgFuncSnap),
+                () -> operateOrgFuncDao.tranSave(rowOrgFunc, Arrays.asList(rowOrgFuncSnap), false, () -> {
+                    AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicatorCurrent(validator.getExperimentPersonId(), null, evalSumResults))
+                            .throwMessage("影响指标数据保存失败");
+                    return true;
+                }),
+                HepFoodIntervene.class);
+        // flag-change-end
         return new SaveExptInterveneResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
 
     }
 
-    public SaveExptInterveneResponse saveExptSportPlan(SaveExptSportRequest saveSport, HttpServletRequest request ) {
-        ExptRequestValidator validator=ExptRequestValidator.create(saveSport);
+    public SaveExptInterveneResponse saveExptSportPlan(SaveExptSportRequest saveSport, HttpServletRequest request) {
+        ExptRequestValidator validator = ExptRequestValidator.create(saveSport);
         validator.checkExperimentPerson()
                 .checkExperimentOrgId()
                 .checkExperimentInstanceId();
 
         saveSport.setSportItems(ShareUtil.XObject.defaultIfNull(saveSport.getSportItems(), Collections.emptyList()));
         AssertUtil.trueThenThrow(ShareUtil.XCollection.notEmpty(saveSport.getSportItems())
-                        &&saveSport.getSportItems().stream()
+                        && saveSport.getSportItems().stream()
                         .map(SportPlanItemVO::getSportItemId)
                         .collect(Collectors.toSet())
-                        .size()<saveSport.getSportItems().size())
+                        .size() < saveSport.getSportItems().size())
                 .throwMessage("存在重复的运动项目，请检查");
         //校验操作类型
-        final EnumExptOperateType operateType=EnumExptOperateType.INTERVENESport;
+        final EnumExptOperateType operateType = EnumExptOperateType.INTERVENESport;
         //校验登录
-        LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+        LoginContextVO voLogin = ShareBiz.getLoginUser(request);
         //校验挂号
-        final LocalDateTime ldtNow=LocalDateTime.now();
-        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
-        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
+        final LocalDateTime ldtNow = LocalDateTime.now();
+        final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint = validator.getTimePoint(true, ldtNow, true);
+        ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(validator)
                 .checkOrgFlow(false);
 
         //保存操作记录
-        OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
+        OperateOrgFuncEntity rowOrgFunc = createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
                 .setOperateType(operateType.getCode())
                 .setOperateAccountId(voLogin.getAccountId())
@@ -311,31 +339,39 @@ public class ExperimentOrgInterveneBiz{
                 .setOperateGameDay(timePoint.getGameDay())
                 .setPeriods(timePoint.getPeriod())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
-                .setReportFlag(operateType.getReportFuncFlag()?1:0)
+                .setReportFlag(operateType.getReportFuncFlag() ? 1 : 0)
                 .setReportLabel("运动干预")
                 .setReportDescr("制定了一个运动方案");
         //保存快照
-        OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
+        OperateOrgFuncSnapEntity rowOrgFuncSnap = new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
                 .setSnapTime(dateNow);
-        ExptSportPlanResponse snapRst=new ExptSportPlanResponse().setSportItems(saveSport.getSportItems());
-        try{
-            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true));
-        }catch (Exception ex){
-            AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
+        ExptSportPlanResponse snapRst = new ExptSportPlanResponse().setSportItems(saveSport.getSportItems());
+        try {
+            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst, true));
+        } catch (Exception ex) {
+            AssertUtil.justThrow(String.format("记录数据编制失败：%s", ex.getMessage()), ex);
         }
 
-        boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false);
-        if(succFlag){
-            sportCalcBiz.calcSportCostEnergy(validator.getExperimentPersonId(),saveSport.getSportItems(),true);
+        // flag-change-begin
+//        boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false);
+        // flag-change-partLine
+        boolean succFlag = interveneHandler.write(rowOrgFunc,
+                Arrays.asList(rowOrgFuncSnap),
+                () -> operateOrgFuncDao.tranSave(rowOrgFunc,Arrays.asList(rowOrgFuncSnap),false),
+                HepSportIntervene.class);
+        // flag-change-end
+
+        if (succFlag) {
+            sportCalcBiz.calcSportCostEnergy(validator.getExperimentPersonId(), saveSport.getSportItems(), true);
         }
         return new SaveExptInterveneResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
     }
 
-    public SaveExptTreatResponse saveExptTreatPlan( SaveExptTreatRequest saveTreat, HttpServletRequest request){
-        StringBuilder sb=new StringBuilder().append("EVALTRACE--saveExptTreatPlan");
+    public SaveExptTreatResponse saveExptTreatPlan(SaveExptTreatRequest saveTreat, HttpServletRequest request) {
+        StringBuilder sb = new StringBuilder().append("EVALTRACE--saveExptTreatPlan");
         try {
 
             ExptRequestValidator validator = ExptRequestValidator.create(saveTreat);
@@ -537,26 +573,23 @@ public class ExperimentOrgInterveneBiz{
                     .setSuccess(succFlag)
                     .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId())
                     .setReportInfo(report);
-        }finally {
+        } finally {
             log.error(sb.toString());
             log.info(sb.toString());
         }
     }
 
 
-
-
-
-    private <T> T getReportSnapData(ExptOperateOrgFuncRequest reqOperateFunc, boolean checkIndicatorFunc, boolean checkOrgFlow, Class<T> clazz, Supplier<T> creator){
-        T rst=creator.get();
-        ExptRequestValidator validator=ExptRequestValidator.create(reqOperateFunc)
+    private <T, O extends HepOperateEntity> T getReportSnapData(ExptOperateOrgFuncRequest reqOperateFunc, boolean checkIndicatorFunc, boolean checkOrgFlow, Class<T> clazz, Supplier<T> creator, Class<O> aClass) {
+        T rst = creator.get();
+        ExptRequestValidator validator = ExptRequestValidator.create(reqOperateFunc)
                 .checkExperimentPerson()
                 .checkExperimentOrgId()
                 .checkExperimentInstanceId();
-        if(checkIndicatorFunc){
+        if (checkIndicatorFunc) {
             validator.checkIndicatorFunc();
         }
-        if(checkOrgFlow&&ShareUtil.XObject.isEmpty(reqOperateFunc.getOperateFlowId())) {
+        if (checkOrgFlow && ShareUtil.XObject.isEmpty(reqOperateFunc.getOperateFlowId())) {
             ExperimentTimePoint timePoint = validator.getTimePoint(false, LocalDateTime.now(), false);
             if (ShareUtil.XObject.isEmpty(timePoint)) {
                 return rst;
@@ -567,27 +600,44 @@ public class ExperimentOrgInterveneBiz{
             }
             reqOperateFunc.setOperateFlowId(flowValidator.getOperateFlowId());
         }
-        OperateOrgFuncEntity rowOrgFunc=getRowOrgFunc(reqOperateFunc,
-                OperateOrgFuncEntity::getOperateOrgFuncId,
-                OperateOrgFuncEntity::getOperateFlowId,
-                OperateOrgFuncEntity::getPeriods)
-                .orElse(null);
-        if(null==rowOrgFunc){
+        // flag-change-begin
+//        OperateOrgFuncEntity rowOrgFunc=getRowOrgFunc(reqOperateFunc,
+//                OperateOrgFuncEntity::getOperateOrgFuncId,
+//                OperateOrgFuncEntity::getOperateFlowId,
+//                OperateOrgFuncEntity::getPeriods)
+//                .orElse(null);
+//        if(null==rowOrgFunc){
+//            return rst;
+//        }
+//        List<OperateOrgFuncSnapEntity> rowOrgFuncSnaps=operateOrgFuncDao.getSubByLeadId(rowOrgFunc.getOperateOrgFuncId(),OperateOrgFuncSnapEntity::getInputJson);
+        // flag-change-partLine
+        List<OperateOrgFuncSnapEntity> rowOrgFuncSnaps = interveneHandler.read(reqOperateFunc,
+                (param) -> {
+                    // ori
+                    OperateOrgFuncEntity rowOrgFunc = getRowOrgFunc(param,
+                            OperateOrgFuncEntity::getOperateOrgFuncId,
+                            OperateOrgFuncEntity::getOperateFlowId,
+                            OperateOrgFuncEntity::getPeriods)
+                            .orElse(null);
+                    if (null == rowOrgFunc) {
+                        return null;
+                    }
+                    return operateOrgFuncDao.getSubByLeadId(rowOrgFunc.getOperateOrgFuncId(), OperateOrgFuncSnapEntity::getInputJson);
+                },
+                aClass);
+        // flag-change-end
+        if (ShareUtil.XObject.anyEmpty(rowOrgFuncSnaps, () -> rowOrgFuncSnaps.get(0).getInputJson())) {
             return rst;
         }
-        List<OperateOrgFuncSnapEntity> rowOrgFuncSnaps=operateOrgFuncDao.getSubByLeadId(rowOrgFunc.getOperateOrgFuncId(),OperateOrgFuncSnapEntity::getInputJson);
-        if(ShareUtil.XObject.anyEmpty(rowOrgFuncSnaps,()->rowOrgFuncSnaps.get(0).getInputJson())){
-            return rst;
-        }
-        try{
+        try {
             return JacksonUtil.fromJson(rowOrgFuncSnaps.get(0).getInputJson(), clazz);
-        }catch (Exception ex){
-            AssertUtil.justThrow(String.format("记录数据解析失败：%s",ex.getMessage()),ex);
+        } catch (Exception ex) {
+            AssertUtil.justThrow(String.format("记录数据解析失败：%s", ex.getMessage()), ex);
         }
         return rst;
     }
 
-    private BigDecimal getExperimentPersonRestitution(BigDecimal fee,String experimentPersonId){
+    private BigDecimal getExperimentPersonRestitution(BigDecimal fee, String experimentPersonId) {
         //获取在该消费之前的保险购买记录并计算报销比例
         List<OperateInsuranceEntity> insuranceEntityList = operateInsuranceService.lambdaQuery()
                 .eq(OperateInsuranceEntity::getExperimentPersonId, experimentPersonId)
@@ -618,7 +668,7 @@ public class ExperimentOrgInterveneBiz{
     }
 
 
-    private OperateOrgFuncEntity createRowOrgFunc(ExptRequestValidator req){
+    private OperateOrgFuncEntity createRowOrgFunc(ExptRequestValidator req) {
         return OperateOrgFuncEntity.builder()
                 .appId(req.getAppId())
                 .experimentInstanceId(req.getExperimentInstanceId())
@@ -630,26 +680,26 @@ public class ExperimentOrgInterveneBiz{
                 .indicatorFuncId(req.getIndicatorFuncId())
                 .build();
     }
-    private Optional<OperateOrgFuncEntity> getRowOrgFunc(ExptOperateOrgFuncRequest req, SFunction<OperateOrgFuncEntity,?>... cols){
+
+    private Optional<OperateOrgFuncEntity> getRowOrgFunc(ExptOperateOrgFuncRequest req, SFunction<OperateOrgFuncEntity, ?>... cols) {
         /*if(ShareUtil.XObject.notEmpty(req.getOperateOrgFuncId())){
             return operateOrgFuncDao.getById(req.getOperateOrgFuncId(), cols);
         }*/
         return operateOrgFuncDao.getCurrentOrgFuncRecord(req.getExperimentPersonId(), req.getExperimentOrgId(),
-                req.getIndicatorFuncId(), req.getPeriods(),req.getOperateFlowId(), cols);
+                req.getIndicatorFuncId(), req.getPeriods(), req.getOperateFlowId(), cols);
     }
 
-    private String getTimestampId(Date dt,int seq){
-        final int mod=10000;
-        return String.valueOf(getTimestampPrefix(dt)*mod+seq%mod);
+    private String getTimestampId(Date dt, int seq) {
+        final int mod = 10000;
+        return String.valueOf(getTimestampPrefix(dt) * mod + seq % mod);
     }
 
-    private Long getTimestampPrefix(Date dt){
+    private Long getTimestampPrefix(Date dt) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
         return Long.valueOf(sdf.format(dt));
     }
 
     //endregion
-
 
 
 }

@@ -59,4 +59,10 @@ public class HepOperateGetRequest {
      */
     @Schema(title = "流程Id[挂号ID|就诊ID]")
     private String flowId;
+
+    /**
+     * 期数
+     */
+    @Schema(title = "期数")
+    private Integer period;
 }
