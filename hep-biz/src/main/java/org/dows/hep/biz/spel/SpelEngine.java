@@ -37,11 +37,18 @@ public class SpelEngine {
 
     @Autowired
     private FromSnapshotLoader fromSnapshotLoader;
+
+    @Autowired
+    private ExperimentSpelCache experimentSpelCache;
     //endregion
 
     //region facade
     public ISpelFlow loadFromSnapshot(){
         return new SpelLoadProxy(fromSnapshotLoader);
+    }
+
+    public ISpelFlow loadFromSpelCache(){
+        return new SpelLoadProxy(experimentSpelCache);
     }
 
     public ISpelExecute loadWith(SpelInput input) {
@@ -167,7 +174,7 @@ public class SpelEngine {
         if (ShareUtil.XObject.anyEmpty(input.getIndicatorId(), input.getExpressions())) {
             return rst;
         }
-        Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId()));
+        Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId(),false));
         rst.setCurVal(curVal);
         Object val = null;
         for (SpelInput.SpelExpressionItem item : input.getExpressions()) {
@@ -190,7 +197,7 @@ public class SpelEngine {
         BigDecimal valNumber = BigDecimalUtil.valueOf(val);
         BigDecimal curValNumber = BigDecimalUtil.valueOf(curVal, BigDecimal.ZERO);
         BigDecimal change = valNumber.subtract(curValNumber);
-        if (ShareUtil.XObject.isNumber(input.getFactor())) {
+        if (input.hasFactor()) {
             change = change.multiply(input.getFactor());
         }
         if (ShareUtil.XObject.allEmpty(input.getMin(), input.getMax())) {
