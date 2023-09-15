@@ -999,9 +999,10 @@ public class ExperimentScoringBiz {
             String treatmentPercentScore = "0";
             String percentTreatmentPercentScore = "0";
             String totalScore = "0";
-            String percentKnowledgePercentage = "0";
-            String percentHealthIndexPercentage = "0";
-            String percentTreatmentPercentPercentage = "0";
+            String percentKnowledge = "0";
+            String percentHealthIndex = "0";
+            String percentTreatmentPercent = "0";
+            String rankNo = "0";
             ExperimentScoringEntity experimentScoringEntity = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
             if (Objects.nonNull(experimentScoringEntity)) {
                 //权重
@@ -1020,6 +1021,10 @@ public class ExperimentScoringBiz {
                 percentKnowledgeScore = finalKnowledgeScore.multiply(knowledgeWeightAtomicReference.get()).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
                 percentHealthIndexScore = finalHealthIndexScore.multiply(healthIndexWeightAtomicReference.get()).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
                 percentTreatmentPercentScore = finalMedicalRatioScoreScore.multiply(medicalRatioWeightAtomicReference.get()).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN).divide(BigDecimal.valueOf(Double.parseDouble(totalScore)), 2, RoundingMode.DOWN).toString();
+                percentKnowledge = experimentScoringEntity.getPercentKnowledgeScore();
+                percentHealthIndex = experimentScoringEntity.getPercentHealthIndexScore();
+                percentTreatmentPercent = experimentScoringEntity.getPercentTreatmentPercentScore();
+                rankNo = String.valueOf(experimentScoringEntity.getRankNo());
             }
             ExperimentGraphRankGroupResponse experimentGraphRankGroupResponse = ExperimentGraphRankGroupResponse
                     .builder()
@@ -1031,6 +1036,10 @@ public class ExperimentScoringBiz {
                     .percentHealthIndexScore(percentHealthIndexScore)
                     .percentTreatmentPercentScore(percentTreatmentPercentScore)
                     .totalScore(totalScore)
+                    .percentKnowledge(percentKnowledge)
+                    .percentHealthIndex(percentHealthIndex)
+                    .percentTreatmentPercent(percentTreatmentPercent)
+                    .rankNo(rankNo)
                     .build();
             kExperimentGroupIdVExperimentGraphRankGroupResponseMap.put(experimentGroupId, experimentGraphRankGroupResponse);
         });
