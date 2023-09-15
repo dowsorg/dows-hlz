@@ -78,7 +78,6 @@ public abstract class BaseEventDealer implements ISysEventDealer {
             }
             final int maxRetry = this.maxRetryTimes();
             if (row.tillMaxRetry()) {
-                dealFlag=row.getRetryTimes().get() <= maxRetry+1;
                 return rst.setSucc(false)
                         .append("maxRetry")
                         .isSucc();
@@ -102,10 +101,10 @@ public abstract class BaseEventDealer implements ISysEventDealer {
             dealFlag=true;
             rst.setSucc(coreDeal(rst,row, stat));
         } catch (Exception ex) {
-            dealFlag=true;
-            rst.setSucc(false).append("dealError:%s", ex.getMessage());
             row.getRetryTimes().incrementAndGet();
+            rst.setSucc(false).append("dealError:%s", ex.getMessage());
             logError(ex, "dealEvent", "dealError. rst:%s",rst);
+            dealFlag=!row.tillMaxRetry();
         } finally {
             if (lockFlag) {
                 row.getLock().unlock();
