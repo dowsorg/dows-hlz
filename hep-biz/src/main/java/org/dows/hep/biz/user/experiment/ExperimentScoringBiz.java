@@ -713,9 +713,7 @@ public class ExperimentScoringBiz {
 
     }
 
-
-//    public
-
+    //实验排行榜
     public ExperimentRankResponse getRank(String experimentId) {
         List<ExperimentRankItemResponse> experimentRankItemResponseList = new ArrayList<>();
         List<ExperimentTotalRankItemResponse> experimentTotalRankItemResponseList = new ArrayList<>();

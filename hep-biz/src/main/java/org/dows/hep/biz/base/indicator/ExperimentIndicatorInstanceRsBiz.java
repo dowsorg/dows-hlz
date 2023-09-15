@@ -284,6 +284,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         }
     }
 
+    //竞赛小组排名
     public GroupAverageHealthPointResponse groupAverageHealth(String experimentId, String experimentGroupId, Integer periods) {
         if (ConfigExperimentFlow.SWITCH2EvalCache) {
             return queryPersonBiz.groupAverageHealth(experimentId, experimentGroupId, periods);
