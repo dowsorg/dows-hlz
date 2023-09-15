@@ -12,6 +12,7 @@ import org.dows.hep.api.user.experiment.request.ExperimentPersonInsuranceRequest
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
@@ -388,11 +389,15 @@ public class ExperimentInsuranceBiz {
             map.put("result",false);
             return map;
         }
-        int intervalDays=0;
-        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId()),
+
+        final ExperimentCacheKey cacheKey=ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId());
+        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(cacheKey,true);
+        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(cacheKey,
                 LocalDateTime.now(), true);
+        int intervalDays=0;
+        final int YEARDays=365;
         if(ShareUtil.XObject.notEmpty(nowPoint)){
-            intervalDays=Math.max(360,360+entity.getBuyGameDay()-nowPoint.getGameDay());
+            intervalDays=Math.min(entity.getBuyGameDay()+YEARDays, (int)exptColl.getTotalDays())-nowPoint.getGameDay();
         }
         if(intervalDays>0){
             long interval = (entity.getExpdate().getTime() - new Date().getTime())/1000;
