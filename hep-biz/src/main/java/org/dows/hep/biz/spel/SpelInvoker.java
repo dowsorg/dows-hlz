@@ -52,12 +52,13 @@ public class SpelInvoker {
 
 
     //region 治疗干预
-    public List<SpelEvalResult> evalTreatEffect(String experimentId, String experimentPersonId, Integer periods,List<ExptTreatPlanItemVO> treatItems,Map<String, SpelEvalSumResult> mapSum ) {
+    public List<SpelEvalResult> evalTreatEffect(String experimentId, String experimentPersonId, Integer periods,List<ExptTreatPlanItemVO> treatItems,
+                                                Map<String, SpelEvalSumResult> mapSum,EnumIndicatorExpressionSource source ) {
         StandardEvaluationContext context = new SpelPersonContext().setVariables(experimentPersonId, periods);
         final Map<String, BigDecimal> mapTreatItem = ShareUtil.XCollection.toMap(treatItems, HashMap::new,ExptTreatPlanItemVO::getTreatItemId,i ->
                 BigDecimalUtil.tryParseDecimalElseZero(i.getWeight()),(c,n)->BigDecimalUtil.add(c,n));
         return spelEngine.loadFromSnapshot()
-                .withReasonId(experimentId, experimentPersonId, mapTreatItem.keySet(), null)
+                .withReasonId(experimentId, experimentPersonId, mapTreatItem.keySet(),source.getSource())
                 .prepare(inputs -> inputs.forEach(i -> i.setFactor(mapTreatItem.get(i.getReasonId()))))
                 .evalSum(context, mapSum);
     }

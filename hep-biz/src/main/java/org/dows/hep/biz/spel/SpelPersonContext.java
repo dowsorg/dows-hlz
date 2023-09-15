@@ -40,20 +40,33 @@ public class SpelPersonContext extends StandardEvaluationContext {
         return this;
     }
 
+    public SpelPersonContext setCurVal(String experimentPersonId,String indicatorId,String curVal){
+        this.setVariable(SpelVarKeyFormatter.getVariableKey(indicatorId,false), wrapVal(experimentPersonId,indicatorId,curVal));
+        return this;
+    }
+    public SpelPersonContext setLastVal(String experimentPersonId,String indicatorId,String lastVal){
+        this.setVariable(SpelVarKeyFormatter.getVariableKey(indicatorId,true), wrapVal(experimentPersonId,indicatorId,lastVal));
+        return this;
+    }
 
     private void loadIndicatorVals(String experimentPersonId,Integer period) {
         try {
             Collection<String> indicatorIds = PersonIndicatorIdCache.Instance().getIndicatorIds(experimentPersonId);
 
-            if(ConfigExperimentFlow.SWITCH2EvalCache){
-                EvalPersonCache.Instance().getCurHolder(experimentPersonId).get().getMapIndicators().values().forEach(i->
-                        setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorId()), wrapVal(experimentPersonId,i.getIndicatorId(), i.getCurVal())));
+            if(ConfigExperimentFlow.SWITCH2EvalCache) {
+                EvalPersonCache.Instance().getCurHolder(experimentPersonId).get().getMapIndicators().values().forEach(i -> {
+                    setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorId(), false), wrapVal(experimentPersonId, i.getIndicatorId(), i.getCurVal()));
+                    setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorId(), true), wrapVal(experimentPersonId, i.getIndicatorId(), i.getLastVal()));
+                });
             }else {
                 List<ExperimentIndicatorValRsEntity> rowsVal = SpringUtil.getBean(ExperimentIndicatorValRsDao.class)
                         .getByExperimentIdAndIndicatorIds(null, indicatorIds, period,
                                 ExperimentIndicatorValRsEntity::getIndicatorInstanceId,
                                 ExperimentIndicatorValRsEntity::getCurrentVal);
-                rowsVal.forEach(i->setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorInstanceId()), wrapVal(experimentPersonId,i.getIndicatorInstanceId(), i.getCurrentVal())));
+                rowsVal.forEach(i->{
+                    setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorInstanceId(),false), wrapVal(experimentPersonId,i.getIndicatorInstanceId(), i.getCurrentVal()));
+                    setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorInstanceId(),true), wrapVal(experimentPersonId,i.getIndicatorInstanceId(), i.getCurrentVal()));
+                });
                 rowsVal.clear();
             }
 

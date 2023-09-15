@@ -46,10 +46,10 @@ public class SportCalcBiz {
                     .mul(item.getStrengthMet())
                     .mul(BigDecimalUtil.tryParseDecimal(item.getFrequency(), BigDecimal.ONE))
                     .mul(MULFactor4SportEnergy)
-                    .div(DIVFactor4SportEnergy,2,RoundingMode.DOWN)
+                    .div(DIVFactor4SportEnergy,2,RoundingMode.HALF_UP)
                     .getValue());
         });
-        BigDecimal rst= total.getValue(2, RoundingMode.DOWN);
+        BigDecimal rst= total.getValue(2, RoundingMode.HALF_UP);
         if(saveFlag) {
             curHolder.putCurVal(EnumIndicatorType.SPORT_ENERGY, BigDecimalUtil.formatDecimal(rst), true);
         }
