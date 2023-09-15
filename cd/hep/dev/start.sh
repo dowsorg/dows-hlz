@@ -117,6 +117,10 @@ start_or_restart_container "mysql"
 start_or_restart_container "redis"
 start_or_restart_container "minio"
 start_or_restart_container "pdf"
+
+start_or_restart_container "elasticsearch"
+start_or_restart_container "fluent"
+start_or_restart_container "kibana"
 #sudo docker compose -f ./paas/mysql.yml up  -d
 #sudo docker compose -f ./paas/redis.yml up  -d
 #sudo docker compose -f ./paas/minio.yml up  -d
