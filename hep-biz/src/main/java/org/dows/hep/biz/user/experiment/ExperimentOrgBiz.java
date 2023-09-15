@@ -406,8 +406,8 @@ public class ExperimentOrgBiz {
     public List<OperateFlowEntity> listFlowLog(String experimentId,String experimentPersonId){
         List<OperateFlowEntity> operateFlowEntities = operateFlowDao.listFlowLog(experimentId, experimentPersonId,
                 OperateFlowEntity::getOperateTime,
-                OperateFlowEntity::getFlowName,
-                OperateFlowEntity::getReportLabel);
+                OperateFlowEntity::getReportLabel,
+                OperateFlowEntity::getReportDescr);
         return operateFlowEntities;
     }
 
