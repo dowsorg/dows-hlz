@@ -18,7 +18,6 @@ public class EvalScoreRankBiz {
     }
 
     //TODO 替换原读取排行榜方法 ExperimentScoringBiz.getGraphRank,直接读取Rank排名字段输出
-
     public ExperimentGraphRankResponse getGraphRank(String appId, String experimentId, Integer period){
 
         return null;
