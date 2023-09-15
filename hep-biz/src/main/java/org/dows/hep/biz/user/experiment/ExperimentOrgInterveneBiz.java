@@ -512,15 +512,30 @@ public class ExperimentOrgInterveneBiz {
                         .appId(rowOrgFunc.getAppId())
                         .snapTime(dateNow)
                         .build();
-                succFlag = operateOrgFuncDao.tranSave(rowOrgFunc, List.of(rowOrgFuncSnap), false, () -> {
-                    AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(), evalResults, mapSum.values(), timePoint.getPeriod()))
-                            .throwMessage("影响指标数据保存失败");
-                    if (costFlag) {
-                        experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);
-                        operateCostBiz.saveCost(costRecord);
-                    }
-                    return true;
-                });
+                // flag-change-begin
+//                succFlag = operateOrgFuncDao.tranSave(rowOrgFunc, List.of(rowOrgFuncSnap), false, () -> {
+//                    AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(), evalResults, mapSum.values(), timePoint.getPeriod()))
+//                            .throwMessage("影响指标数据保存失败");
+//                    if (costFlag) {
+//                        experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);
+//                        operateCostBiz.saveCost(costRecord);
+//                    }
+//                    return true;
+//                });
+                // flag-change-partLine
+                succFlag = interveneHandler.write(rowOrgFunc,
+                        List.of(rowOrgFuncSnap),
+                        () -> operateOrgFuncDao.tranSave(rowOrgFunc, List.of(rowOrgFuncSnap), false, () -> {
+                            AssertUtil.falseThenThrow(SpelInvoker.Instance().saveIndicator(validator.getExperimentPersonId(), evalResults, mapSum.values(), timePoint.getPeriod()))
+                                    .throwMessage("影响指标数据保存失败");
+                            if (costFlag) {
+                                experimentIndicatorInstanceRsBiz.saveChangeMoney(costIndicator);
+                                operateCostBiz.saveCost(costRecord);
+                            }
+                            return true;
+                        }),
+                        HepPsychologyIntervene.class);
+                // flag-change-end
 
                 try {
                     if (ConfigExperimentFlow.SWITCH2EvalCache) {
