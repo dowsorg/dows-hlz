@@ -348,6 +348,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         }*/
         experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                .eq(ExperimentScoringEntity::getExperimentGroupId,experimentGroupId)
                 .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState() == EnumExperimentState.FINISH ? periods : (periods - 1))
                 .orderByDesc(ExperimentScoringEntity::getTotalScore, ExperimentScoringEntity::getId)
                 .oneOpt()
