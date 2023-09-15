@@ -33,11 +33,15 @@ public class SpelCacheExecutor {
             return;
         }
         List<List<String>> exptIds= ShareUtil.XCollection.split(ids,CONCURRENTNum);
-        exptIds.forEach(item->new SpelCacheLoadThread(new HashSet<>(item)).start());
+        for(int i=0;i<exptIds.size();i++){
+            new SpelCacheLoadThread(new HashSet<>(exptIds.get(i)),i).start();
+        }
+
     }
 
     public class SpelCacheLoadThread extends Thread {
-        public SpelCacheLoadThread(Set<String> ids){
+        public SpelCacheLoadThread(Set<String> ids,int threadNum){
+            super("SpelCacheLoadThread-".concat(String.valueOf(threadNum)));
             this.experimentIds=ids;
         }
         private final Set<String> experimentIds;

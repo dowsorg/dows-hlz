@@ -178,6 +178,9 @@ public class ShareUtil {
         }
 
         public static <T> List<List<T>> split(List<T> src,int splitNum){
+            if(ShareUtil.XObject.isEmpty(src)){
+                return Collections.emptyList();
+            }
             int size=(src.size()+splitNum-1)/splitNum;
             return Lists.partition(src, size).stream().map(ArrayList::new).collect(Collectors.toList());
         }

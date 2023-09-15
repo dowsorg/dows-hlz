@@ -37,6 +37,7 @@ import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
+import org.dows.hep.biz.spel.SpelCacheExecutor;
 import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
@@ -188,6 +189,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                     .periods(0)
                     .funcType(EnumEvalFuncType.START)
                     .build());
+            SpelCacheExecutor.Instance().start(List.of(experimentInstanceId));
         }
         if(ConfigExperimentFlow.SWITCH2SysEvent){
             //启用新流程

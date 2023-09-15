@@ -1,7 +1,6 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.mongodb.client.model.Collation;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.CaseIndicatorInstanceEntity;
 import org.dows.hep.service.CaseIndicatorInstanceService;
@@ -65,8 +64,8 @@ public class CaseIndicatorInstanceDao extends BaseDao<CaseIndicatorInstanceServi
         }
         final boolean oneFlag=accountIds.size()==1;
         return service.lambdaQuery()
-                .eq(oneFlag, getColId(),accountIds.iterator().next())
-                .in(!oneFlag, getColId(),accountIds)
+                .eq(oneFlag, CaseIndicatorInstanceEntity::getPrincipalId,accountIds.iterator().next())
+                .in(!oneFlag, CaseIndicatorInstanceEntity::getPrincipalId,accountIds)
                 .orderByAsc(getColId())
                 .select(cols)
                 .list();

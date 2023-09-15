@@ -367,9 +367,9 @@ public class ExperimentOrgBiz {
                 .setActionPeriod(timePoint.getPeriod())
                 .setActionGameDay(timePoint.getGameDay())
                 .setState(EnumExperimentEventState.USERAction.getCode());
-        if (!ExperimentEventRules.Instance().saveActionEvent(rowEvent, rowNotice, actedIds)) {
-            return null;
-        }
+
+        AssertUtil.falseThenThrow(ExperimentEventRules.Instance().saveActionEvent(rowEvent, rowNotice, actedIds))
+                .throwMessage("系统繁忙，请稍后重试");
         return experimentOrgNoticeBiz.CreateOrgNoticeResponse(noticeBox);
 
     }

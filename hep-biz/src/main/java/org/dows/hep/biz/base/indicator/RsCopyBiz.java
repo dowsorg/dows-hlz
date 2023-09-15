@@ -751,6 +751,10 @@ public class RsCopyBiz {
     }
     if (!indicatorViewPhysicalExamEntityList.isEmpty()) {
       indicatorViewPhysicalExamEntityList.forEach(indicatorViewPhysicalExamEntity -> {
+        String indicatorInstanceId = indicatorViewPhysicalExamEntity.getIndicatorInstanceId();
+        if(ShareUtil.XObject.isEmpty(indicatorInstanceId)){
+            return;
+        }
         String experimentIndicatorViewPhysicalExamId = idGenerator.nextIdStr();
         String indicatorFuncId = indicatorViewPhysicalExamEntity.getIndicatorFuncId();
         IndicatorFuncEntity indicatorFuncEntity = kIndicatorFuncIdVIndicatorFuncEntityMap.get(indicatorFuncId);
@@ -775,7 +779,7 @@ public class RsCopyBiz {
         String indicatorViewPhysicalExamId = indicatorViewPhysicalExamEntity.getIndicatorViewPhysicalExamId();
         String name1 = indicatorViewPhysicalExamEntity.getName();
         BigDecimal fee = indicatorViewPhysicalExamEntity.getFee();
-        String indicatorInstanceId = indicatorViewPhysicalExamEntity.getIndicatorInstanceId();
+
         String resultAnalysis = indicatorViewPhysicalExamEntity.getResultAnalysis();
         Integer status = indicatorViewPhysicalExamEntity.getStatus();
         String indicatorCategoryId = null;
@@ -827,6 +831,10 @@ public class RsCopyBiz {
     }
     if (!indicatorViewSupportExamEntityList.isEmpty()) {
       indicatorViewSupportExamEntityList.forEach(indicatorViewSupportExamEntity -> {
+         String indicatorInstanceId = indicatorViewSupportExamEntity.getIndicatorInstanceId();
+         if(ShareUtil.XObject.isEmpty(indicatorInstanceId)){
+             return;
+         }
         String experimentIndicatorViewSupportExamId = idGenerator.nextIdStr();
         String indicatorFuncId = indicatorViewSupportExamEntity.getIndicatorFuncId();
         IndicatorFuncEntity indicatorFuncEntity = kIndicatorFuncIdVIndicatorFuncEntityMap.get(indicatorFuncId);
@@ -851,7 +859,7 @@ public class RsCopyBiz {
         String indicatorViewSupportExamId = indicatorViewSupportExamEntity.getIndicatorViewSupportExamId();
         String name1 = indicatorViewSupportExamEntity.getName();
         BigDecimal fee = indicatorViewSupportExamEntity.getFee();
-        String indicatorInstanceId = indicatorViewSupportExamEntity.getIndicatorInstanceId();
+
         String resultAnalysis = indicatorViewSupportExamEntity.getResultAnalysis();
         Integer status = indicatorViewSupportExamEntity.getStatus();
         String indicatorCategoryIdArray = null;
