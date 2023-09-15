@@ -16,6 +16,9 @@ import org.dows.hep.api.user.organization.request.TransferPersonelRequest;
 import org.dows.hep.api.user.organization.response.AccountOrgGeoResponse;
 import org.dows.hep.api.user.organization.response.OrganizationFunsResponse;
 import org.dows.hep.api.user.organization.response.PersonInstanceResponse;
+import org.dows.hep.biz.eval.ExperimentPersonCache;
+import org.dows.hep.biz.spel.PersonIndicatorIdCache;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.entity.ExperimentPersonEntity;
 import org.dows.hep.entity.OperateTransfersEntity;
 import org.dows.hep.service.ExperimentPersonService;
@@ -152,7 +155,11 @@ public class HepOrgOperateBiz {
                     .eq(ExperimentPersonEntity::getExperimentGroupId,request.getExperimentGroupId())
                     .set(ExperimentPersonEntity::getExperimentOrgId, request.getExperimentOrgId())
                     .set(ExperimentPersonEntity::getExperimentOrgName,orgResponse.getOrgName());
-            experimentPersonService.update(updateWrapper);
+            AssertUtil.falseThenThrow(experimentPersonService.update(updateWrapper))
+                    .throwMessage("系统繁忙，请稍后重试");
+            PersonIndicatorIdCache.Instance().loadingCache().invalidate(experimentPerson.getExperimentPersonId());
+            ExperimentPersonCache.Instance().remove(request.getExperimentInstanceId());
+
         }
         return flag;
     }

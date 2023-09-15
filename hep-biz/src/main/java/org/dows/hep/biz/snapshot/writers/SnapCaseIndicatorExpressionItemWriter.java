@@ -56,7 +56,7 @@ public class SnapCaseIndicatorExpressionItemWriter extends BaseSnapshotTableWrit
         SnapshotRefValidator refValidator=new SnapshotRefValidator(experimentId);
         final String refExperimentId4Expression=refValidator.checkExpression().getExpressionId();
         if(ShareUtil.XObject.isEmpty(refExperimentId4Expression)){
-            logError("SNAPTRACE--expressionItem","missRef:%s",experimentId);
+            logError("SNAPTRACE--expressionItem","missExpressionRef:%s",experimentId);
             return null;
         }
         List<SnapCaseIndicatorExpressionEntity> rowsSnapExpression=snapCaseIndicatorExpressionDao.getByExperimentId(experimentId,

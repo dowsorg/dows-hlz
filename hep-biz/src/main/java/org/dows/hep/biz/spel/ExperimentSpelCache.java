@@ -99,7 +99,7 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
                 missReasonIds.add(reasonId);
             }
         }
-        if(ShareUtil.XObject.notEmpty(reasonIds)) {
+        if(ShareUtil.XObject.notEmpty(missReasonIds)) {
             rst.addAll(fillInput(cached, experimentId, experimentPersonId, missReasonIds, EnumIndicatorExpressionSource.of(source)));
         }
         return rst;
@@ -123,35 +123,36 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
         try {
             final String experimentId = key.getExperimentInstanceId();
             final Set<String> personIds = ExperimentPersonCache.Instance().getPersondIdSet(experimentId, null);
+            ts=logCostTime(sb, "1-person",ts);
             List<ExperimentIndicatorInstanceRsEntity> rowsIndicators = experimentIndicatorInstanceRsDao.getByExperimentId(experimentId,
                     ExperimentIndicatorInstanceRsEntity::getExperimentPersonId,
                     ExperimentIndicatorInstanceRsEntity::getCaseIndicatorInstanceId);
-            ts=logCostTime(sb, "1-person",ts);
             Map<String, List<String>> mapIndicatorIds = new HashMap<>();
             rowsIndicators.forEach(i -> mapIndicatorIds.computeIfAbsent(i.getExperimentPersonId(), k -> new ArrayList<>())
                     .add(i.getCaseIndicatorInstanceId()));
+            ts=logCostTime(sb, "2-indicatorIds",ts);
             mapIndicatorIds.forEach((personId, reasonIds) -> {
                 fillInput(rst, experimentId, personId, reasonIds, EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT);
             });
             mapIndicatorIds.clear();
-            ts=logCostTime(sb, "2-indicators",ts);
+            ts=logCostTime(sb, "3-indicatorsSpel-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
             SnapshotRefValidator refValidator = new SnapshotRefValidator(experimentId);
             final String refExptId4Crowd = refValidator.checkCrowd().getCrowdId();
             final String refExptId4RiskModel = refValidator.checkRiskModel().getRiskModelId();
             final List<String> crowdIds = ShareUtil.XCollection.map(snapCrowdsInstanceDao.getByExperimentId(refExptId4Crowd, SnapCrowdsInstanceEntity::getCrowdsId),
                     SnapCrowdsInstanceEntity::getCrowdsId);
-            ts=logCostTime(sb, "3-crowdIds",ts);
+            ts=logCostTime(sb, "4-crowdIds",ts);
             final List<String> riskModelIds = ShareUtil.XCollection.map(snapRiskModelDao.getByExperimentId(refExptId4RiskModel, SnapRiskModelEntity::getRiskModelId),
                     SnapRiskModelEntity::getRiskModelId);
             ts=logCostTime(sb, "4-riskIds",ts);
             for (String personId : personIds) {
                 fillInput(rst, experimentId, personId, crowdIds, EnumIndicatorExpressionSource.CROWDS);
             }
-            ts=logCostTime(sb, "5-crowdSpels",ts);
+            ts=logCostTime(sb, "5-crowdSpels-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
             for (String personId : personIds) {
                 fillInput(rst, experimentId, personId, riskModelIds, EnumIndicatorExpressionSource.RISK_MODEL);
             }
-            ts=logCostTime(sb, "6-riskSpels",ts);
+            ts=logCostTime(sb, "6-riskSpels-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
 
         }catch (Exception ex){
             ts=logCostTime(sb, String.format("error:%s", ex.getMessage()));

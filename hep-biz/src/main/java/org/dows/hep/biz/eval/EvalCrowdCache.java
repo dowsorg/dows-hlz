@@ -86,9 +86,9 @@ public class EvalCrowdCache extends BaseLoadingCache<ExperimentCacheKey, EvalCro
         SnapshotRefValidator refValidator = new SnapshotRefValidator(key.getExperimentInstanceId());
         final String refExptId4Crowd = refValidator.checkCrowd().getCrowdId();
         final String refExptId4RiskModel = refValidator.checkRiskModel().getRiskModelId();
-        List<SnapCrowdsInstanceEntity> rowsCrowd=snapCrowdsInstanceDao.getByExperimentId(refExptId4Crowd, SnapCrowdsInstanceEntity::getCrowdsId);
+        List<SnapCrowdsInstanceEntity> rowsCrowd=snapCrowdsInstanceDao.getByExperimentId(refExptId4Crowd);
         rowsCrowd.forEach(i->rst.mapCrowds.put(i.getCrowdsId(), i));
-        List<SnapRiskModelEntity> rowsRiskmodel=snapRiskModelDao.getByExperimentId(refExptId4RiskModel, SnapRiskModelEntity::getRiskModelId);
+        List<SnapRiskModelEntity> rowsRiskmodel=snapRiskModelDao.getByExperimentId(refExptId4RiskModel);
         rowsRiskmodel.forEach(i->{
             rst.mapRiskModels.put(i.getRiskModelId(),i);
             rst.mapCrowdXRiskModels.computeIfAbsent(i.getCrowdsCategoryId(), k->new ArrayList<>())
