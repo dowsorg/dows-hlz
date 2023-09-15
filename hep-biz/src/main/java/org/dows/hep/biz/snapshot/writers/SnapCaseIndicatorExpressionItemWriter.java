@@ -41,6 +41,7 @@ public class SnapCaseIndicatorExpressionItemWriter extends BaseSnapshotTableWrit
     @Autowired
     private IndicatorExpressionDao indicatorExpressionDao;
 
+    @Autowired
     private SnapCaseIndicatorExpressionDao snapCaseIndicatorExpressionDao;
 
 

@@ -54,6 +54,7 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
     @Autowired
     private RiskModelDao riskModelDao;
 
+    @Autowired
     private CaseIndicatorInstanceDao caseIndicatorInstanceDao;
 
     @Override

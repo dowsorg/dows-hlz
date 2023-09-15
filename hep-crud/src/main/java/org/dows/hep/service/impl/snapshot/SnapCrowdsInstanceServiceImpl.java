@@ -1,4 +1,4 @@
-package org.dows.hep.service.impl;
+package org.dows.hep.service.impl.snapshot;
 
 import org.dows.framework.crud.mybatis.MybatisCrudServiceImpl;
 import org.dows.hep.entity.snapshot.SnapCrowdsInstanceEntity;
@@ -11,6 +11,6 @@ import org.springframework.stereotype.Service;
  * @date : 2023/9/14 10:02
  */
 
-@Service("snapCrowdsInstance")
-public class SnapCrowdsInstanceImpl extends MybatisCrudServiceImpl<SnapCrowdsInstanceMapper, SnapCrowdsInstanceEntity> implements SnapCrowdsInstanceService {
+@Service("snapCrowdsInstanceService")
+public class SnapCrowdsInstanceServiceImpl extends MybatisCrudServiceImpl<SnapCrowdsInstanceMapper, SnapCrowdsInstanceEntity> implements SnapCrowdsInstanceService {
 }
