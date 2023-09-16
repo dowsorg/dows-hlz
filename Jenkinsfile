@@ -1,7 +1,7 @@
 
 def detect_branch() {
     def RESULT = sh(returnStdout: true, script: '''
-        for branch in `git branch -r | grep -v HEAD`; do echo -e `git show --format="%ci %cr" $branch | head -n 1` "\\t" $branch; done | sort -r |head -n 1 |awk \'{print $NF}\'
+        git for-each-ref --sort=-committerdate --format="%(refname:short)" refs/remotes/ | head -n 1
     ''')
     def content = "RESULT=$RESULT\n"
     RESULT=sh(returnStdout: true, script: content+'echo $RESULT|sed "s#origin/##g"') // 删除 origin
