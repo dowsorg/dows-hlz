@@ -11,6 +11,7 @@ import org.dows.hep.api.enums.EnumExperimentOrgNoticeType;
 import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
 import org.dows.hep.api.user.experiment.vo.ExptOrgNoticeActionVO;
 import org.dows.hep.biz.dao.ExperimentParticipatorDao;
+import org.dows.hep.biz.eval.ExperimentPersonCache;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.ExperimentEventBox;
@@ -19,6 +20,7 @@ import org.dows.hep.biz.vo.ExperimentOrgNoticeBox;
 import org.dows.hep.entity.ExperimentEventEntity;
 import org.dows.hep.entity.ExperimentOrgNoticeEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.dows.hep.entity.ExperimentPersonEntity;
 import org.dows.hep.service.ExperimentOrgNoticeService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
@@ -77,12 +79,16 @@ public class ExperimentOrgNoticeBiz {
     public ExperimentOrgNoticeEntity createNotice(ExperimentEventEntity src,Map<String,String> mapAvatar) throws JsonProcessingException {
         ExperimentEventBox eventBox = ExperimentEventBox.create(src);
         ExperimentEventJson eventData = eventBox.fromEventJsonOrDefault(false);
+       ;
+
         ExperimentOrgNoticeEntity rst = new ExperimentOrgNoticeEntity()
                 .setAppId(src.getAppId())
                 .setExperimentInstanceId(src.getExperimentInstanceId())
                 .setExperimentGroupId(src.getExperimentGroupId())
-                .setExperimentOrgId(src.getExperimentOrgId())
                 .setExperimentPersonId(src.getExperimentPersonId())
+                .setExperimentOrgId(Optional.ofNullable(ExperimentPersonCache.Instance().getPerson(src.getExperimentInstanceId(), src.getExperimentPersonId()))
+                        .map(ExperimentPersonEntity::getExperimentOrgId)
+                        .orElse(src.getExperimentOrgId()))
                 .setAccountId(src.getAccountId())
                 .setPersonName(src.getPersonName())
                 .setPeriods(src.getTriggeredPeriod())

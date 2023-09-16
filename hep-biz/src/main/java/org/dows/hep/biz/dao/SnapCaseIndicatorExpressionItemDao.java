@@ -67,6 +67,19 @@ public class SnapCaseIndicatorExpressionItemDao extends BaseDao<SnapCaseIndicato
                 .select(cols)
                 .list();
     }
+    public List<SnapCaseIndicatorExpressionItemEntity> getByExpressionItemId(String experimentId, Collection<String> expressionItemIds, SFunction<SnapCaseIndicatorExpressionItemEntity,?>... cols) {
+        if (ShareUtil.XObject.isEmpty(expressionItemIds)) {
+            return Collections.emptyList();
+        }
+        final boolean oneFlag = expressionItemIds.size() == 1;
+        return service.lambdaQuery()
+                .eq(SnapCaseIndicatorExpressionItemEntity::getExperimentInstanceId, experimentId)
+                .eq(oneFlag, SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId, expressionItemIds.iterator().next())
+                .in(!oneFlag, SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId, expressionItemIds)
+                .orderByAsc(SnapCaseIndicatorExpressionItemEntity::getIndicatorExpressionId, SnapCaseIndicatorExpressionItemEntity::getSeq)
+                .select(cols)
+                .list();
+    }
 
 
 }

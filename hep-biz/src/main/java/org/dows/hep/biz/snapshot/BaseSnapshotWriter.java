@@ -1,6 +1,7 @@
 package org.dows.hep.biz.snapshot;
 
 import cn.hutool.crypto.SecureUtil;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.biz.dao.ExperimentSnapshotRefDao;
 import org.dows.hep.biz.util.JacksonUtil;
@@ -34,6 +35,7 @@ public abstract class BaseSnapshotWriter<T> implements ISnapshotDbWriter<T> {
 
 
     @Override
+    @DSTransactional
     public boolean write(SnapshotRequest req,T data) {
         if(ShareUtil.XObject.isEmpty(data)){
             return true;

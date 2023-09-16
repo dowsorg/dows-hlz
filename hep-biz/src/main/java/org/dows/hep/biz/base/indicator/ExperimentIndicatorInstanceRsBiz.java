@@ -127,7 +127,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         } else if (newMoneyCurrentVal.compareTo(BigDecimal.valueOf(Double.parseDouble(max))) > 0) {
             newMoneyCurrentVal = BigDecimal.valueOf(Double.parseDouble(max));
         }
-        experimentIndicatorValRsEntity.setCurrentVal(newMoneyCurrentVal.setScale(2, RoundingMode.DOWN).toString());
+        experimentIndicatorValRsEntity.setCurrentVal(newMoneyCurrentVal.setScale(2, RoundingMode.HALF_UP).toString());
         return experimentIndicatorValRsEntity;
     }
 
@@ -284,6 +284,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         }
     }
 
+    //竞赛小组排名
     public GroupAverageHealthPointResponse groupAverageHealth(String experimentId, String experimentGroupId, Integer periods) {
         if (ConfigExperimentFlow.SWITCH2EvalCache) {
             return queryPersonBiz.groupAverageHealth(experimentId, experimentGroupId, periods);
@@ -326,32 +327,32 @@ public class ExperimentIndicatorInstanceRsBiz {
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         int experimentPersonCount = healthPointExperimentIndicatorInstanceIdSet.size();
-        String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.DOWN).toString();
+        String averageHealthPoint = total.divide(BigDecimal.valueOf(experimentPersonCount), 2, RoundingMode.HALF_UP).toString();
 
+        //查询当前计数器
+        Integer scoringCount=experimentScoringService.lambdaQuery()
+                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                .eq(ExperimentScoringEntity::getPeriods, periods)
+                .orderByDesc(ExperimentScoringEntity::getScoringCount)
+                .select(ExperimentScoringEntity::getScoringCount)
+                .last("limit 1")
+                .oneOpt()
+                .map(ExperimentScoringEntity::getScoringCount)
+                .orElse(null);
         ExperimentTimePoint nowPoint = ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3", experimentId),
                 LocalDateTime.now(), false);
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
                 .throwMessage("未找到实验时间设置");
-        //int rank = 0 ;
         AtomicInteger curRank = new AtomicInteger(1);
-        /*Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
+
         experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-                .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState()==EnumExperimentState.FINISH? periods: (periods - 1))
-                .orderByDesc(ExperimentScoringEntity::getId,ExperimentScoringEntity::getTotalScore)
-                .list()
-                .forEach(experimentScoringEntity -> {
-                    kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
-                });
-        if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
-            rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
-        }*/
-        experimentScoringService.lambdaQuery()
-                .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
+                .eq(ExperimentScoringEntity::getExperimentGroupId,experimentGroupId)
                 .eq(ExperimentScoringEntity::getPeriods, nowPoint.getGameState() == EnumExperimentState.FINISH ? periods : (periods - 1))
-                .orderByDesc(ExperimentScoringEntity::getTotalScore, ExperimentScoringEntity::getId)
+                .eq(ShareUtil.XObject.notEmpty(scoringCount), ExperimentScoringEntity::getScoringCount, scoringCount)
                 .oneOpt()
                 .ifPresent(i -> curRank.set(i.getRankNo()));
+
         return GroupAverageHealthPointResponse
                 .builder()
                 .experimentPersonCount(experimentPersonCount)

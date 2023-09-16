@@ -8,13 +8,14 @@ import org.dows.hep.biz.spel.meta.ISpelLoad;
 import org.dows.hep.biz.spel.meta.SpelInput;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.CaseIndicatorExpressionItemEntity;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionItemEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ import java.util.Optional;
 @Slf4j
 public abstract class BaseSpelLoader implements ISpelLoad {
 
-    protected SpelInput fillInput(SpelInput rst,String exptPersonId, SnapCaseIndicatorExpressionEntity rowExpression, Collection<SnapCaseIndicatorExpressionItemEntity> rowsExpressionItem) {
+    protected SpelInput fillInput(SpelInput rst,String exptPersonId, SnapCaseIndicatorExpressionEntity rowExpression, List<SnapCaseIndicatorExpressionItemEntity> rowsExpressionItem) {
         if (null == rst) {
             rst = new SpelInput();
         }
@@ -33,26 +34,30 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         rst.setExpressionId(rowExpression.getCaseIndicatorExpressionId())
                 .setIndicatorId(optIndicator.map(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId).orElse(null))
                 .setRandom(Optional.ofNullable(rowExpression.getType()).orElse(0).equals(1))
-                .setMin(optIndicator.map(i->BigDecimalUtil.tryParseDecimal(i.getMin(),null)).orElse(null))
-                .setMax(optIndicator.map(i->BigDecimalUtil.tryParseDecimal(i.getMax(),null)).orElse(null));
+                .setIndicatorMin(optIndicator.map(i->BigDecimalUtil.tryParseDecimal(i.getMin(),null)).orElse(null))
+                .setIndicatorMax(optIndicator.map(i->BigDecimalUtil.tryParseDecimal(i.getMax(),null)).orElse(null));
         if (ShareUtil.XObject.isEmpty(rowsExpressionItem)) {
             return rst;
         }
+        rowsExpressionItem.sort(Comparator.comparingInt(CaseIndicatorExpressionItemEntity::getSeq));
         List<SpelInput.SpelExpressionItem> expressionItems = new ArrayList<>();
         SpelInput.SpelExpressionItem expressionItem;
         for (SnapCaseIndicatorExpressionItemEntity item : rowsExpressionItem) {
             //公式下限
-            if (null==rst.getMin() && item.getCaseIndicatorExpressionItemId().equals(rowExpression.getMinIndicatorExpressionItemId())) {
+            if (item.getCaseIndicatorExpressionItemId().equals(rowExpression.getMinIndicatorExpressionItemId())) {
                 rst.setMin(BigDecimalUtil.tryParseDecimal(item.getResultExpression(), null));
                 continue;
             }
             //公式上限
-            if (null==rst.getMax() && item.getCaseIndicatorExpressionItemId().equals(rowExpression.getMaxIndicatorExpressionItemId())) {
+            if (item.getCaseIndicatorExpressionItemId().equals(rowExpression.getMaxIndicatorExpressionItemId())) {
                 rst.setMax(BigDecimalUtil.tryParseDecimal(item.getResultExpression(), null));
                 continue;
             }
             //随机指标忽略公式
             if (rst.isRandom()) {
+                continue;
+            }
+            if(item.isMinOrMax()){
                 continue;
             }
             expressionItem = buildExpressionItem(exptPersonId, item);
@@ -86,12 +91,15 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         String[] splitVals=vals.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr());
         List<String> missIds=new ArrayList<>();
         for(int i=0;i<splitVals.length;i++){
+            String name=splitNames[i];
+            String[] splits=name.split(EnumString.INDICATOR_EXPRESSION_SPLIT.getStr());
+            boolean lastFlag=splits.length>1&&splits[1].endsWith("1");
             String raw=splitVals[i];
             String fix= PersonIndicatorIdCache.Instance().getIndicatorIdBySourceId(exptPersonId,raw);
             if(ShareUtil.XObject.isEmpty(fix)){
                 missIds.add(fix);
             }else{
-                splitVals[i]= SpelVarKeyFormatter.getVariableKey(fix);
+                splitVals[i]= SpelVarKeyFormatter.getVariableKey(fix,lastFlag);
             }
         }
         for(int i=0;i<splitNames.length;i++){

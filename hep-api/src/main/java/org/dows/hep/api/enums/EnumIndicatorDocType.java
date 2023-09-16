@@ -14,7 +14,7 @@ import java.util.*;
 public enum EnumIndicatorDocType {
     NONE(0,null,"NA"),
     HP(1,Arrays.asList(EnumIndicatorType.HEALTH_POINT) ,"健康指数"),
-    BASIC(2,null,"体重","BMI","bmi","舒张压","收缩压","心率","空腹血糖","胆固醇"),
+    BASIC(2,null,"体重","BMI","bmi","舒张压","收缩压","心率","空腹血糖","总胆固醇"),
     ENERGY(3,null,"饮食摄入热量","运动消耗热量"),
     ;
     private final Integer code;

@@ -63,4 +63,15 @@ public class SnapCaseIndicatorExpressionRefDao extends BaseDao<SnapCaseIndicator
                 .select(cols)
                 .list();
     }
+
+    public List<SnapCaseIndicatorExpressionRefEntity> getByExperiment(String experimentId,  SFunction<SnapCaseIndicatorExpressionRefEntity,?>... cols){
+        if (ShareUtil.XObject.isEmpty(experimentId)) {
+            return Collections.emptyList();
+        }
+        return service.lambdaQuery()
+                .eq(SnapCaseIndicatorExpressionRefEntity::getExperimentInstanceId, experimentId)
+                .orderByAsc(SnapCaseIndicatorExpressionRefEntity::getId)
+                .select(cols)
+                .list();
+    }
 }

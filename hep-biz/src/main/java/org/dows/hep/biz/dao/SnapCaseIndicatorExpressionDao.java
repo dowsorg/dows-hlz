@@ -69,4 +69,15 @@ public class SnapCaseIndicatorExpressionDao extends BaseDao<SnapCaseIndicatorExp
                 .select(cols)
                 .list();
     }
+
+    public List<SnapCaseIndicatorExpressionEntity> getByExperimentId(String experimentId,Collection<Integer> sources, SFunction<SnapCaseIndicatorExpressionEntity,?>... cols) {
+
+        return service.lambdaQuery()
+                .eq(SnapCaseIndicatorExpressionEntity::getExperimentInstanceId, experimentId)
+                .eq(null != sources && sources.size() == 1, SnapCaseIndicatorExpressionEntity::getSource, sources.iterator().next())
+                .in(null != sources && sources.size() > 1, SnapCaseIndicatorExpressionEntity::getSource, sources)
+                .select(cols)
+                .list();
+    }
+
 }

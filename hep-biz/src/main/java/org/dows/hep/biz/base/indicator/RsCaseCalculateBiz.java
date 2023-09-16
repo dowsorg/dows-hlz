@@ -340,7 +340,7 @@ public class RsCaseCalculateBiz {
       BigDecimal newHealthPoint = rsUtilBiz.newCalculateFinalHealthScore(kRiskModelIdVTotalScoreMap, kRiskModelIdVRiskDeathProbabilityMap, totalRiskDeathProbability);
       AtomicReference<BigDecimal> newHealthPointAR = new AtomicReference<>(newHealthPoint);
       rsUtilBiz.healthPointMinAndMax(newHealthPointAR);
-      caseIndicatorRuleEntity.setDef(newHealthPointAR.get().setScale(2, RoundingMode.DOWN).toString());
+      caseIndicatorRuleEntity.setDef(newHealthPointAR.get().setScale(2, RoundingMode.HALF_UP).toString());
       caseIndicatorRuleEntityAR.set(caseIndicatorRuleEntity);
     });
     if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
