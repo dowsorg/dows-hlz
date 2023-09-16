@@ -117,6 +117,7 @@ start_or_restart_container "mysql"
 start_or_restart_container "redis"
 start_or_restart_container "minio"
 start_or_restart_container "pdf"
+start_or_restart_container "mongodb"
 
 start_or_restart_container "elasticsearch"
 start_or_restart_container "fluent"
