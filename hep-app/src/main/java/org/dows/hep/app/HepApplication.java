@@ -61,7 +61,7 @@ public class HepApplication{
         log.info("应用关闭！");
         hepClientMonitor.shutdown();
     }
-    @PostConstruct
+    //@PostConstruct
     @Transactional(rollbackFor = Exception.class)
     public void init() throws InterruptedException {
         /* runsix:init IndicatorCategory */
