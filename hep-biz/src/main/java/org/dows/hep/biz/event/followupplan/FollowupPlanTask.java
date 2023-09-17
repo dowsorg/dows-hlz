@@ -183,6 +183,9 @@ public class FollowupPlanTask extends BaseEventTask {
         if(ShareUtil.XObject.anyEmpty(timePoint,entity.getTodoDay(),entity.getDueDays())){
             return null;
         }
+        if(exptColl.getTotalDays()< row.getTodoDay()){
+            return null;
+        }
         Integer rawSeconds=  exptColl.getRawSecondsByGameDay(row.getTodoDay());
         return exptColl.getSandStartTime().plusSeconds(rawSeconds+timePoint.getCntPauseSeconds());
 

@@ -120,8 +120,10 @@ public class FollowupBiz {
                     .operateFlowId(operateFlowId)
                     .build();
         }
+        boolean planChanged=false;
         if (ShareUtil.XObject.nullSafeNotEquals(rowPlan.getDueDays(), intervalDay)
                 || ShareUtil.XObject.nullSafeNotEquals(rowPlan.getIndicatorFollowupId(), indicatorViewMonitorFollowupId)) {
+            planChanged=true;
             rowPlan.setIndicatorFollowupId(indicatorViewMonitorFollowupId)
                     .setIndicatorFollowupName(experimentIndicatorViewMonitorFollowupRsEntity.getName())
                     .setDueDays(intervalDay)
@@ -304,7 +306,9 @@ public class FollowupBiz {
         })){
             AssertUtil.justThrow("数据保存失败");
         }
-        FollowupPlanCache.Instance().putPlan(ExperimentCacheKey.create(appId,experimentId),rowPlan);
+        if(planChanged) {
+            FollowupPlanCache.Instance().putPlan(ExperimentCacheKey.create(appId, experimentId), rowPlan);
+        }
 
     }
     private ExperimentIndicatorFuncRsResponse getIndicatorFunc(String experimentOrgId, String indicatorFuncId){
