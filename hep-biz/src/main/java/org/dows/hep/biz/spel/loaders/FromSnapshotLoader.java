@@ -154,7 +154,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
         );
         rowsMinMaxExpressionItem.forEach(i->{
             i.setMinOrMax(true)
-                    .setCaseIndicatorExpressionItemId(mapMinXMaxIds.get(i.getCaseIndicatorExpressionItemId()));
+                    .setIndicatorExpressionId(mapMinXMaxIds.get(i.getCaseIndicatorExpressionItemId()));
         });
         rowsExpressionItem.addAll(rowsMinMaxExpressionItem);
 
