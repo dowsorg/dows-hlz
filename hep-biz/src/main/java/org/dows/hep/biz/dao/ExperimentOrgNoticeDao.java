@@ -4,11 +4,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.dows.hep.api.enums.EnumExperimentOrgNoticeType;
 import org.dows.hep.api.user.experiment.request.FindOrgNoticeRequest;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentOrgNoticeEntity;
 import org.dows.hep.service.ExperimentOrgNoticeService;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author : wuzl
@@ -46,17 +50,49 @@ public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,E
     public IPage<ExperimentOrgNoticeEntity> pageByCondition(FindOrgNoticeRequest req, SFunction<ExperimentOrgNoticeEntity, ?>... cols) {
         Page<ExperimentOrgNoticeEntity> page = Page.of(req.getPageNo(), req.getPageSize());
         page.addOrder(OrderItem.desc("id"));
-        if(ShareUtil.XObject.isEmpty(req.getExperimentPersonIds())){
+        if (ShareUtil.XObject.isEmpty(req.getExperimentPersonIds())) {
             return page;
         }
-        final boolean oneFlag=req.getExperimentPersonIds().size()==1;
+        final boolean oneFlag = req.getExperimentPersonIds().size() == 1;
         return service.lambdaQuery()
                 .eq(ShareUtil.XObject.notEmpty(req.getAppId()), ExperimentOrgNoticeEntity::getAppId, req.getAppId())
                 //.eq(ExperimentOrgNoticeEntity::getExperimentOrgId, req.getExperimentOrgId())
                 //.eq(ExperimentOrgNoticeEntity::getExperimentGroupId, req.getExperimentGroupId())
-                .eq(oneFlag,ExperimentOrgNoticeEntity::getExperimentPersonId,req.getExperimentPersonIds().get(0))
-                .in(!oneFlag,ExperimentOrgNoticeEntity::getExperimentPersonId,req.getExperimentPersonIds())
+                .eq(oneFlag, ExperimentOrgNoticeEntity::getExperimentPersonId, req.getExperimentPersonIds().get(0))
+                .in(!oneFlag, ExperimentOrgNoticeEntity::getExperimentPersonId, req.getExperimentPersonIds())
+                .and(i -> i.eq(ExperimentOrgNoticeEntity::getNoticeSrcType, EnumExperimentOrgNoticeType.EVENTTriggered.getCode())
+                        .or()
+                        .in(ShareUtil.XObject.notEmpty(req.getFollowUpNoticeIds()), ExperimentOrgNoticeEntity::getExperimentOrgNoticeId, req.getFollowUpNoticeIds())
+                )
                 .select(cols)
                 .page(page);
+    }
+
+    public List<ExperimentOrgNoticeEntity> getTopFollowUpNoticeIds(List<String> experimentPersonIds){
+        if(ShareUtil.XObject.isEmpty(experimentPersonIds)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=experimentPersonIds.size()==1;
+        return service.query()
+                .select("experiment_person_id, max(experiment_org_notice_id) experiment_org_notice_id")
+                .groupBy("experiment_person_id")
+                .list();
+    }
+
+    public ExperimentOrgNoticeEntity getTopFollowupNotice(String experimentPersonId
+            ,SFunction<ExperimentOrgNoticeEntity,?>...cols){
+        return service.lambdaQuery()
+                .eq(ExperimentOrgNoticeEntity::getExperimentPersonId,experimentPersonId)
+                .orderByDesc(ExperimentOrgNoticeEntity::getId)
+                .select(cols)
+                .last("limit 1")
+                .one();
+    }
+
+    public boolean setTopFollowupNoticeAction(String noticeId,Integer actionState){
+        return service.lambdaUpdate()
+                .eq(ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,noticeId)
+                .set(ExperimentOrgNoticeEntity::getActionState,actionState)
+                .update();
     }
 }

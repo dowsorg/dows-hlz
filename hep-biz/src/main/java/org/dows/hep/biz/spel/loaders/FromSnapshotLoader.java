@@ -154,8 +154,9 @@ public class FromSnapshotLoader extends BaseSpelLoader {
         );
         rowsMinMaxExpressionItem.forEach(i->{
             i.setMinOrMax(true)
-                    .setIndicatorExpressionId(mapMinXMaxIds.get(i.getCaseIndicatorExpressionItemId()));
+                    .setCaseIndicatorExpressionItemId(mapMinXMaxIds.get(i.getCaseIndicatorExpressionItemId()));
         });
+        rowsExpressionItem.addAll(rowsMinMaxExpressionItem);
 
         Map<String,SnapCaseIndicatorExpressionEntity> mapExpression=ShareUtil.XCollection.toMap(rowsExpression, SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId);
         Map<String,List<SnapCaseIndicatorExpressionItemEntity>> mapExpressionItem=ShareUtil.XCollection.groupBy(rowsExpressionItem, SnapCaseIndicatorExpressionItemEntity::getIndicatorExpressionId);

@@ -56,10 +56,10 @@ public class SysEventTask extends BaseEventTask {
             logError("call", "missExperiment");
             return 0;
         }
-        /*if(experimentState.equals(EnumExperimentState.FINISH.getState())){
+        if(experimentState.equals(EnumExperimentState.FINISH.getState())){
             logInfo("call", "finishedExperiment");
             return RUNCode4Silence;
-        }*/
+        }
         if(experimentState.equals(EnumExperimentState.SUSPEND.getState())){
             logInfo("call", "pausedExperiment");
             raiseScheduler(DELAYSeconds4Poll,false,true);

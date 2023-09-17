@@ -2,6 +2,7 @@ package org.dows.hep.biz.event.followupplan;
 
 import org.dows.hep.biz.cache.BaseLoadingCache;
 import org.dows.hep.biz.dao.ExperimentFollowupPlanDao;
+import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentFollowupPlanEntity;
@@ -33,6 +34,16 @@ public class FollowupPlanCache extends BaseLoadingCache<ExperimentCacheKey, Foll
     @Autowired
     private ExperimentFollowupPlanDao experimentFollowupPlanDao;
 
+    public boolean putPlan(ExperimentCacheKey key,ExperimentFollowupPlanEntity src){
+        FollowupPlanCollection cached=loadingCache().get(key);
+        if(null==cached){
+            return false;
+        }
+        cached.getMapPlanRows().put(src.getExperimentPersonId(), new FollowupPlanRow(src));
+        EventScheduler.Instance().scheduleFollowUpPlan(key.getAppId(),key.getExperimentInstanceId(),3);
+        return true;
+    }
+
     @Override
     protected FollowupPlanCollection load(ExperimentCacheKey key) {
         FollowupPlanCollection rst=new FollowupPlanCollection()
@@ -41,7 +52,7 @@ public class FollowupPlanCache extends BaseLoadingCache<ExperimentCacheKey, Foll
         if(ShareUtil.XObject.isEmpty(rowsPlan)){
             return rst;
         }
-        rst.setPlanRows(ShareUtil.XCollection.map(rowsPlan, FollowupPlanRow::new));
+        rowsPlan.forEach(item->rst.getMapPlanRows().putIfAbsent(item.getExperimentPersonId(), new FollowupPlanRow(item)));
         rowsPlan.clear();
         return rst;
     }

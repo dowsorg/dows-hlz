@@ -1,12 +1,14 @@
 package org.dows.hep.app;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.CreateIndicatorFuncRequest;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
-import org.dows.hep.api.enums.*;
+import org.dows.hep.api.enums.EnumIndicatorCategory;
+import org.dows.hep.api.enums.EnumIndicatorType;
+import org.dows.hep.api.enums.EnumStatus;
+import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.biz.base.indicator.IndicatorFuncBiz;
 import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
 import org.dows.hep.entity.IndicatorCategoryEntity;
@@ -61,7 +63,7 @@ public class HepApplication{
         log.info("应用关闭！");
         hepClientMonitor.shutdown();
     }
-    @PostConstruct
+    //@PostConstruct
     @Transactional(rollbackFor = Exception.class)
     public void init() throws InterruptedException {
         /* runsix:init IndicatorCategory */

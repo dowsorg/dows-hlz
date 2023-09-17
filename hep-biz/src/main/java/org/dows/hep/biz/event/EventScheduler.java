@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.biz.cache.BaseManulCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.followupplan.FollowupPlanTask;
 import org.dows.hep.biz.event.sysevent.SysEventTask;
 import org.dows.hep.biz.util.ShareBiz;
 import org.springframework.context.ApplicationListener;
@@ -67,10 +68,10 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
         return scheduleFollowUpPlan(experimentKey, LocalDateTime.now().plusSeconds(delaySeconds));
     }
     public ScheduledFuture<?> scheduleFollowUpPlan(ExperimentCacheKey experimentKey, LocalDateTime nextTime){
-        return null;
-    /*    final String exclusiveKey = String.format("followup:%s", experimentKey.getKeyString());
+        final String exclusiveKey = String.format("followup:%s", experimentKey.getKeyString());
         return scheduleExclusive(exclusiveKey, new FollowupPlanTask(experimentKey), nextTime,additiveSeconds4FollowupPlan);
- */   }
+    }
+
     /**
      * 系统事件定时
      * @param appId
@@ -127,6 +128,14 @@ public class EventScheduler implements ApplicationListener<ContextClosedEvent> {
     }
     public ScheduledFuture<?> schedule(Runnable  cmd, long delay, TimeUnit unit) {
         return scheduledExecutor.schedule(cmd, delay, unit);
+    }
+    public boolean cancelExclusive(String exclusiveKey){
+        ScheduledFuture<?>[] buffer = futureCache.caffineCache().getIfPresent(exclusiveKey);
+        if(null==buffer){
+            return false;
+        }
+        clearExclusiveTaskBuffer(buffer);
+        return true;
     }
     //endregion
 

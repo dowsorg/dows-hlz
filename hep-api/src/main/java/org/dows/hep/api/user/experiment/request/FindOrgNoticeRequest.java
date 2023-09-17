@@ -28,5 +28,9 @@ public class FindOrgNoticeRequest extends BaseExptRequest {
     @Schema(title = "机构人物列表")
     private List<String> experimentPersonIds;
 
+    @JsonIgnore
+    @Schema(title = "随访通知列表")
+    private List<String> followUpNoticeIds;
+
 
 }
