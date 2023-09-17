@@ -93,7 +93,7 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
                 CopyWrapper.create(CaseIndicatorExpressionRefEntity::new)
                         .endFrom(i)
                         .setCaseIndicatorExpressionRefId(i.getIndicatorExpressionRefId())));
-        rst.sort(Comparator.comparing(i->i.getCaseIndicatorExpressionRefId()));
+        rst.sort(Comparator.nullsFirst(Comparator.comparing(i->i.getCaseIndicatorExpressionRefId())));
         return rst;
     }
 }

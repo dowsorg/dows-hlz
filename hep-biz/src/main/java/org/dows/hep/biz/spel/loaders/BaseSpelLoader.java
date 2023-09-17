@@ -39,7 +39,7 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         if (ShareUtil.XObject.isEmpty(rowsExpressionItem)) {
             return rst;
         }
-        rowsExpressionItem.sort(Comparator.comparingInt(CaseIndicatorExpressionItemEntity::getSeq));
+        rowsExpressionItem.sort(Comparator.nullsLast(Comparator.comparingInt(CaseIndicatorExpressionItemEntity::getSeq)));
         List<SpelInput.SpelExpressionItem> expressionItems = new ArrayList<>();
         SpelInput.SpelExpressionItem expressionItem;
         for (SnapCaseIndicatorExpressionItemEntity item : rowsExpressionItem) {

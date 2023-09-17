@@ -188,7 +188,7 @@ public class EvalHealthIndexAdvBiz {
         });
 
         BigDecimal personHealthIndex = EvalHealthIndexUtil.evalHealthIndex(vosHealthIndex, false);
-        vosHealthIndex.forEach(i->Optional.of(i.getRiskFactors()).ifPresent(v->v.sort(Comparator.comparing(RiskFactorScoreVO::getRiskFactorName))));
+        vosHealthIndex.forEach(i->Optional.of(i.getRiskFactors()).ifPresent(v->v.sort(Comparator.comparing(iv->Optional.ofNullable(iv.getRiskFactorName()).orElse("")))));
         evalHolder.get().setEvalRisks(vosHealthIndex).setRisks(voRisks);
         evalHolder.putCurVal(personIndicatorIdCache.getSysIndicatorId(experimentPersonId, EnumIndicatorType.HEALTH_POINT),
                 BigDecimalUtil.formatRoundDecimal(personHealthIndex, 2), false);

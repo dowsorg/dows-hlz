@@ -78,7 +78,7 @@ public class SnapCaseIndicatorExpressionWriter extends BaseSnapshotTableWriter<C
                 EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource()
                 )
         ));
-        rst.sort(Comparator.comparing(i->i.getCaseIndicatorExpressionId()));
+        rst.sort(Comparator.nullsFirst(Comparator.comparing(i->i.getCaseIndicatorExpressionId())));
         return rst;
     }
 
