@@ -19,24 +19,24 @@ services:
     ports:
       - "17017:27017"
     networks:
-      - prd_net
+      - dev_net
 
   # 可视化图形工具
-  adminmongo:
-    image: mrvautin/adminmongo
-    restart: unless-stopped
-    container_name: adminmongo
-    environment:
-      - HOST=0.0.0.0
-    depends_on:
-      - 'mongodb-dev'
-    links:
-      - mongodb-dev
-    ports:
-      - "1234:1234"
-    networks:
-      - prd_net
+#  adminmongo:
+#    image: mrvautin/adminmongo
+#    restart: unless-stopped
+#    container_name: adminmongo
+#    environment:
+#      - HOST=0.0.0.0
+#    depends_on:
+#      - 'mongodb-dev'
+#    links:
+#      - mongodb-dev
+#    ports:
+#      - "1234:1234"
+#    networks:
+#      - dev_net
 
 networks:
-  prd_net:
+  dev_net:
     external: true
