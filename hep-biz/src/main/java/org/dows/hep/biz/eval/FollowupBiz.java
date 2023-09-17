@@ -333,9 +333,68 @@ public class FollowupBiz {
 
     public ExperimentMonitorFollowupRsResponse get(String indicatorFuncId, String experimentPersonId, Integer periods) {
         ExperimentFollowupPlanEntity rowPlan = experimentFollowupPlanDao.getByExperimentPersonId(experimentPersonId, indicatorFuncId).orElse(null);
-        if (null == rowPlan) {
-            return new ExperimentMonitorFollowupRsResponse();
+        if(null==rowPlan){
+            List<ExperimentIndicatorViewMonitorFollowupRsResponse> experimentIndicatorViewMonitorFollowupRsResponseList = new ArrayList<>();
+            Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
+            Map<String, String> kExperimentIndicatorInstanceIdVValMap = new HashMap<>();
+            Map<String, String> kInstanceIdVExperimentIndicatorInstanceIdMap = new HashMap<>();
+            Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+            experimentIndicatorInstanceRsService.lambdaQuery()
+                    .select(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId, ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId, ExperimentIndicatorInstanceRsEntity::getIndicatorName, ExperimentIndicatorInstanceRsEntity::getUnit)
+                    .eq(ExperimentIndicatorInstanceRsEntity::getExperimentPersonId, experimentPersonId)
+                    .list()
+                    .forEach(experimentIndicatorInstanceRsEntity -> {
+                        kInstanceIdVExperimentIndicatorInstanceIdMap.put(experimentIndicatorInstanceRsEntity.getIndicatorInstanceId(), experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+                        experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+                        kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.put(
+                                experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(), experimentIndicatorInstanceRsEntity);
+                    });
+            if (!experimentIndicatorInstanceIdSet.isEmpty()) {
+                queryPersonBiz.fillIndicatorValMap(kExperimentIndicatorInstanceIdVValMap, periods, experimentPersonId, experimentIndicatorInstanceIdSet);
+
+            }
+            experimentIndicatorViewMonitorFollowupRsService.lambdaQuery()
+                    .eq(ExperimentIndicatorViewMonitorFollowupRsEntity::getIndicatorFuncId, indicatorFuncId)
+                    .list()
+                    .forEach(experimentIndicatorViewMonitorFollowupRsEntity -> {
+                        List<ExperimentIndicatorViewMonitorFollowupFollowupContentRsResponse> experimentIndicatorViewMonitorFollowupFollowupContentRsResponseList = new ArrayList<>();
+                        String ivmfContentNameArray = experimentIndicatorViewMonitorFollowupRsEntity.getIvmfContentNameArray();
+                        if (StringUtils.isBlank(ivmfContentNameArray)) {
+                            return;
+                        }
+                        List<String> contentNameList = Arrays.stream(ivmfContentNameArray.split(EnumString.COMMA.getStr())).collect(Collectors.toList());
+                        String ivmfContentRefIndicatorInstanceIdArray = experimentIndicatorViewMonitorFollowupRsEntity.getIvmfContentRefIndicatorInstanceIdArray();
+                        if (StringUtils.isBlank(ivmfContentRefIndicatorInstanceIdArray)) {
+                            return;
+                        }
+                        List<String> indicatorInstanceIdArrayList = Arrays.stream(ivmfContentRefIndicatorInstanceIdArray.split(EnumString.JIN.getStr())).collect(Collectors.toList());
+                        final Integer loopNum = Math.min(contentNameList.size(), indicatorInstanceIdArrayList.size());
+                        for (int i = 0; i < loopNum; i++) {
+                            String indicatorInstanceIdArray = indicatorInstanceIdArrayList.get(i);
+                            List<ExperimentIndicatorInstanceRsResponse> experimentIndicatorInstanceRsResponseList = new ArrayList<>();
+                            populateExperimentIndicatorInstanceRsResponseList(experimentIndicatorInstanceRsResponseList, indicatorInstanceIdArray,
+                                    kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, kInstanceIdVExperimentIndicatorInstanceIdMap, kExperimentIndicatorInstanceIdVValMap);
+                            ExperimentIndicatorViewMonitorFollowupFollowupContentRsResponse experimentIndicatorViewMonitorFollowupFollowupContentRsResponse = ExperimentIndicatorViewMonitorFollowupFollowupContentRsResponse
+                                    .builder()
+                                    .name(contentNameList.get(i))
+                                    .experimentIndicatorInstanceRsResponseList(experimentIndicatorInstanceRsResponseList)
+                                    .build();
+                            experimentIndicatorViewMonitorFollowupFollowupContentRsResponseList.add(experimentIndicatorViewMonitorFollowupFollowupContentRsResponse);
+                        }
+                        ExperimentIndicatorViewMonitorFollowupRsResponse experimentIndicatorViewMonitorFollowupRsResponse = ExperimentIndicatorViewMonitorFollowupRsResponse
+                                .builder()
+                                .experimentIndicatorViewMonitorFollowupId(experimentIndicatorViewMonitorFollowupRsEntity.getExperimentIndicatorViewMonitorFollowupId())
+                                .name(experimentIndicatorViewMonitorFollowupRsEntity.getName())
+                                .experimentIndicatorViewMonitorFollowupFollowupContentRsResponseList(experimentIndicatorViewMonitorFollowupFollowupContentRsResponseList)
+                                .build();
+                        experimentIndicatorViewMonitorFollowupRsResponseList.add(experimentIndicatorViewMonitorFollowupRsResponse);
+                    });
+            return ExperimentMonitorFollowupRsResponse
+                    .builder()
+                    .experimentIndicatorViewMonitorFollowupRsResponseList(experimentIndicatorViewMonitorFollowupRsResponseList)
+                    .build();
         }
+
         return get(rowPlan,null,null,periods);
 
     }
