@@ -8,7 +8,6 @@ import org.dows.hep.biz.spel.meta.ISpelLoad;
 import org.dows.hep.biz.spel.meta.SpelInput;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.CaseIndicatorExpressionItemEntity;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionItemEntity;
@@ -39,7 +38,7 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         if (ShareUtil.XObject.isEmpty(rowsExpressionItem)) {
             return rst;
         }
-        rowsExpressionItem.sort(Comparator.nullsLast(Comparator.comparingInt(CaseIndicatorExpressionItemEntity::getSeq)));
+        rowsExpressionItem.sort(Comparator.comparingInt(i->Optional.ofNullable(i.getSeq()).orElse(Integer.MAX_VALUE)));
         List<SpelInput.SpelExpressionItem> expressionItems = new ArrayList<>();
         SpelInput.SpelExpressionItem expressionItem;
         for (SnapCaseIndicatorExpressionItemEntity item : rowsExpressionItem) {

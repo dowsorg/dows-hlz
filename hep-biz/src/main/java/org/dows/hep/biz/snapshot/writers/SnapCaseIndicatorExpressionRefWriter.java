@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author : wuzl
@@ -93,7 +94,7 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
                 CopyWrapper.create(CaseIndicatorExpressionRefEntity::new)
                         .endFrom(i)
                         .setCaseIndicatorExpressionRefId(i.getIndicatorExpressionRefId())));
-        rst.sort(Comparator.nullsFirst(Comparator.comparing(i->i.getCaseIndicatorExpressionRefId())));
+        rst.sort(Comparator.comparing(i-> Optional.ofNullable(i.getCaseIndicatorExpressionRefId()).orElse("")));
         return rst;
     }
 }

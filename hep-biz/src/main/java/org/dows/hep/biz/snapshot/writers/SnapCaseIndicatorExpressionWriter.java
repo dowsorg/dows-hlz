@@ -16,10 +16,7 @@ import org.dows.hep.service.snapshot.SnapCaseIndicatorExpressionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author : wuzl
@@ -78,7 +75,7 @@ public class SnapCaseIndicatorExpressionWriter extends BaseSnapshotTableWriter<C
                 EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource()
                 )
         ));
-        rst.sort(Comparator.nullsFirst(Comparator.comparing(i->i.getCaseIndicatorExpressionId())));
+        rst.sort(Comparator.comparing(i-> Optional.ofNullable(i.getCaseIndicatorExpressionId()).orElse("")));
         return rst;
     }
 

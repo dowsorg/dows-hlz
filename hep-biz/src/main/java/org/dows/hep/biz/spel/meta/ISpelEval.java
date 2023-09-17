@@ -10,9 +10,15 @@ import java.util.Map;
  */
 public interface ISpelEval {
 
+    default SpelEvalResult evalDelta(StandardEvaluationContext context){
+        return evalDeltaSum(context, null);
+    }
+
     default SpelEvalResult eval(StandardEvaluationContext context){
         return evalSum(context, null);
     }
+
+    SpelEvalResult evalDeltaSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum );
 
     SpelEvalResult evalSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum );
 
