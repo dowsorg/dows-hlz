@@ -37,9 +37,24 @@ public class ExperimentSupportExamCheckRequestRs implements Serializable {
   @Schema(title = "机构id")
   private String experimentOrgId;
 
+  @Schema(title = "操作人id")
+  private String operatorId;
+
   @Schema(title = "辅助检查id")
   private List<String> experimentIndicatorViewSupportExamIdList;
-
+  /**
+   * 存mongodb新增字段
+   */
+  @Schema(title = "实验分组id")
+  private String experimentGroupId;
+  @Schema(title = "流程id")
+  private String operateFlowId;
+  @Schema(title = "机构名称")
+  private String orgName;
+  @Schema(title = "(职责|能力|功能|菜单)名称[体格检查报告,辅助检查报告......]")
+  private String functionName;
   @Schema(title = "json辅助检查明细数据")
   private String data;
+
+
 }

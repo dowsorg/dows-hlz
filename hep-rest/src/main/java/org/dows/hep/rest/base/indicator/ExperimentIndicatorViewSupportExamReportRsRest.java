@@ -31,7 +31,12 @@ public class ExperimentIndicatorViewSupportExamReportRsRest {
 
   @Operation(summary = "根据实验人物id和功能点id查找辅助报告")
   @GetMapping("v1/userExperiment/supportExamReport/get")
-  public List<ExperimentSupportExamReportResponseRs> get(@RequestParam String appId, @RequestParam String experimentId, @RequestParam String indicatorFuncId, @RequestParam String experimentPersonId, String experimentOrgId, Integer periods) {
+  public List<ExperimentSupportExamReportResponseRs> get(@RequestParam String appId,
+                                                         @RequestParam String experimentId,
+                                                         @RequestParam String indicatorFuncId,
+                                                         @RequestParam String experimentPersonId,
+                                                         @RequestParam String experimentOrgId,
+                                                         @RequestParam Integer periods) {
     return experimentIndicatorViewSupportExamReportRsBiz.get(appId, experimentId, indicatorFuncId, experimentPersonId, experimentOrgId, periods);
   }
 }
