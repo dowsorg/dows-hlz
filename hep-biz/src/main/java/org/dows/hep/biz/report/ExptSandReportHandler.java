@@ -656,8 +656,11 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
             for (OperateFlowEntity operateFlowEntity : operateFlowEntities) {
                 ExptSandReportModel.ServiceLog serviceLog = new ExptSandReportModel.ServiceLog();
                 serviceLog.setDt(DateUtil.formatDateTime(operateFlowEntity.getOperateTime()));
-                serviceLog.setLable(operateFlowEntity.getReportLabel());
-                serviceLog.setDescr(operateFlowEntity.getReportDescr());
+               /* serviceLog.setLable(operateFlowEntity.getReportLabel());
+                serviceLog.setDescr(operateFlowEntity.getReportDescr());*/
+
+                serviceLog.setDescr(operateFlowEntity.getReportLabel());
+                serviceLog.setLable(operateFlowEntity.getReportDescr());
                 npcData1.getServiceLogs().add(serviceLog);
             }
         }
