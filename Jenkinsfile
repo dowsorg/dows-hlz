@@ -32,8 +32,8 @@ pipeline {
         TO_PRD_CD_PATH = '/findsoft/hep/prd/saas/api'
 
         DOCKER_OFFLINE_LOGIN = 'docker login --username=admin --password=findsoft_harbor http://192.168.1.60:7080'
-        DOCKER_OFFLINE_BUILD = 'docker build . --file Dockerfile -t http://192.168.1.60:7080/findsoft/api-hep-admin'
-        DOCKER_OFFLINE_PUSH = 'docker push http://192.168.1.60:7080/findsoft/api-hep-admin'
+        DOCKER_OFFLINE_BUILD = 'docker build . --file Dockerfile -t http://192.168.1.60:7080/hep/api-hep-admin'
+        DOCKER_OFFLINE_PUSH = 'docker push http://192.168.1.60:7080/hep/api-hep-admin'
 
         DOCKER_ONLINE_LOGIN = 'docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com'
         DOCKER_ONLINE_BUILD  = 'docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin'
@@ -108,7 +108,7 @@ pipeline {
                     } else if (branch.startsWith('dev-')) {
                         echo "Building for development environment for ${branch}"
                         sh "$DOCKER_OFFLINE_LOGIN"
-                        sh "$DOCKER_OFFLINE_BUILD-dev:$ver"
+                        sh "$DOCKER_OFFLINE_BUILD'-dev':$ver"
                         sh "$DOCKER_OFFLINE_PUSH-dev:$ver"
 
                         sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_DEV_CD_PATH"
