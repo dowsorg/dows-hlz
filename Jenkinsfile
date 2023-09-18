@@ -96,8 +96,8 @@ pipeline {
                     if (branch.startsWith('lte-')) {
                         echo "Building for sit environment for $branch"
                         sh "$DOCKER_OFFLINE_LOGIN"
-                        sh "$DOCKER_OFFLINE_BUILD'-lte':$ver"
-                        sh "$DOCKER_OFFLINE_PUSH'-lte':$ver"
+                        sh "'$DOCKER_OFFLINE_BUILD'-lte:$ver"
+                        sh "'$DOCKER_OFFLINE_PUSH'-lte:$ver"
 
                         sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_LTE_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_LTE_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_LTE_CD_PATH"
@@ -109,7 +109,7 @@ pipeline {
                         echo "Building for development environment for ${branch}"
                         sh "$DOCKER_OFFLINE_LOGIN"
                         sh "$DOCKER_OFFLINE_BUILD'-dev':$ver"
-                        sh "$DOCKER_OFFLINE_PUSH-dev:$ver"
+                        sh "$DOCKER_OFFLINE_PUSH'-dev':$ver"
 
                         sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_DEV_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_DEV_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_DEV_CD_PATH"
