@@ -101,7 +101,7 @@ pipeline {
 
                         sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_LTE_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_LTE_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_LTE_CD_PATH"
-                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_LTE_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$START_CONTAINER'"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_LTE_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$DOCKER_CONTAINER_START'"
 
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_LTE_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'LTE环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
 
@@ -113,7 +113,7 @@ pipeline {
 
                         sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_DEV_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_DEV_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_DEV_CD_PATH"
-                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_DEV_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$START_CONTAINER'"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_DEV_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$DOCKER_CONTAINER_START'"
 
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_DEV_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'DEV环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
 
@@ -126,7 +126,7 @@ pipeline {
 
                         sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_SIT_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_SIT_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_SIT_CD_PATH"
-                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_SIT_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$START_CONTAINER'"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_SIT_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$DOCKER_CONTAINER_START'"
 
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '"$branch"' '"$gitCommitAuthorName"' 'api-hep-admin' 'SIT环境发布' '"$gitCommitMessage"' '"$changes"' 'green'"
@@ -140,7 +140,7 @@ pipeline {
 
                         sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_UAT_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_UAT_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_UAT_CD_PATH"
-                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_UAT_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$START_CONTAINER'"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_UAT_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$DOCKER_CONTAINER_START'"
 
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'UAT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '$branch' '$gitCommitAuthorName' 'api-hep-admin' 'UAT环境发布' '$gitCommitMessage' '$changes' 'green'"
@@ -157,7 +157,7 @@ pipeline {
 
                         //sh "sshpass -p $PRD_AS_PWD ssh -o StrictHostKeyChecking=no $PRD_AS_USERNAME@$PRD_AS_HOST mkdir -p $TO_PRD_CD_PATH"
                         //sh "sshpass -p $PRD_AS_PWD scp -r $FORM_PRD_CD_PATH $AS_USERNAME@$AS_HOST:$TO_PRD_CD_PATH"
-                        //sh "sshpass -p $PRD_AS_PWD ssh $PRD_AS_USERNAME@$PRD_AS_HOST 'cd $TO_PRD_CD_PATH/admin;$LOGIN_ONLINE_DOCKER;$START_CONTAINER'"
+                        //sh "sshpass -p $PRD_AS_PWD ssh $PRD_AS_USERNAME@$PRD_AS_HOST 'cd $TO_PRD_CD_PATH/admin;$LOGIN_ONLINE_DOCKER;$DOCKER_CONTAINER_START'"
 
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'PRD环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '$branch' '$gitCommitAuthorName' 'api-hep-admin' 'PRD环境发布' '$gitCommitMessage' '$changes' 'green'"
