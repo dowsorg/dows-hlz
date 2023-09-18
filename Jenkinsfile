@@ -94,7 +94,7 @@ pipeline {
                         /usr/local/mvn/bin/mvn -Dmaven.test.skip=true clean package -U
                     '''
                     if (branch.startsWith('lte-')) {
-                        echo "Building for sit environment for $branch"
+                        echo "====== Building for sit environment for $branch ======="
                         sh "$DOCKER_OFFLINE_LOGIN"
                         sh "'$DOCKER_OFFLINE_BUILD'-lte:$ver"
                         sh "'$DOCKER_OFFLINE_PUSH'-lte:$ver"
