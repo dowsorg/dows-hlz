@@ -1,10 +1,10 @@
 package org.dows.hep.biz.spel.meta;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
+import org.dows.hep.biz.util.ShareUtil;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,10 +16,19 @@ import java.util.List;
 
 @Data
 @Accessors(chain = true)
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class SpelInput {
+
+    public SpelInput(){
+
+    }
+    public SpelInput(EnumIndicatorExpressionSource source){
+        this.source=source;
+    }
+    public SpelInput(Integer source){
+        this.source=EnumIndicatorExpressionSource.of(source);
+    }
+    private EnumIndicatorExpressionSource source;
+
     private String reasonId;
 
     //公式id
@@ -31,15 +40,29 @@ public class SpelInput {
     //是否随机
     private boolean random;
 
-    //下限
+    //公式下限
     private BigDecimal min;
 
-    //上限
+    //公式上限
     private BigDecimal max;
+
+    //指标下限
+    private BigDecimal indicatorMin;
+
+    //指标上限
+    private BigDecimal indicatorMax;
 
     //用量
     private BigDecimal factor;
     private List<SpelExpressionItem> expressions;
+
+    public boolean hasFactor(){
+        if(ShareUtil.XObject.anyEmpty(factor,source))
+            return false;
+        return source==EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL
+                ||source==EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL;
+
+    }
 
     @Override
     public String toString() {

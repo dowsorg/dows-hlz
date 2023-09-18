@@ -6,6 +6,7 @@ import org.dows.hep.entity.CaseIndicatorInstanceEntity;
 import org.dows.hep.service.CaseIndicatorInstanceService;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,6 +54,19 @@ public class CaseIndicatorInstanceDao extends BaseDao<CaseIndicatorInstanceServi
         return service.lambdaQuery()
                 .eq(CaseIndicatorInstanceEntity::getAppId,appId)
                 .eq(CaseIndicatorInstanceEntity::getPrincipalId,personId)
+                .select(cols)
+                .list();
+    }
+
+    public List<CaseIndicatorInstanceEntity> getByAccountIds(Collection<String> accountIds, SFunction<CaseIndicatorInstanceEntity,?>...cols){
+        if(ShareUtil.XObject.isEmpty(accountIds)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=accountIds.size()==1;
+        return service.lambdaQuery()
+                .eq(oneFlag, CaseIndicatorInstanceEntity::getPrincipalId,accountIds.iterator().next())
+                .in(!oneFlag, CaseIndicatorInstanceEntity::getPrincipalId,accountIds)
+                .orderByAsc(getColId())
                 .select(cols)
                 .list();
     }

@@ -1,10 +1,10 @@
 version: '3'
 services:
   # mongodb
-  mongodb-dev:
+  mongodb-sit:
     image: mongo
     restart: unless-stopped
-    container_name: mongodb-dev
+    container_name: mongodb-sit
     #command: mongod --config /etc/mongo/mongod.conf
     environment:
       TZ: Asia/Shanghai
@@ -17,26 +17,26 @@ services:
       - ./mongodb/db:/data/db
       - ./mongodb/log:/data/logs
     ports:
-      - "17017:27017"
+      - "27017:27017"
     networks:
-      - prd_net
+      - sit_net
 
   # 可视化图形工具
-  adminmongo:
-    image: mrvautin/adminmongo
-    restart: unless-stopped
-    container_name: adminmongo
-    environment:
-      - HOST=0.0.0.0
-    depends_on:
-      - 'mongodb-dev'
-    links:
-      - mongodb-dev
-    ports:
-      - "1234:1234"
-    networks:
-      - prd_net
+#  adminmongo:
+#    image: mrvautin/adminmongo
+#    restart: unless-stopped
+#    container_name: adminmongo
+#    environment:
+#      - HOST=0.0.0.0
+#    depends_on:
+#      - 'mongodb-dev'
+#    links:
+#      - mongodb-dev
+#    ports:
+#      - "1234:1234"
+#    networks:
+#      - prd_net
 
 networks:
-  prd_net:
+  sit_net:
     external: true

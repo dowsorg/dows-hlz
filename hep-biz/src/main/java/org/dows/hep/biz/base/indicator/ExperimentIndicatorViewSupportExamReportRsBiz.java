@@ -19,11 +19,13 @@ import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
 import org.dows.hep.api.edw.request.HepOperateGetRequest;
 import org.dows.hep.api.edw.request.HepOperateSetRequest;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumIndicatorExpressionField;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumOrgFeeType;
 import org.dows.hep.biz.edw.InterveneHandler;
+import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.eval.QueryPersonBiz;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
@@ -68,6 +70,8 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
   private final ExperimentOrgService experimentOrgService;
   private final CaseOrgFeeService caseOrgFeeService;
   private final QueryPersonBiz queryPersonBiz;
+
+  private final EvalPersonBiz evalPersonBiz;
   private final HepOperateSetRepository hepOperateSetRepository;
   private final HepOperateGetRepository hepOperateGetRepository;
   private final InterveneHandler interveneHandler;
@@ -132,6 +136,11 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
       interveneHandler.write(experimentSupportExamCheckRequestRs,HepHealthExamination.class);
       return;
     }
+    if(ConfigExperimentFlow.SWITCH2SpelCache){
+      evalPersonBiz.supportExamCheck(experimentSupportExamCheckRequestRs,request);
+      return;
+    }
+
     String appId = experimentSupportExamCheckRequestRs.getAppId();
     Integer periods = experimentSupportExamCheckRequestRs.getPeriods();
     String experimentId = experimentSupportExamCheckRequestRs.getExperimentId();
@@ -270,7 +279,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
               .operateFlowId(operateFlowId)
               .name(experimentIndicatorViewSupportExamRsEntity.getName())
               .fee(experimentIndicatorViewSupportExamRsEntity.getFee())
-              .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.DOWN))
+              .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.HALF_UP))
                       .orElse(currentVal))
               .unit(unit)
               .resultExplain(experimentIndicatorViewSupportExamRsEntity.getResultAnalysis())
@@ -335,7 +344,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
                   .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
                   .one();
           if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
-            reimburse = reimburse.add(fee.multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio())).divide(BigDecimal.valueOf(100), 2, RoundingMode.DOWN));
+            reimburse = reimburse.add(fee.multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio())).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
           }
         }
       }

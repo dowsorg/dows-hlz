@@ -241,6 +241,10 @@ public class ExperimentOrgBiz {
             findOrgNotice.setExperimentPersonIds(ShareUtil.XCollection.map(experimentPersonDao.getByOrgId(findOrgNotice.getExperimentOrgId(),
                     ExperimentPersonEntity::getExperimentPersonId), ExperimentPersonEntity::getExperimentPersonId));
         }
+        List<String> followupNoticeIds = ShareUtil.XCollection.map(experimentOrgNoticeDao.getTopFollowUpNoticeIds(findOrgNotice.getExperimentPersonIds()),
+                ExperimentOrgNoticeEntity::getExperimentOrgNoticeId);
+        findOrgNotice.setFollowUpNoticeIds(followupNoticeIds);
+
         return ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
                 ExperimentOrgNoticeEntity::getId,
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
@@ -306,6 +310,7 @@ public class ExperimentOrgBiz {
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
                 ExperimentOrgNoticeEntity::getExperimentInstanceId,
                 ExperimentOrgNoticeEntity::getExperimentPersonId,
+                ExperimentOrgNoticeEntity::getExperimentOrgId,
                 ExperimentOrgNoticeEntity::getPersonName,
                 ExperimentOrgNoticeEntity::getAvatar,
                 ExperimentOrgNoticeEntity::getPeriods,
@@ -367,9 +372,9 @@ public class ExperimentOrgBiz {
                 .setActionPeriod(timePoint.getPeriod())
                 .setActionGameDay(timePoint.getGameDay())
                 .setState(EnumExperimentEventState.USERAction.getCode());
-        if (!ExperimentEventRules.Instance().saveActionEvent(rowEvent, rowNotice, actedIds)) {
-            return null;
-        }
+
+        AssertUtil.falseThenThrow(ExperimentEventRules.Instance().saveActionEvent(rowEvent, rowNotice, actedIds))
+                .throwMessage("系统繁忙，请稍后重试");
         return experimentOrgNoticeBiz.CreateOrgNoticeResponse(noticeBox);
 
     }
@@ -405,8 +410,8 @@ public class ExperimentOrgBiz {
     public List<OperateFlowEntity> listFlowLog(String experimentId,String experimentPersonId){
         List<OperateFlowEntity> operateFlowEntities = operateFlowDao.listFlowLog(experimentId, experimentPersonId,
                 OperateFlowEntity::getOperateTime,
-                OperateFlowEntity::getFlowName,
-                OperateFlowEntity::getReportLabel);
+                OperateFlowEntity::getReportLabel,
+                OperateFlowEntity::getReportDescr);
         return operateFlowEntities;
     }
 

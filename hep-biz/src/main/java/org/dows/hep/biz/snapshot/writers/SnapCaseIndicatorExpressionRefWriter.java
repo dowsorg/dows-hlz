@@ -1,6 +1,7 @@
 package org.dows.hep.biz.snapshot.writers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumStatus;
 import org.dows.hep.biz.dao.*;
 import org.dows.hep.biz.snapshot.BaseSnapshotTableWriter;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
@@ -14,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author : wuzl
@@ -47,6 +50,15 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
     @Autowired
     private TreatItemDao treatItemDao;
 
+    @Autowired
+    private CrowdsInstanceDao crowdsInstanceDao;
+
+    @Autowired
+    private RiskModelDao riskModelDao;
+
+    @Autowired
+    private CaseIndicatorInstanceDao caseIndicatorInstanceDao;
+
     @Override
     public List<CaseIndicatorExpressionRefEntity> readSource(SnapshotRequest req) {
         List<CaseIndicatorExpressionRefEntity> rst=new ArrayList<>();
@@ -61,13 +73,28 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
                 CaseEventActionEntity::getCaseEventActionId);
         caseEventIds.addAll (caseActionIds);
         rst.addAll(caseIndicatorExpressionRefDao.getByReasonId(req.getAppId(), caseEventIds ));
-        List<String> treatItemIds= ShareUtil.XCollection.map(treatItemDao.getAll(req.getAppId(), true,TreatItemEntity::getTreatItemId),
+        //治疗效果
+        List<String> refItemIds= ShareUtil.XCollection.map(treatItemDao.getAll(req.getAppId(), EnumStatus.ENABLE.getCode(), true,TreatItemEntity::getTreatItemId),
                 TreatItemEntity::getTreatItemId);
-        List<IndicatorExpressionRefEntity> rowsTreatRef=indicatorExpressionRefDao.getByReasonId(req.getAppId(), treatItemIds);
-        rst.addAll(ShareUtil.XCollection.map(rowsTreatRef, i->
+        List<IndicatorExpressionRefEntity> refItems=indicatorExpressionRefDao.getByReasonId(req.getAppId(), refItemIds);
+
+        //人物指标
+        refItemIds= ShareUtil.XCollection.map(caseIndicatorInstanceDao.getByAccountIds(caseAccountIds,CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId),
+                CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId);
+        rst.addAll(caseIndicatorExpressionRefDao.getByReasonId(req.getAppId(), refItemIds));
+
+        //人群-风险模型
+        refItemIds=ShareUtil.XCollection.map(crowdsInstanceDao.getAll(req.getAppId(), true,CrowdsInstanceEntity::getCrowdsId),
+                CrowdsInstanceEntity::getCrowdsId);
+        refItemIds.addAll(ShareUtil.XCollection.map(riskModelDao.getAll(req.getAppId(), EnumStatus.ENABLE.getCode(), RiskModelEntity::getRiskModelId),
+                RiskModelEntity::getRiskModelId));
+        refItems.addAll(indicatorExpressionRefDao.getByReasonId(req.getAppId(), refItemIds));
+
+        rst.addAll(ShareUtil.XCollection.map(refItems, i->
                 CopyWrapper.create(CaseIndicatorExpressionRefEntity::new)
                         .endFrom(i)
                         .setCaseIndicatorExpressionRefId(i.getIndicatorExpressionRefId())));
+        rst.sort(Comparator.comparing(i-> Optional.ofNullable(i.getCaseIndicatorExpressionRefId()).orElse("")));
         return rst;
     }
 }

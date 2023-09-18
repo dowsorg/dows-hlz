@@ -52,27 +52,28 @@ public class SpelInvoker {
 
 
     //region 治疗干预
-    public List<SpelEvalResult> evalTreatEffect(String experimentId, String experimentPersonId, Integer periods,List<ExptTreatPlanItemVO> treatItems,Map<String, SpelEvalSumResult> mapSum ) {
+    public List<SpelEvalResult> evalTreatEffect(String experimentId, String experimentPersonId, Integer periods,List<ExptTreatPlanItemVO> treatItems,
+                                                Map<String, SpelEvalSumResult> mapSum,EnumIndicatorExpressionSource source ) {
         StandardEvaluationContext context = new SpelPersonContext().setVariables(experimentPersonId, periods);
         final Map<String, BigDecimal> mapTreatItem = ShareUtil.XCollection.toMap(treatItems, HashMap::new,ExptTreatPlanItemVO::getTreatItemId,i ->
                 BigDecimalUtil.tryParseDecimalElseZero(i.getWeight()),(c,n)->BigDecimalUtil.add(c,n));
-        return spelEngine.loadFromSnapshot()
-                .withReasonId(experimentId, experimentPersonId, mapTreatItem.keySet(), null)
+        return spelEngine.loadFromSpelCache()
+                .withReasonId(experimentId, experimentPersonId, mapTreatItem.keySet(),source.getSource())
                 .prepare(inputs -> inputs.forEach(i -> i.setFactor(mapTreatItem.get(i.getReasonId()))))
-                .evalSum(context, mapSum);
+                .evalDeltaSum(context, mapSum);
     }
     //endregion
 
     //region 突发事件
     //触发条件
     public boolean checkEventCondition(String experimentId, String experimentPersonId, String eventId, StandardEvaluationContext context) {
-        return spelEngine.loadFromSnapshot()
+        return spelEngine.loadFromSpelCache()
                 .withReasonId(experimentId, experimentPersonId, eventId,
                         EnumIndicatorExpressionSource.EMERGENCY_TRIGGER_CONDITION.getSource())
                 .check(context);
     }
     public List<SpelCheckResult> checkEventCondition(String experimentId, String experimentPersonId,Integer period,Collection<String> eventIds) {
-        return spelEngine.loadFromSnapshot()
+        return spelEngine.loadFromSpelCache()
                 .withReasonId(experimentId, experimentPersonId, eventIds,
                         EnumIndicatorExpressionSource.EMERGENCY_TRIGGER_CONDITION.getSource())
                 .check(new SpelPersonContext().setVariables(experimentPersonId, period));
@@ -85,10 +86,10 @@ public class SpelInvoker {
     }
     public boolean saveEventEffect(String experimentId, String experimentPersonId, Integer periods, Collection<String> eventIds, StandardEvaluationContext context){
         Map<String, SpelEvalSumResult> mapSum=new HashMap<>();
-        List<SpelEvalResult> evalResults= spelEngine.loadFromSnapshot()
+        List<SpelEvalResult> evalResults= spelEngine.loadFromSpelCache()
                 .withReasonId(experimentId, experimentPersonId, eventIds,
                         EnumIndicatorExpressionSource.EMERGENCY_INFLUENCE_INDICATOR.getSource())
-                .evalSum(context,mapSum);
+                .evalDeltaSum(context,mapSum);
         return saveIndicator(experimentPersonId,evalResults,mapSum.values(),periods);
 
     }
@@ -96,10 +97,10 @@ public class SpelInvoker {
     //处理措施作用
 
     public List<SpelEvalResult> evalEventAction(String experimentId, String experimentPersonId, Integer periods,Collection<String> actionIds,Map<String, SpelEvalSumResult> mapSum){
-        return  spelEngine.loadFromSnapshot()
+        return  spelEngine.loadFromSpelCache()
                 .withReasonId(experimentId, experimentPersonId, actionIds,
                         EnumIndicatorExpressionSource.EMERGENCY_ACTION_INFLUENCE_INDICATOR.getSource())
-                .evalSum(new SpelPersonContext().setVariables(experimentPersonId,periods), mapSum);
+                .evalDeltaSum(new SpelPersonContext().setVariables(experimentPersonId,periods), mapSum);
     }
     public boolean saveEventAction(String experimentId, String experimentPersonId, Integer periods,Collection<String> actionIds){
         return saveEventAction(experimentId,experimentPersonId,periods,actionIds,
@@ -107,10 +108,10 @@ public class SpelInvoker {
     }
     public boolean saveEventAction(String experimentId, String experimentPersonId, Integer periods,Collection<String> actionIds,StandardEvaluationContext context) {
         Map<String, SpelEvalSumResult> mapSum = new HashMap<>();
-        List<SpelEvalResult> evalResults = spelEngine.loadFromSnapshot()
+        List<SpelEvalResult> evalResults = spelEngine.loadFromSpelCache()
                 .withReasonId(experimentId, experimentPersonId, actionIds,
                         EnumIndicatorExpressionSource.EMERGENCY_ACTION_INFLUENCE_INDICATOR.getSource())
-                .evalSum(context, mapSum);
+                .evalDeltaSum(context, mapSum);
         return saveIndicator(experimentPersonId,evalResults,mapSum.values(), periods);
     }
     //endregion

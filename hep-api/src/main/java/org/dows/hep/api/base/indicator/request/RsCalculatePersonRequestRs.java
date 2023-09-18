@@ -1,5 +1,6 @@
 package org.dows.hep.api.base.indicator.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,7 @@ public class RsCalculatePersonRequestRs implements Serializable {
   @Schema(title = "人物id")
   private Set<String> personIdSet;
 
+  @JsonIgnore
   @Schema(title = "功能点类型")
   private EnumEvalFuncType funcType;
 }

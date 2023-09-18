@@ -5,10 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.biz.dao.SnapCaseIndicatorExpressionDao;
 import org.dows.hep.biz.dao.SnapCaseIndicatorExpressionItemDao;
 import org.dows.hep.biz.dao.SnapCaseIndicatorExpressionRefDao;
-import org.dows.hep.biz.snapshot.EnumSnapshotType;
-import org.dows.hep.biz.snapshot.SnapshotRefCache;
+import org.dows.hep.biz.spel.SnapshotRefValidator;
 import org.dows.hep.biz.spel.meta.SpelInput;
-import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionItemEntity;
@@ -33,7 +31,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
 
     @Override
     public SpelInput withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source) {
-        SpelInput rst=new SpelInput().setReasonId(reasonId);
+        SpelInput rst=new SpelInput(source).setReasonId(reasonId);
         SnapshotRefValidator refValidator=new SnapshotRefValidator(experimentId);
         final String refExperimentId4ExpressionRef=refValidator.checkExpressionRef().getExpressionRefId();
         if(ShareUtil.XObject.isEmpty(refExperimentId4ExpressionRef)){
@@ -121,6 +119,16 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                     experimentId,refExperimentId4Expression,String.join(",", reasonIds),source,String.join(",", expressionIds));
             return rst;
         }
+        Map<String,String> mapMinXMaxIds=new HashMap<>();
+        rowsExpression.forEach(i->{
+            if(ShareUtil.XObject.notEmpty(i.getMinIndicatorExpressionItemId())){
+                mapMinXMaxIds.put(i.getMinIndicatorExpressionItemId(), i.getCaseIndicatorExpressionId());
+            }
+            if(ShareUtil.XObject.notEmpty(i.getMaxIndicatorExpressionItemId())){
+                mapMinXMaxIds.put(i.getMaxIndicatorExpressionItemId(), i.getCaseIndicatorExpressionId());
+            }
+        });
+
         final List<String> itemExpressionIds=ShareUtil.XCollection.map(rowsExpression, SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId);
         List<SnapCaseIndicatorExpressionItemEntity> rowsExpressionItem=snapCaseIndicatorExpressionItemDao.getByExpressionId(refExperimentId4Item,itemExpressionIds,
                 SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId,
@@ -133,12 +141,29 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                 SnapCaseIndicatorExpressionItemEntity::getResultValList,
                 SnapCaseIndicatorExpressionItemEntity::getSeq
         );
+        List<SnapCaseIndicatorExpressionItemEntity> rowsMinMaxExpressionItem=snapCaseIndicatorExpressionItemDao.getByExpressionItemId(refExperimentId4Item,mapMinXMaxIds.keySet(),
+                SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId,
+                SnapCaseIndicatorExpressionItemEntity::getIndicatorExpressionId,
+                SnapCaseIndicatorExpressionItemEntity::getConditionExpression,
+                SnapCaseIndicatorExpressionItemEntity::getConditionNameList,
+                SnapCaseIndicatorExpressionItemEntity::getConditionValList,
+                SnapCaseIndicatorExpressionItemEntity::getResultExpression,
+                SnapCaseIndicatorExpressionItemEntity::getResultNameList,
+                SnapCaseIndicatorExpressionItemEntity::getResultValList,
+                SnapCaseIndicatorExpressionItemEntity::getSeq
+        );
+        rowsMinMaxExpressionItem.forEach(i->{
+            i.setMinOrMax(true)
+                    .setIndicatorExpressionId(mapMinXMaxIds.get(i.getCaseIndicatorExpressionItemId()));
+        });
+        rowsExpressionItem.addAll(rowsMinMaxExpressionItem);
+
         Map<String,SnapCaseIndicatorExpressionEntity> mapExpression=ShareUtil.XCollection.toMap(rowsExpression, SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId);
         Map<String,List<SnapCaseIndicatorExpressionItemEntity>> mapExpressionItem=ShareUtil.XCollection.groupBy(rowsExpressionItem, SnapCaseIndicatorExpressionItemEntity::getIndicatorExpressionId);
         Map<String,String> mapExpressionRef=ShareUtil.XCollection.toMap(rowsExpressionRef,
                 SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId, SnapCaseIndicatorExpressionRefEntity::getReasonId);
         mapExpression.forEach((k,v)->{
-            SpelInput input=new SpelInput().setReasonId(mapExpressionRef.get(k));
+            SpelInput input=new SpelInput(source).setReasonId(mapExpressionRef.get(k));
             rst.add(fillInput(input,experimentPersonId,v,mapExpressionItem.get(k)));
         });
         return rst;
@@ -174,7 +199,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
     //region fillInput
     protected SpelInput fillInput(SpelInput rst,SnapshotRefValidator refValidator, String experimentPersonId,  String expressionId, Integer source){
         if(null==rst){
-            rst=new SpelInput();
+            rst=new SpelInput(source);
         }
         rst.setExpressionId(expressionId);
         final String refExperimentId4Expression=refValidator.checkExpression().getExpressionId();
@@ -208,76 +233,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
     }
     //endregion
 
-    private class SnapshotRefValidator {
 
-        private SnapshotRefValidator(String experimentId){
-            this.experimentId=experimentId;
-            this.appId=ShareBiz.checkAppId(null,experimentId);
-        }
-
-        private final String appId;
-        private final String experimentId;
-
-        private Optional<String> optExpressionRef;
-        private Optional<String> optExpression;
-        private Optional<String> optExpressionItem;
-
-        public String getExperimentId(){
-            return experimentId;
-        }
-
-        public SnapshotRefValidator checkExpressionRef(){
-            if(ShareUtil.XObject.isEmpty(getExpressionRefId())){
-                logError("SnapshotRefValidator", "miss snapshot4ExpressionRef. experimentId:%s",experimentId);
-            }
-            return this;
-        }
-        public String getExpressionRefId(){
-            return getExpressionRef().orElse("");
-        }
-
-        public Optional<String> getExpressionRef(){
-            if(null==optExpressionRef){
-                optExpressionRef=Optional.ofNullable(SnapshotRefCache.Instance().getRefExperimentId(appId,EnumSnapshotType.CASEIndicatorExpressionRef,experimentId));
-            }
-            return optExpressionRef;
-        }
-
-        public SnapshotRefValidator checkExpression(){
-            if(ShareUtil.XObject.isEmpty(getExpressionId())){
-                logError("SnapshotRefValidator", "miss snapshot4Expression. experimentId:%s",experimentId);
-            }
-            return this;
-        }
-        public String getExpressionId(){
-            return getExpression().orElse("");
-        }
-
-        public Optional<String> getExpression(){
-            if(null==optExpression){
-                optExpression=Optional.ofNullable(SnapshotRefCache.Instance().getRefExperimentId(appId,EnumSnapshotType.CASEIndicatorExpression,experimentId));
-            }
-            return optExpression;
-        }
-
-        public SnapshotRefValidator checkExpressionItem(){
-            if(ShareUtil.XObject.isEmpty(getExpressionItemId())){
-                logError("SnapshotRefValidator", "miss snapshot4ExpressionItem. experimentId:%s",experimentId);
-            }
-            return this;
-        }
-        public String getExpressionItemId(){
-            return getExpressionItem().orElse("");
-        }
-        public Optional<String> getExpressionItem(){
-            if(null==optExpressionItem){
-                optExpressionItem=Optional.ofNullable(SnapshotRefCache.Instance().getRefExperimentId(appId,EnumSnapshotType.CASEIndicatorExpressionItem,experimentId));
-            }
-            return optExpressionItem;
-        }
-
-
-    }
 
 
 }

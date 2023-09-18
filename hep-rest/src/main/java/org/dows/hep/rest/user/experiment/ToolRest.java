@@ -3,10 +3,15 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateReportHealthScoreRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCalculatePersonRequestRs;
+import org.dows.hep.biz.eval.EvalHealthIndexBiz;
+import org.dows.hep.biz.eval.EvalPersonIndicatorBiz;
+import org.dows.hep.biz.snapshot.EnumSnapshotType;
+import org.dows.hep.biz.snapshot.SnapshotManager;
+import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.user.experiment.ToolBiz;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @folder user-hep/tools
@@ -19,6 +24,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class ToolRest {
 
     private final ToolBiz toolBiz;
+
+    private final EvalPersonIndicatorBiz evalPersonIndicatorBiz;
+
+    private final EvalHealthIndexBiz evalHealthIndexBiz;
+
+    private final SnapshotManager snapshotManager;
+
+
+
+
+
     @Operation(summary = "获取webSocket连接状态")
     @GetMapping("v1/tool/getWebSocketState")
     public String getWebSocketState(@RequestParam String exptId){
@@ -30,4 +46,27 @@ public class ToolRest {
     public String getWebSocketState(){
         return toolBiz.ping();
     }
+
+    @Operation(summary = "功能点结算")
+    @PostMapping("v1/tool/evalPersonIndicator")
+    public void evalPersonIndicator(@RequestBody RsCalculatePersonRequestRs req)  {
+        evalPersonIndicatorBiz.evalPersonIndicator(req);
+    }
+
+
+    @Operation(summary = "健康指数计算")
+    @PostMapping("v1/tool/evalHealthIndex")
+    public void evalHealthIndex(@RequestBody ExperimentRsCalculateAndCreateReportHealthScoreRequestRs req)  {
+        evalHealthIndexBiz.evalPersonHealthIndex(req);
+    }
+
+    @Operation(summary = "实验数据复制")
+    @PostMapping(value = "v1/tool/snapshot",produces = {})
+    public void snapshot(@RequestBody SnapshotRequest req)  {
+        snapshotManager.write(req, EnumSnapshotType.CASEIndicatorExpressionRef,
+                EnumSnapshotType.CASEIndicatorExpression,
+                EnumSnapshotType.CASEIndicatorExpressionItem);
+    }
+
+
 }

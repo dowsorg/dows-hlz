@@ -26,7 +26,6 @@ import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
-import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewSupportExamRsBiz;
 import org.dows.hep.biz.risk.RiskBiz;
 import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
@@ -657,8 +656,8 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
             for (OperateFlowEntity operateFlowEntity : operateFlowEntities) {
                 ExptSandReportModel.ServiceLog serviceLog = new ExptSandReportModel.ServiceLog();
                 serviceLog.setDt(DateUtil.formatDateTime(operateFlowEntity.getOperateTime()));
-                serviceLog.setLable(operateFlowEntity.getFlowName());
-                serviceLog.setDescr(operateFlowEntity.getReportLabel());
+                serviceLog.setLable(operateFlowEntity.getReportLabel());
+                serviceLog.setDescr(operateFlowEntity.getReportDescr());
                 npcData1.getServiceLogs().add(serviceLog);
             }
         }

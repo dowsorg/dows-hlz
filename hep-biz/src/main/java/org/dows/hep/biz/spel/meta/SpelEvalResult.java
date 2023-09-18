@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.dows.hep.biz.util.BigDecimalUtil;
+import org.dows.hep.biz.util.ShareUtil;
 
 import java.math.BigDecimal;
 
@@ -34,6 +36,20 @@ public class SpelEvalResult {
     private BigDecimal min;
 
     private BigDecimal max;
+
+    public String getValString(){
+        return getString(val);
+    }
+
+    String getString(Object obj){
+        if(ShareUtil.XObject.isEmpty(obj)){
+            return null;
+        }
+        if(obj instanceof BigDecimal){
+            return BigDecimalUtil.formatRoundDecimal((BigDecimal) obj, 2);
+        }
+        return obj.toString();
+    }
 
     @Override
     public String toString() {

@@ -473,8 +473,11 @@ public class ExperimentOrgInterveneBiz {
                     .setSnapTime(dateNow);
 
             Map<String, SpelEvalSumResult> mapSum = new HashMap<>();
+            final EnumIndicatorExpressionSource indicatorSource=enumOperateType.getEndFlag()?
+                    EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL:EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL;
+
             List<SpelEvalResult> evalResults = SpelInvoker.Instance().evalTreatEffect(validator.getExperimentInstanceId(), validator.getExperimentPersonId(),
-                    timePoint.getPeriod(), newItems, mapSum);
+                    timePoint.getPeriod(), newItems, mapSum,indicatorSource);
             ExptTreatPlanResponse snapRst = new ExptTreatPlanResponse().setTreatItems(saveTreat.getTreatItems());
             try {
                 rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst, true))

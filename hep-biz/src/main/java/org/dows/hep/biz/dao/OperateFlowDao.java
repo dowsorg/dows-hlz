@@ -163,13 +163,15 @@ public class OperateFlowDao extends BaseSubDao<OperateFlowService, OperateFlowEn
      * @param cols
      * @return
      */
-    public List<OperateFlowEntity> listFlowLog(String experimentId,String experimentPersonId,SFunction<OperateFlowEntity,?>... cols){
+    public List<OperateFlowEntity> listFlowLog(String experimentId,String experimentPersonId,SFunction<OperateFlowEntity,?>... cols) {
 
         return service.lambdaQuery()
                 .select(cols)
-                .eq(OperateFlowEntity::getExperimentInstanceId,experimentId)
-                .eq(OperateFlowEntity::getExperimentPersonId,experimentPersonId)
+                .eq(OperateFlowEntity::getExperimentInstanceId, experimentId)
+                .eq(OperateFlowEntity::getExperimentPersonId, experimentPersonId)
+                .ge(OperateFlowEntity::getReportFlag, 1)
                 .orderByDesc(OperateFlowEntity::getDt, OperateFlowEntity::getId)
+                .select(cols)
                 .list();
     }
 

@@ -7,9 +7,8 @@ import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentMonitorFollowupRsResponse;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorViewMonitorFollowupReportRsBiz;
+import org.dows.hep.biz.eval.FollowupBiz;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author runsix
@@ -20,11 +19,14 @@ import java.util.concurrent.ExecutionException;
 public class ExperimentIndicatorViewMonitorFollowupReportRsRest {
   private final ExperimentIndicatorViewMonitorFollowupReportRsBiz experimentIndicatorViewMonitorFollowupReportRsBiz;
 
+  private final FollowupBiz followupBiz;
+
   @Resubmit(duration = 3)
   @Operation(summary = "进行随访")
   @PostMapping("v1/userExperiment/monitorFollowup/check")
-  public void monitorFollowupCheck(@RequestBody ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) throws ExecutionException, InterruptedException {
-    experimentIndicatorViewMonitorFollowupReportRsBiz.monitorFollowupCheck(experimentMonitorFollowupCheckRequestRs);
+  public void monitorFollowupCheck(@RequestBody ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs) {
+    //experimentIndicatorViewMonitorFollowupReportRsBiz.monitorFollowupCheck(experimentMonitorFollowupCheckRequestRs);
+    followupBiz.monitorFollowupCheck(experimentMonitorFollowupCheckRequestRs);
   }
 
 
@@ -35,7 +37,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsRest {
       @RequestParam String experimentPersonId,
       @RequestParam Integer periods
       ) {
-    return experimentIndicatorViewMonitorFollowupReportRsBiz.get(indicatorFuncId, experimentPersonId, periods);
+    //return experimentIndicatorViewMonitorFollowupReportRsBiz.get(indicatorFuncId, experimentPersonId, periods);
+    return followupBiz.get(indicatorFuncId, experimentPersonId, periods);
   }
 
 }
