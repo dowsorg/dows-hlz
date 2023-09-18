@@ -4,6 +4,15 @@ spring:
   config:
     activate:
       on-profile: lte
+  data:
+    mongodb:
+      username: admin
+      password: "123456"
+      database: hep
+      port: 17017
+      host: 192.168.1.60
+      #collection-name: user
+      #authentication-database: user
 ---
 #生产环境
 spring:
