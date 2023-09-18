@@ -31,13 +31,11 @@ spring:
       on-profile: lte
 
 ---
-#生产环境
+#开发环境
 spring:
   config:
     activate:
-      on-profile: prd
-
-
+      on-profile: dev
 
 ---
 #开发环境
@@ -47,12 +45,7 @@ spring:
       on-profile: sit
 
 
----
-#开发环境
-spring:
-  config:
-    activate:
-      on-profile: dev
+
 
 ---
 #本地环境
@@ -61,3 +54,9 @@ spring:
     activate:
       on-profile: uat
 
+---
+#生产环境
+spring:
+  config:
+    activate:
+      on-profile: prd

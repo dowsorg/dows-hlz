@@ -12,15 +12,13 @@ spring:
       on-profile: dev
   data:
     mongodb:
-      host: 192.168.1.60
-      port: 17017
-      database: hep
       username: admin
       password: "123456"
-      auth-source: admin
-      authentication-database: hep
+      database: hep
+      port: 17017
+      host: 192.168.1.60
       #collection-name: user
-      #auth-method: SCRAM-SHA-1
+      #authentication-database: user
 
 
 
@@ -32,11 +30,7 @@ spring:
       on-profile: sit
   data:
     mongodb:
-      username: admin
-      password: "123456"
-      database: hep
-      port: 27017
-      host: 192.168.1.60
+      uri: mongodb://test:123456@192.168.1.60:27017/hep
 
 ---
 #开发环境
@@ -46,11 +40,7 @@ spring:
       on-profile: uat
   data:
     mongodb:
-      username: admin
-      password: "123456"
-      database: hep
-      port: 37017
-      host: 192.168.1.60
+      uri: mongodb://uat:123456@192.168.1.60:37017/hep
 ---
 #本地环境
 spring:
@@ -59,8 +49,4 @@ spring:
       on-profile: prd
   data:
     mongodb:
-      username: admin
-      password: "123456"
-      database: hep
-      port: 47017
-      host: 192.168.1.60
+      uri: mongodb://prd:123456@192.168.1.60:47017/hep

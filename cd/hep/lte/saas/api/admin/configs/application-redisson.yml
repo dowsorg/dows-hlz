@@ -1,30 +1,9 @@
-
 ---
-#开发环境
+#本地测试环境
 spring:
   config:
     activate:
       on-profile: lte
-  redis:
-    redisson:
-      config: |
-        singleServerConfig:
-          idleConnectionTimeout: 10000
-          connectTimeout: 10000
-          timeout: 3000
-          retryAttempts: 3
-          retryInterval: 1500
-          subscriptionsPerConnection: 5
-          clientName: null
-          address: redis://127.0.0.1:6379
-          password: findsoft_redis7
-          subscriptionConnectionMinimumIdleSize: 1
-          subscriptionConnectionPoolSize: 50
-          connectionMinimumIdleSize: 32
-          connectionPoolSize: 64
-          database: 0
-          dnsMonitoringInterval: 5000
-        codec: !<org.redisson.codec.JsonJacksonCodec> {}
 
 ---
 #开发环境
@@ -78,8 +57,10 @@ spring:
           database: 0
           dnsMonitoringInterval: 5000
         codec: !<org.redisson.codec.JsonJacksonCodec> {}
+        
+
 ---
-#预发布环境
+#验收环境
 spring:
   config:
     activate:
@@ -104,8 +85,11 @@ spring:
           database: 0
           dnsMonitoringInterval: 5000
         codec: !<org.redisson.codec.JsonJacksonCodec> {}
+        
+        
+
 ---
-#预发布环境
+#生产环境
 spring:
   config:
     activate:

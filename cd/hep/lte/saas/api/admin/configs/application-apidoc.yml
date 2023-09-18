@@ -13,25 +13,24 @@ springdoc:
       packagesToScan: org.dows.hep.rest.tenant
     - group: hep-user
       packagesToScan: org.dows.hep.rest.user
-
 ---
 #本地测试环境
 spring:
   config:
     activate:
       on-profile: lte
-
+springdoc:
+  api-docs:
+    enabled: true
 ---
-#生产环境
+#开发环境
 spring:
   config:
     activate:
-      on-profile: pro
+      on-profile: dev
 springdoc:
   api-docs:
-    enabled: false
-
-
+    enabled: true
 ---
 #测试环境
 spring:
@@ -43,20 +42,22 @@ springdoc:
     enabled: true
 
 ---
-#开发环境
+#生产环境
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: uat
 springdoc:
   api-docs:
     enabled: true
+
+
 ---
 #本地环境
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: prd
 springdoc:
   api-docs:
     enabled: true
