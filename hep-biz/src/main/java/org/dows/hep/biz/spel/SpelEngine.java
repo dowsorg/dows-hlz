@@ -130,17 +130,17 @@ public class SpelEngine {
     }
 
     private SpelEvalResult evalSum(SpelInput input, StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
-        return coreEval(new SpelExpressionParser(), input, context, mapSum);
+        return coreEval(new SpelExpressionParser(), input, context, mapSum,false);
     }
 
-    private List<SpelEvalResult>  evalSum(List<SpelInput> input, StandardEvaluationContext context,  Map<String, SpelEvalSumResult> mapSum) {
+    private List<SpelEvalResult> evalSum(List<SpelInput> input, StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
         List<SpelEvalResult> rst = new ArrayList<>();
         if (ShareUtil.XObject.isEmpty(input)) {
             return rst;
         }
         ExpressionParser parser = new SpelExpressionParser();
         for (SpelInput item : input) {
-            SpelEvalResult evalRst = coreEval(parser, item, context, mapSum);
+            SpelEvalResult evalRst = coreEval(parser, item, context, mapSum,false);
             if (ShareUtil.XObject.isEmpty(evalRst)) {
                 continue;
             }
@@ -148,7 +148,27 @@ public class SpelEngine {
         }
         return rst;
     }
-    private SpelEvalResult coreEval(ExpressionParser parser, SpelInput input, StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
+
+    private SpelEvalResult evalDeltaSum(SpelInput input, StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
+        return coreEval(new SpelExpressionParser(), input, context, mapSum,true);
+    }
+
+    private List<SpelEvalResult> evalDeltaSum(List<SpelInput> input, StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
+        List<SpelEvalResult> rst = new ArrayList<>();
+        if (ShareUtil.XObject.isEmpty(input)) {
+            return rst;
+        }
+        ExpressionParser parser = new SpelExpressionParser();
+        for (SpelInput item : input) {
+            SpelEvalResult evalRst = coreEval(parser, item, context, mapSum,true);
+            if (ShareUtil.XObject.isEmpty(evalRst)) {
+                continue;
+            }
+            rst.add(evalRst);
+        }
+        return rst;
+    }
+    private SpelEvalResult coreEval(ExpressionParser parser, SpelInput input, StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum,boolean deltaFlag) {
         if (ShareUtil.XObject.isEmpty(input)) {
             return null;
         }
@@ -171,11 +191,14 @@ public class SpelEngine {
             return rst;
         }
 
-        if (ShareUtil.XObject.anyEmpty(input.getIndicatorId(), input.getExpressions())) {
+        if (ShareUtil.XObject.isEmpty(input.getExpressions())) {
             return rst;
         }
-        Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId(),false));
-        rst.setCurVal(curVal);
+        if(ShareUtil.XObject.notEmpty(input.getIndicatorId())) {
+            Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId(), false));
+            rst.setCurVal(curVal);
+        }
+
         Object val = null;
         for (SpelInput.SpelExpressionItem item : input.getExpressions()) {
             if (ShareUtil.XObject.isEmpty(item.getResultExpression())) {
@@ -194,8 +217,12 @@ public class SpelEngine {
             coreEvalSum(mapSum, rst.setVal(val).setValNumber(null));
             return rst;
         }
-        BigDecimal valNumber = BigDecimalUtil.valueOf(val);
-        BigDecimal curValNumber = BigDecimalUtil.valueOf(curVal, BigDecimal.ZERO);
+        BigDecimal valNumber=BigDecimalUtil.valueOf(val);
+        if(!deltaFlag){
+            return rst.setVal(val).setValNumber(valNumber);
+        }
+
+        BigDecimal curValNumber = BigDecimalUtil.valueOf(rst.getCurVal(), BigDecimal.ZERO);
         BigDecimal change = valNumber.subtract(curValNumber);
         if (input.hasFactor()) {
             change = change.multiply(input.getFactor());
@@ -301,6 +328,11 @@ public class SpelEngine {
         }
 
         @Override
+        public SpelEvalResult evalDeltaSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
+            return SpelEngine.Instance().evalDeltaSum(this.target, context, mapSum);
+        }
+
+        @Override
         public SpelEvalResult evalSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
             return SpelEngine.Instance().evalSum(this.target, context, mapSum);
         }
@@ -328,6 +360,11 @@ public class SpelEngine {
         @Override
         public List<SpelEvalResult> evalSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
             return SpelEngine.Instance().evalSum(this.target, context, mapSum);
+        }
+
+        @Override
+        public List<SpelEvalResult> evalDeltaSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
+            return SpelEngine.Instance().evalDeltaSum(this.target, context, mapSum);
         }
 
         @Override

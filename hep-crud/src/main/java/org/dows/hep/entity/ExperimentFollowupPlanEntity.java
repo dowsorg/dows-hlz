@@ -59,8 +59,11 @@ public class ExperimentFollowupPlanEntity implements CrudEntity {
     @Schema(title = "操作人名")
     private String operateAccountName;
 
+    @Schema(title = "挂号流水号")
+    private String operateFlowId;
+
     @Schema(title = "实验随访表id")
-    private String indicatorViewMonitorFollowupId;
+    private String indicatorFollowupId;
 
     @Schema(title = "实验随访表名称")
     private String indicatorFollowupName;
@@ -70,24 +73,30 @@ public class ExperimentFollowupPlanEntity implements CrudEntity {
     @Schema(title = "最近保存所在天数")
     private Integer setAtDay;
 
-    @Schema(title = "下次随访天数")
+    @Schema(title = "下次可随访天数")
     private Integer todoDay;
 
-    @Schema(title = "最近随访天数")
+    @Schema(title = "已触发随访天数")
     private Integer doneDay;
 
     @Schema(title = "最近保存时间")
     private Date setAtTime;
 
 
-    @Schema(title = "最近待随访时间")
+    @Schema(title = "待触发随访时间")
     private Date doingTime;
 
-    @Schema(title = "最近已随访时间")
+    @Schema(title = "已触发随访时间")
     private Date doneTime;
 
-    @Schema(title = "累计随访次数")
+    @Schema(title = "已触发随访次数")
     private Integer doneTimes;
+
+    @Schema(title = "最近随访时间")
+    private Date followupTime;
+
+    @Schema(title = "已随访次数")
+    private Integer followupTimes;
 
     @JsonIgnore
     @TableLogic

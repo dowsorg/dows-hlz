@@ -71,7 +71,7 @@ public class EvalPersonIndicatorAdvBiz {
                 }
                 CompletableFuture.allOf(futures).join();
             }
-            ts=logCostTime(sb,"4-eval", ts);
+            ts=logCostTime(sb,"3-eval", ts);
         }finally {
             log.error(sb.toString());
             log.info(sb.toString());

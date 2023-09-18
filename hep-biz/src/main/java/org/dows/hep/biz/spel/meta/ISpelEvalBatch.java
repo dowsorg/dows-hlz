@@ -14,7 +14,11 @@ public interface ISpelEvalBatch {
     default List<SpelEvalResult> eval(StandardEvaluationContext context){
         return evalSum(context, null);
     }
+    default List<SpelEvalResult> evalDelta(StandardEvaluationContext context){
+        return evalDeltaSum(context, null);
+    }
 
     List<SpelEvalResult> evalSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum );
+    List<SpelEvalResult> evalDeltaSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum );
 
 }

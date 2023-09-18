@@ -76,7 +76,6 @@ public abstract class BaseEventDealer implements ISysEventDealer {
                         .append("nowDealt")
                         .isSucc();
             }
-            final int maxRetry = this.maxRetryTimes();
             if (row.tillMaxRetry()) {
                 return rst.setSucc(false)
                         .append("maxRetry")
@@ -154,7 +153,7 @@ public abstract class BaseEventDealer implements ISysEventDealer {
     }
 
     protected boolean saveDeal(ExperimentSysEventEntity row){
-        return experimentSysEventDao.saveOrUpdate(row);
+        return experimentSysEventDao.saveOrUpdate(row,true);
     }
 
     protected ExperimentSysEventEntity reloadDeal(String eventId){

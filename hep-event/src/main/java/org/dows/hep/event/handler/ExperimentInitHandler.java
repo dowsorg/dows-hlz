@@ -189,7 +189,9 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                     .periods(0)
                     .funcType(EnumEvalFuncType.START)
                     .build());
-            SpelCacheExecutor.Instance().start(List.of(experimentInstanceId));
+            if(ConfigExperimentFlow.SWITCH2SpelCache) {
+                SpelCacheExecutor.Instance().start(List.of(experimentInstanceId));
+            }
         }
         if(ConfigExperimentFlow.SWITCH2SysEvent){
             //启用新流程

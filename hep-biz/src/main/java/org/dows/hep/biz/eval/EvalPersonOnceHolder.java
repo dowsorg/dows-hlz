@@ -373,10 +373,13 @@ public class EvalPersonOnceHolder {
                 .setExperimentInstanceId(cacheKey.getExperimentInstanceId())
                 .setExperimentPersonId(cacheKey.getExperimentPersonId());
         logEval.setRisks(JacksonUtil.toJsonSilence(data.getRisks(), true));
+        final List<EvalIndicatorValues> sortIndicators=data.getMapIndicators().values().stream()
+                .sorted(Comparator.comparing(i->Optional.ofNullable(i.getIndicatorName()).orElse("")))
+                .collect(Collectors.toList());
         ExperimentEvalLogContentEntity logEvalContent = new ExperimentEvalLogContentEntity()
                 .setEvalNo(logEval.getEvalNo())
                 .setAppId(logEval.getAppId())
-                .setIndicatorContent(JacksonUtil.toJsonSilence(data.getMapIndicators().values(), true))
+                .setIndicatorContent(JacksonUtil.toJsonSilence(sortIndicators, true))
                 .setHealthIndexContent(JacksonUtil.toJsonSilence(data.getEvalRisks(), true));
 
 

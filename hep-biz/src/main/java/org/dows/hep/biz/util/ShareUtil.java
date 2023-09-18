@@ -112,6 +112,9 @@ public class ShareUtil {
         public static boolean nullSafeEquals(Object o1, Object o2) {
             return ObjectUtils.nullSafeEquals(o1, o2);
         }
+        public static boolean nullSafeNotEquals(Object o1, Object o2) {
+            return !ObjectUtils.nullSafeEquals(o1, o2);
+        }
 
 
     }

@@ -48,6 +48,9 @@ public class ExperimentIndicatorViewMonitorFollowupPlanRsResponse implements Ser
   @Schema(title = "监测随访表id列表")
   private String experimentIndicatorViewMonitorFollowupId;
 
+  @Schema(title = "是否可随访")
+  private Boolean canFollowUp;
+
   @JsonIgnore
   @TableLogic
   @TableField(fill = FieldFill.INSERT)

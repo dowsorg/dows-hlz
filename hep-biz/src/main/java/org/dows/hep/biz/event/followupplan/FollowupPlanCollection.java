@@ -1,12 +1,11 @@
 package org.dows.hep.biz.event.followupplan;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.dows.hep.biz.event.sysevent.data.SysEventRow;
+import org.ehcache.core.collections.ConcurrentWeakIdentityHashMap;
 
-import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author : wuzl
@@ -20,5 +19,5 @@ public class FollowupPlanCollection {
     private String experimentInstanceId;
 
     @Schema(title = "随访计划列表")
-    private List<FollowupPlanRow> planRows;
+    private final ConcurrentMap<String,FollowupPlanRow> mapPlanRows=new ConcurrentWeakIdentityHashMap<>();
 }
