@@ -450,22 +450,6 @@ public class ExperimentScoringBiz {
             BigDecimal finalHealthIndexScore = groupCompetitiveScoreBigDecimal.multiply(healthIndexWeight);
             BigDecimal finalMedicalRatioScoreScore = groupIdVGroupMoneyScoreBigDecimal.multiply(medicalRatioWeight);
 
-            //当前期排行
-            int rank = 0;
-            AtomicInteger curRank = new AtomicInteger(1);
-            Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
-            experimentScoringService.lambdaQuery()
-                    .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
-                    .eq(ExperimentScoringEntity::getPeriods, periods)
-                    .eq(ExperimentScoringEntity::getScoringCount,scoringCountAtomicInteger.get() -1)
-                    .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
-                    .list()
-                    .forEach(experimentScoringEntity -> {
-                        kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
-                    });
-            if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
-                rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
-            }
             experimentScoringEntityList.add(ExperimentScoringEntity
                     .builder()
                     .experimentScoringId(idGenerator.nextIdStr())
@@ -481,12 +465,15 @@ public class ExperimentScoringBiz {
                     .percentKnowledgeScore(finalKnowledgeScore.divide(totalScoreBigDecimal,2,RoundingMode.HALF_UP).toString())
                     .percentHealthIndexScore(finalHealthIndexScore.divide(totalScoreBigDecimal,2, RoundingMode.HALF_UP).toString())
                     .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal,2, RoundingMode.HALF_UP).toString())
-                    .rankNo(rank)
                     .scoringCount(scoringCountAtomicInteger.get())
                     .periods(periods)
                     .build());
         });
-
+        //计算排名
+        experimentScoringEntityList.sort(Comparator.comparing(ExperimentScoringEntity::getTotalScore));
+        Collections.reverse(experimentScoringEntityList);
+        AtomicInteger curRank = new AtomicInteger(1);
+        experimentScoringEntityList.forEach(experimentScoringEntity -> experimentScoringEntity.setRankNo(curRank.incrementAndGet()));
         experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
     }
 
@@ -1000,7 +987,7 @@ public class ExperimentScoringBiz {
             String percentKnowledge = "0";
             String percentHealthIndex = "0";
             String percentTreatmentPercent = "0";
-            String rankNo = "0";
+            String rankNo = "1";
             ExperimentScoringEntity experimentScoringEntity = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
             if (Objects.nonNull(experimentScoringEntity)) {
                 //权重
