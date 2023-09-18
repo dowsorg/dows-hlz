@@ -1,7 +1,7 @@
 
 def detect_branch() {
     def RESULT = sh(returnStdout: true, script: '''
-        for branch in `git branch -r | grep -v HEAD`; do echo -e `git show --format="%ci %cr" $branch | head -n 1` "\\t" $branch; done | sort -r |head -n 1 |awk \'{print $NF}\'
+        git for-each-ref --sort=-committerdate --format="%(refname:short)" refs/remotes/ | head -n 1
     ''')
     def content = "RESULT=$RESULT\n"
     RESULT=sh(returnStdout: true, script: content+'echo $RESULT|sed "s#origin/##g"') // 删除 origin
@@ -16,6 +16,9 @@ pipeline {
         MAVEN_HOME = '/usr/local/mvn/bin/mvn'
         PATH = "${env.JAVA_HOME}/bin:${env.MAVEN_HOME}/bin:${env.PATH}"
 
+        FORM_LTE_CD_PATH = 'cd/hep/lte/saas/api/admin'
+        TO_LTE_CD_PATH = '/findsoft/hep/lte/saas/api'
+
         FORM_DEV_CD_PATH = 'cd/hep/dev/saas/api/admin'
         TO_DEV_CD_PATH = '/findsoft/hep/dev/saas/api'
 
@@ -28,23 +31,27 @@ pipeline {
         FORM_PRD_CD_PATH = 'cd/hep/prd/saas/api/admin'
         TO_PRD_CD_PATH = '/findsoft/hep/prd/saas/api'
 
-        LOGIN_DOCKER = 'docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com'
-        START_CONTAINER = "docker compose down && docker compose up -d"
+        DOCKER_OFFLINE_LOGIN = 'docker login --username=admin --password=findsoft_harbor http://192.168.1.60:7080'
+        DOCKER_OFFLINE_BUILD = 'docker build . --file Dockerfile -t http://192.168.1.60:7080/findsoft/api-hep-admin'
+        DOCKER_OFFLINE_PUSH = 'docker push http://192.168.1.60:7080/findsoft/api-hep-admin'
 
-        AS_HOST='192.168.1.60'
-        AS_USERNAME='root'
-        AS_PWD='findsoft2022!@#'
+        DOCKER_ONLINE_LOGIN = 'docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com'
+        DOCKER_ONLINE_BUILD  = 'docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin'
+        DOCKER_ONLINE_PUSH  = 'docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin'
 
-        PRD_AS_HOST='139.186.208.204'
-        PRD_AS_USERNAME='root'
-        PRD_AS_PWD='Findsoft20232023'
+        DOCKER_CONTAINER_START = "docker compose down && docker compose up -d"
+
+        OFFLINE_AS_HOST='192.168.1.60'
+        OFFLINE_AS_USERNAME='root'
+        OFFLINE_AS_PWD='findsoft2022!@#'
+
+        ONLINE_AS_HOST='139.186.208.204'
+        ONLINE_AS_USERNAME='root'
+        ONLINE_AS_PWD='Findsoft20232023'
 
         BRANCH="${env.BRANCH_NAME.split('/')[1]}"
         RTE="${BRANCH.split('-')[0]}"
         VER="${BRANCH.split('-')[1]}"
-
-
-
     }
 
     stages {
@@ -85,33 +92,41 @@ pipeline {
                     sh '''
                         /usr/local/mvn/bin/mvn -v
                         /usr/local/mvn/bin/mvn -Dmaven.test.skip=true clean package -U
-                        docker login --username=findsoft@dows --password=findsoft123456 registry.cn-hangzhou.aliyuncs.com
                     '''
+                    if (branch.startsWith('lte-')) {
+                        echo "Building for sit environment for $branch"
+                        sh "$DOCKER_OFFLINE_LOGIN"
+                        sh "$DOCKER_OFFLINE_BUILD-lte:$ver"
+                        sh "$DOCKER_OFFLINE_PUSH-lte:$ver"
 
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_LTE_CD_PATH"
+                        sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_LTE_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_LTE_CD_PATH"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_LTE_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$START_CONTAINER'"
 
-                    if (branch.startsWith('dev-')) {
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_LTE_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'LTE环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
+
+                    } else if (branch.startsWith('dev-')) {
                         echo "Building for development environment for ${branch}"
+                        sh "$DOCKER_OFFLINE_LOGIN"
+                        sh "$DOCKER_OFFLINE_BUILD-dev:$ver"
+                        sh "$DOCKER_OFFLINE_PUSH-dev:$ver"
 
-                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-dev:$ver"
-                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-dev:$ver"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_DEV_CD_PATH"
+                        sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_DEV_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_DEV_CD_PATH"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_DEV_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$START_CONTAINER'"
 
-
-                        sh "sshpass -p $AS_PWD ssh -o StrictHostKeyChecking=no $AS_USERNAME@$AS_HOST mkdir -p $TO_DEV_CD_PATH"
-                        sh "sshpass -p $AS_PWD scp -r $FORM_DEV_CD_PATH $AS_USERNAME@$AS_HOST:$TO_DEV_CD_PATH"
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_DEV_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
-
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_DEV_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
-                        //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_DEV_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'DEV环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_DEV_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'DEV环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
 
                     } else if (branch.startsWith('sit-')) {
                         echo "Building for sit environment for $branch"
 
-                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-sit:$ver"
-                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-sit:$ver"
+                        sh "$DOCKER_OFFLINE_LOGIN"
+                        sh "$DOCKER_OFFLINE_BUILD-sit:$ver"
+                        sh "$DOCKER_OFFLINE_PUSH-sit:$ver"
 
-                        sh "sshpass -p $AS_PWD ssh -o StrictHostKeyChecking=no $AS_USERNAME@$AS_HOST mkdir -p $TO_SIT_CD_PATH"
-                        sh "sshpass -p $AS_PWD scp -r $FORM_SIT_CD_PATH $AS_USERNAME@$AS_HOST:$TO_SIT_CD_PATH"
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_SIT_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_SIT_CD_PATH"
+                        sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_SIT_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_SIT_CD_PATH"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_SIT_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$START_CONTAINER'"
 
                         sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '"$branch"' '"$gitCommitAuthorName"' 'api-hep-admin' 'SIT环境发布' '"$gitCommitMessage"' '"$changes"' 'green'"
@@ -119,30 +134,33 @@ pipeline {
                     } else if (branch.startsWith('uat-')) {
                         echo "Building for uat environment for ${branch}"
 
-                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-uat:$ver"
-                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-uat:$ver"
+                        sh "$DOCKER_OFFLINE_LOGIN"
+                        sh "$DOCKER_OFFLINE_BUILD-uat:$ver"
+                        sh "$DOCKER_OFFLINE_PUSH-uat:$ver"
 
-                        sh "sshpass -p $AS_PWD ssh -o StrictHostKeyChecking=no $AS_USERNAME@$AS_HOST mkdir -p $TO_UAT_CD_PATH"
-                        sh "sshpass -p $AS_PWD scp -r $FORM_UAT_CD_PATH $AS_USERNAME@$AS_HOST:$TO_UAT_CD_PATH"
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST 'cd $TO_UAT_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_UAT_CD_PATH"
+                        sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_UAT_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_UAT_CD_PATH"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_UAT_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$START_CONTAINER'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
-                        //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '$branch' '$gitCommitAuthorName' 'api-hep-admin' 'SIT环境发布' '$gitCommitMessage' '$changes' 'green'"
+                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'UAT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
+                        //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '$branch' '$gitCommitAuthorName' 'api-hep-admin' 'UAT环境发布' '$gitCommitMessage' '$changes' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'UAT环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
                     } else if (branch.startsWith('prd-')){
                         echo "Building for production environment for ${branch}"
                         // 只做推送处理
-                        sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
-                        sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
+                        sh "$DOCKER_ONLINE_LOGIN"
+                        sh "$DOCKER_ONLINE_BUILD-prd:$ver"
+                        sh "$DOCKER_ONLINE_PUSH-prd:$ver"
+
+                        //sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
+                        //sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
 
                         //sh "sshpass -p $PRD_AS_PWD ssh -o StrictHostKeyChecking=no $PRD_AS_USERNAME@$PRD_AS_HOST mkdir -p $TO_PRD_CD_PATH"
-
                         //sh "sshpass -p $PRD_AS_PWD scp -r $FORM_PRD_CD_PATH $AS_USERNAME@$AS_HOST:$TO_PRD_CD_PATH"
+                        //sh "sshpass -p $PRD_AS_PWD ssh $PRD_AS_USERNAME@$PRD_AS_HOST 'cd $TO_PRD_CD_PATH/admin;$LOGIN_ONLINE_DOCKER;$START_CONTAINER'"
 
-                        //sh "sshpass -p $PRD_AS_PWD ssh $PRD_AS_USERNAME@$PRD_AS_HOST 'cd $TO_PRD_CD_PATH/admin;$LOGIN_DOCKER;$START_CONTAINER'"
-
-                        //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
-                        //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '$branch' '$gitCommitAuthorName' 'api-hep-admin' 'SIT环境发布' '$gitCommitMessage' '$changes' 'green'"
+                        //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'PRD环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
+                        //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '$branch' '$gitCommitAuthorName' 'api-hep-admin' 'PRD环境发布' '$gitCommitMessage' '$changes' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_PRD_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'PRD环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
                     }
                 }

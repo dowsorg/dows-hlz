@@ -1,0 +1,20 @@
+version: "3"
+services:
+  fluent-dev:
+    container_name: fluent-dev
+    build: ./fluent
+    restart: always
+    volumes:
+      - ./fluent/conf/:/fluentd/etc/
+      - ./fluent/logs/:/etc/logs/
+#    links:
+#      - "elasticsearch"
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - dev_net
+
+networks:
+  dev_net:
+    external: true
