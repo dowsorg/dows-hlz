@@ -22,5 +22,5 @@ public class ConfigExperimentFlow {
     /**
      * 使用指标公式缓存
      */
-    public static boolean SWITCH2SpelCache=true;
+    public static boolean SWITCH2SpelCache=false;
 }

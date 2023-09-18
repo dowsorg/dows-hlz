@@ -43,7 +43,7 @@ public class ToolRest {
 
 
     @GetMapping("v1/tool/ping")
-    public String getWebSocketState(){
+    public String ping(){
         return toolBiz.ping();
     }
 

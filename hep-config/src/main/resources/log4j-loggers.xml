@@ -12,6 +12,7 @@
     </AsyncLogger>
     <AsyncLogger name="org.dows" level="ERROR" additivity="false"  includeLocation="true">
         <appender-ref ref="FILE-ERROR"/>
+        <appender-ref ref="CONSOLE"/>
     </AsyncLogger>
     <AsyncLogger name="com.zaxxer.hikari.pool.ProxyStatement" level="INFO" additivity="false" includeLocation="true">
         <appender-ref ref="SKYWALKING"/>

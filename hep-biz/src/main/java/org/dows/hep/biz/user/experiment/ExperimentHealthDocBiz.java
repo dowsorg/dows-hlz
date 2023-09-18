@@ -22,7 +22,6 @@ import org.dows.hep.entity.ExperimentIndicatorLogEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 
 /**
@@ -134,7 +133,7 @@ public class ExperimentHealthDocBiz {
                 .mul(BigDecimalUtil.ONEHundred)
                 .min(BigDecimal.ZERO)
                 .max(BigDecimalUtil.ONEHundred)
-                .getString(2, RoundingMode.DOWN)
+                .getString(2)
                 .concat("%");
     }
 }

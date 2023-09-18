@@ -76,7 +76,7 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
             return inputs.get(0);
         }
         inputs=Optional.ofNullable(fromSnapshotLoader.withReasonId(experimentId,experimentPersonId,List.of(reasonId),source))
-                        .orElse(Collections.emptyList());
+                        .orElse(List.of(new SpelInput(source).setReasonId(reasonId)));
         cached.mapReasonInput.put(spelCacheKey,inputs);
         return inputs.size()>0?inputs.get(0):null;
     }
@@ -169,6 +169,9 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
         List<SpelInput> inputs=fromSnapshotLoader.withReasonId(experimentId,personId,reasonIds, source.getSource());
         Map<String,List<SpelInput>> mapReasons= ShareUtil.XCollection.groupBy(inputs, SpelInput::getReasonId);
         mapReasons.forEach((reasonId,vInputs)->rst.mapReasonInput.put(SpelCacheKey.create(personId,reasonId,source.getSource()),vInputs));
+        reasonIds.forEach(reasonId->{
+            rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(personId,reasonId,source.getSource()),k->List.of(new SpelInput(source).setReasonId(reasonId)));
+        });
         inputs.clear();
         mapReasons.clear();;
         return inputs;

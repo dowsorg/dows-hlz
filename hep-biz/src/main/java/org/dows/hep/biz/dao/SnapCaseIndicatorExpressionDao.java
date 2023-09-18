@@ -2,6 +2,7 @@ package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.ExperimentIndicatorExpressionRsEntity;
 import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionEntity;
 import org.dows.hep.service.snapshot.SnapCaseIndicatorExpressionService;
 import org.springframework.stereotype.Component;
@@ -76,6 +77,21 @@ public class SnapCaseIndicatorExpressionDao extends BaseDao<SnapCaseIndicatorExp
                 .eq(SnapCaseIndicatorExpressionEntity::getExperimentInstanceId, experimentId)
                 .eq(null != sources && sources.size() == 1, SnapCaseIndicatorExpressionEntity::getSource, sources.iterator().next())
                 .in(null != sources && sources.size() > 1, SnapCaseIndicatorExpressionEntity::getSource, sources)
+                .select(cols)
+                .list();
+    }
+
+    public List<SnapCaseIndicatorExpressionEntity> getByCaseIndicatorIds(String experimentId, Collection<String> indicatorIds, Integer source,
+                                                                                   SFunction<SnapCaseIndicatorExpressionEntity,?>... cols){
+        if(ShareUtil.XObject.isEmpty(indicatorIds)){
+            return Collections.emptyList();
+        }
+        final boolean oneFlag=indicatorIds.size()==1;
+        return service.lambdaQuery()
+                .eq(SnapCaseIndicatorExpressionEntity::getExperimentInstanceId, experimentId)
+                .eq(oneFlag, SnapCaseIndicatorExpressionEntity::getPrincipalId,indicatorIds.iterator().next())
+                .in(!oneFlag, SnapCaseIndicatorExpressionEntity::getPrincipalId,indicatorIds)
+                .eq(ShareUtil.XObject.notEmpty(source), SnapCaseIndicatorExpressionEntity::getSource,source)
                 .select(cols)
                 .list();
     }

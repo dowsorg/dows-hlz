@@ -191,11 +191,14 @@ public class SpelEngine {
             return rst;
         }
 
-        if (ShareUtil.XObject.anyEmpty(input.getIndicatorId(), input.getExpressions())) {
+        if (ShareUtil.XObject.isEmpty(input.getExpressions())) {
             return rst;
         }
-        Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId(),false));
-        rst.setCurVal(curVal);
+        if(ShareUtil.XObject.notEmpty(input.getIndicatorId())) {
+            Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId(), false));
+            rst.setCurVal(curVal);
+        }
+
         Object val = null;
         for (SpelInput.SpelExpressionItem item : input.getExpressions()) {
             if (ShareUtil.XObject.isEmpty(item.getResultExpression())) {
@@ -219,8 +222,8 @@ public class SpelEngine {
             return rst.setVal(val).setValNumber(valNumber);
         }
 
-        BigDecimal curValNumber = BigDecimalUtil.valueOf(curVal, BigDecimal.ZERO);
-        BigDecimal change = rst.getValNumber().subtract(curValNumber);
+        BigDecimal curValNumber = BigDecimalUtil.valueOf(rst.getCurVal(), BigDecimal.ZERO);
+        BigDecimal change = valNumber.subtract(curValNumber);
         if (input.hasFactor()) {
             change = change.multiply(input.getFactor());
         }
