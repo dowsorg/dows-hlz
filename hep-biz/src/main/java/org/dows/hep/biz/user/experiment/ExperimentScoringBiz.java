@@ -470,8 +470,8 @@ public class ExperimentScoringBiz {
                     .build());
         });
         //计算排名
-        experimentScoringEntityList.sort(Comparator.comparing(ExperimentScoringEntity::getId)
-                .thenComparing(ExperimentScoringEntity::getTotalScore,Comparator.reverseOrder()));
+        experimentScoringEntityList.sort(Comparator.comparing(ExperimentScoringEntity::getTotalScore)
+                .thenComparing(ExperimentScoringEntity::getHealthIndexScore,Comparator.reverseOrder()));
         AtomicInteger curRank = new AtomicInteger(1);
         experimentScoringEntityList.forEach(experimentScoringEntity -> experimentScoringEntity.setRankNo(curRank.incrementAndGet()));
         experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
