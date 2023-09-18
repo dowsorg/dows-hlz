@@ -4,6 +4,9 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
+import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.doc.api.entity.excel.ExcelSelector;
 import org.dows.framework.doc.api.entity.excel.Point;
 import org.dows.framework.doc.api.entity.excel.SheetRange;
@@ -39,6 +42,8 @@ public class BatchInsertBiz {
         Object impResult = null;
         try {
             impResult = docBiz.importExcel(fin, excelSelector, clazz);
+        } catch (NotOfficeXmlFileException ex) {
+            throw new BizException("请上传真实的EXCEL文件");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
