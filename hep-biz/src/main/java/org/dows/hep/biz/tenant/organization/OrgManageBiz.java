@@ -130,6 +130,7 @@ public class OrgManageBiz{
             for (int i = 0; i < list.size(); i++) {
                 request.setAccountName(list.get(i).getAccountName());
                 request.setUserName(list.get(i).getUserName());
+                request.setPassword(list.get(i).getPassword());
                 request.setIdentifier(orgManageBiz.createCode(7));
                 String message = "";
                 try {
