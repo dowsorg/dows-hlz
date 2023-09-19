@@ -284,7 +284,14 @@ public class ExperimentTimerBiz {
     @DSTransactional
     public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId,
                                                              List<ExperimentTimerEntity> updateExperimentTimerEntities,
-                                                             EnumExperimentState enumExperimentState) {
+                                                             EnumExperimentState enumExperimentState){
+        return saveOrUpdateExperimentTimeExperimentState(experimentInstanceId,updateExperimentTimerEntities,
+                enumExperimentState,true);
+    }
+    @DSTransactional
+    public boolean saveOrUpdateExperimentTimeExperimentState(String experimentInstanceId,
+                                                             List<ExperimentTimerEntity> updateExperimentTimerEntities,
+                                                             EnumExperimentState enumExperimentState,boolean updateParticipator) {
         boolean update = experimentInstanceService.lambdaUpdate()
                 .eq(ExperimentInstanceEntity::getExperimentInstanceId, experimentInstanceId)
                 .set(ExperimentInstanceEntity::getState, enumExperimentState.getState())
@@ -292,13 +299,15 @@ public class ExperimentTimerBiz {
         if (!update) {
             throw new ExperimentException(" 更新实验实例状态发生异常！");
         }
-        boolean update1 = experimentParticipatorService.lambdaUpdate()
-                .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
-                .set(ExperimentParticipatorEntity::getState, enumExperimentState.getState())
-                .update();
+        if(updateParticipator) {
+            boolean update1 = experimentParticipatorService.lambdaUpdate()
+                    .eq(ExperimentParticipatorEntity::getExperimentInstanceId, experimentInstanceId)
+                    .set(ExperimentParticipatorEntity::getState, enumExperimentState.getState())
+                    .update();
 
-        if (!update1) {
-            throw new ExperimentException(" 更新实验参与者实验状态发生异常！");
+            if (!update1) {
+                throw new ExperimentException(" 更新实验参与者实验状态发生异常！");
+            }
         }
         if(ShareUtil.XObject.isEmpty(updateExperimentTimerEntities)){
             return true;

@@ -32,6 +32,8 @@ public class SnapshotRefValidator {
 
     private Optional<String> optRiskModel;
 
+    private Optional<String> optTreatItem;
+
 
     public String getExperimentId(){
         return experimentId;
@@ -123,6 +125,25 @@ public class SnapshotRefValidator {
         return optRiskModel;
     }
     //endregion
+
+    //region treatItem
+    public SnapshotRefValidator checkTreatItem(){
+        if(ShareUtil.XObject.isEmpty(getTreatItemId())){
+            logError("SnapshotRefValidator", "miss snapshot4TreatItem. experimentId:%s",experimentId);
+        }
+        return this;
+    }
+    public String getTreatItemId(){
+        return getTreatItem().orElse("");
+    }
+    public Optional<String> getTreatItem(){
+        if(null==optTreatItem){
+            optTreatItem=Optional.ofNullable(SnapshotRefCache.Instance().getRefExperimentId(appId,EnumSnapshotType.TreatItem,experimentId));
+        }
+        return optTreatItem;
+    }
+    //endregion
+
 
     protected void logError(String func, String msg,Object... args){
         logError(null, func, msg, args);
