@@ -1,5 +1,7 @@
 ---
 #本地测试环境
+mongo:
+  enable: true
 spring:
   config:
     activate:
