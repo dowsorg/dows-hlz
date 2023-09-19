@@ -146,7 +146,7 @@ public class InterveneHandler {
      */
     public <T extends HepOperateEntity> void write(HepOperateSetRequest hepOperateSetRequest, Class<T> clazz) {
 
-        List<JSONObject> list = getItemListFromJson(hepOperateSetRequest.getData());
+        /*List<JSONObject> list = getItemListFromJson(hepOperateSetRequest.getData());
 
         Set<String> indicatorInstanceIdSet = new HashSet<>();
         List<JSONObject> examItemList = new ArrayList<>();
@@ -155,7 +155,7 @@ public class InterveneHandler {
                 indicatorInstanceIdSet.add(examItem.getStr("indicatorInstanceId"));
                 examItemList.add(examItem);
             });
-        }
+        }*/
         AtomicReference<BigDecimal> totalFeeAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
         totalFeeAtomicReference.set(totalFeeAtomicReference.get().subtract(getTotalFeeFromRequest(hepOperateSetRequest.getData())));
 
@@ -171,7 +171,10 @@ public class InterveneHandler {
         String orgTreeId = String.valueOf(hepOperateSetRequest.getOrgTreeId());
         // 流程ID
         String flowId = String.valueOf(hepOperateSetRequest.getFlowId());
-        Map<String, ExperimentIndicatorInstanceRsEntity> kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
+        // 小组Id
+        String experimentGroupId = String.valueOf(hepOperateSetRequest.getExperimentGroupId());
+
+        /*Map<String, ExperimentIndicatorInstanceRsEntity> kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
         rsExperimentIndicatorInstanceBiz.populateKIndicatorInstanceIdVExperimentIndicatorInstanceMap(
                 kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap,personId, indicatorInstanceIdSet
         );
@@ -209,7 +212,7 @@ public class InterveneHandler {
             examItem.set("currentVal",Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.HALF_UP))
                     .orElse(currentVal));
         });
-        hepOperateSetRequest.setData(JSONUtil.toJsonStr(examItemList));
+        hepOperateSetRequest.setData(JSONUtil.toJsonStr(examItemList));*/
         experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest
                 .builder()
                 .appId(baseBiz.getAppId())
@@ -220,17 +223,17 @@ public class InterveneHandler {
                 .assertEnough(true)
                 .build());
 
-        // 获取小组信息
+        /*// 获取小组信息
         ExperimentPersonEntity personEntity = experimentPersonService.lambdaQuery()
                 .eq(ExperimentPersonEntity::getExperimentPersonId,personId)
                 .eq(ExperimentPersonEntity::getDeleted,false)
-                .one();
+                .one();*/
         //计算每次操作应该返回的报销金额
         BigDecimal reimburse = getExperimentPersonRestitution(totalFeeAtomicReference.get().negate(),personId);
         CostRequest costRequest = CostRequest.builder()
                 .operateCostId(idGenerator.nextIdStr())
                 .experimentInstanceId(experimentInstanceId)
-                .experimentGroupId(personEntity.getExperimentGroupId())
+                .experimentGroupId(experimentGroupId)
                 .operatorId(operatorId)
                 .experimentOrgId(orgTreeId)
                 .operateFlowId(flowId)
@@ -300,12 +303,8 @@ public class InterveneHandler {
     public <T extends HepOperateEntity,E> List<E> read(HepOperateGetRequest hepOperateGetRequest,Class<E> eClass,Class<T> clazz){
 
         T operateEntity = hepOperateGetRepository.getOperateEntity(hepOperateGetRequest, clazz);
-        List<JSONObject> list = getItemListFromJson(operateEntity.getData());
-        List<E> resList = new ArrayList<>();
-        list.forEach(entity -> {
-            resList.add(JSONUtil.toBean(entity,eClass));
-        });
-        return resList;
+        List<E> list = getItemListFromJson(operateEntity.getData(),eClass);
+        return list;
     }
 
     /**
@@ -321,21 +320,27 @@ public class InterveneHandler {
         JSONObject jsonObject = JSONUtil.parseObj(str);
         // 辅助检查一级目录
         JSONArray children = jsonObject.getJSONArray("children");
-        if(children.size()==0){
+        if(children==null){
+            BigDecimal fee = jsonObject.getBigDecimal("fee");
+            res.add(fee == null ? BigDecimal.ZERO : fee);
             return res;
         }
         for(int i=0;i<children.size();i++){
             JSONObject jsonObject2 = children.getJSONObject(i);
             // 辅助检查二级目录
             JSONArray children2 = jsonObject2.getJSONArray("children");
-            if(children2.size()==0){
+            if(children2==null){
+                BigDecimal fee = jsonObject2.getBigDecimal("fee");
+                res.add(fee == null ? BigDecimal.ZERO : fee);
                 return res;
             }
             for(int j=0;j<children2.size();j++){
                 JSONObject jsonObject3 = children2.getJSONObject(j);
                 // 三级目录
                 JSONArray children3 = jsonObject3.getJSONArray("children");
-                if(children3.size()==0){
+                if(children3==null){
+                    BigDecimal fee = jsonObject3.getBigDecimal("fee");
+                    res.add(fee == null ? BigDecimal.ZERO : fee);
                     return res;
                 }
                 for(int x=0;x<children3.size();x++){
@@ -353,32 +358,32 @@ public class InterveneHandler {
      * @description 解析入参获取明细数据
      * @date 2023/9/16 23:27
      */
-    private  List<JSONObject> getItemListFromJson(String str){
+    private <T> List<T> getItemListFromJson(String str,Class<T> eClass){
 
-        List<JSONObject> list = new ArrayList<>();
+        List<T> list = new ArrayList<>();
         JSONObject jsonObject = JSONUtil.parseObj(str);
         // 一级目录
         JSONArray children = jsonObject.getJSONArray("children");
-        if(children.size()==0){
+        if(children == null){
             return null;
         }
         for(int i=0;i<children.size();i++){
             JSONObject jsonObject2 = children.getJSONObject(i);
             // 二级目录
             JSONArray children2 = jsonObject2.getJSONArray("children");
-            if(children2.size()==0){
-                return null;
+            if(children2 == null){
+                list.add(JSONUtil.toBean(jsonObject2,eClass));
             }
             for(int j=0;j<children2.size();j++){
                 JSONObject jsonObject3 = children2.getJSONObject(j);
                 // 三级目录
                 JSONArray children3 = jsonObject3.getJSONArray("children");
-                if(children3.size()==0){
-                    return null;
+                if(children3 == null){
+                    list.add(JSONUtil.toBean(jsonObject3,eClass));
                 }
                 for(int x=0;x<children3.size();x++){
-                    JSONObject object = children3.getJSONObject(x);
-                    list.add(object);
+                    JSONObject object4 = children3.getJSONObject(x);
+                    list.add(JSONUtil.toBean(object4,eClass));
                 }
             }
         }

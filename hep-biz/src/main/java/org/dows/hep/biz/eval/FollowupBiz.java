@@ -170,28 +170,6 @@ public class FollowupBiz {
             AssertUtil.justThrow(String.format("功能点结算失败：%s", ex.getMessage()), ex);
         }
 
-        // 保存数据到mongodb
-        boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
-        if(useMongo){
-            HepOperateSetRequest hepOperateSetRequest = HepOperateSetRequest.builder()
-                    .type(HepOperateTypeEnum.getNameByCode(HepFollowUp.class))
-                    .experimentInstanceId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentId()))
-                    .experimentGroupId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentGroupId()))
-                    .operatorId(Long.valueOf(voLogin.getAccountId()))
-                    .orgTreeId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentOrgId()))
-                    .flowId(experimentMonitorFollowupCheckRequestRs.getOperateFlowId())
-                    .personId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentPersonId()))
-                    .orgName(experimentMonitorFollowupCheckRequestRs.getOrgName())
-                    .functionName(experimentMonitorFollowupCheckRequestRs.getFunctionName())
-                    .functionCode(experimentMonitorFollowupCheckRequestRs.getIndicatorFuncId())
-                    .data(experimentMonitorFollowupCheckRequestRs.getData())
-                    .period(experimentMonitorFollowupCheckRequestRs.getPeriods())
-                    .onDate(null)
-                    .onDay(null)
-                    .build();
-            interveneHandler.write(hepOperateSetRequest, HepFollowUp.class);
-            return;
-        }
         String caseId = experimentIndicatorViewMonitorFollowupRsEntity.getCaseId();
         String name = experimentIndicatorViewMonitorFollowupRsEntity.getName();
         String ivmfContentNameArray = experimentIndicatorViewMonitorFollowupRsEntity.getIvmfContentNameArray();
@@ -322,6 +300,28 @@ public class FollowupBiz {
         }
         final ExperimentFollowupPlanEntity savePlan = rowPlan;
         final ExperimentOrgNoticeEntity saveNotice=topNotice;
+        // 保存数据到mongodb
+        boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+        if(useMongo){
+            HepOperateSetRequest hepOperateSetRequest = HepOperateSetRequest.builder()
+                    .type(HepOperateTypeEnum.getNameByCode(HepFollowUp.class))
+                    .experimentInstanceId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentId()))
+                    .experimentGroupId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentGroupId()))
+                    .operatorId(Long.valueOf(voLogin.getAccountId()))
+                    .orgTreeId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentOrgId()))
+                    .flowId(experimentMonitorFollowupCheckRequestRs.getOperateFlowId())
+                    .personId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentPersonId()))
+                    .orgName(experimentMonitorFollowupCheckRequestRs.getOrgName())
+                    .functionName(experimentMonitorFollowupCheckRequestRs.getFunctionName())
+                    .functionCode(experimentMonitorFollowupCheckRequestRs.getIndicatorFuncId())
+                    .data(experimentMonitorFollowupCheckRequestRs.getData())
+                    .period(experimentMonitorFollowupCheckRequestRs.getPeriods())
+                    .onDate(null)
+                    .onDay(null)
+                    .build();
+            interveneHandler.write(hepOperateSetRequest, HepFollowUp.class);
+            return;
+        }
         if (!operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false, () -> {
             if(null!=saveNotice){
                 AssertUtil.falseThenThrow(experimentOrgNoticeDao.setTopFollowupNoticeAction(saveNotice.getExperimentOrgNoticeId(),
@@ -339,7 +339,6 @@ public class FollowupBiz {
         if(planChanged) {
             FollowupPlanCache.Instance().putPlan(ExperimentCacheKey.create(appId, experimentId), rowPlan);
         }
-
     }
     private ExperimentIndicatorFuncRsResponse getIndicatorFunc(String experimentOrgId, String indicatorFuncId){
         ExperimentIndicatorFuncRsResponse rst=new ExperimentIndicatorFuncRsResponse();

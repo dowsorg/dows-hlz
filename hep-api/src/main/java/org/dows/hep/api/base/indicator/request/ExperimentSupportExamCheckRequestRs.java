@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,5 +57,10 @@ public class ExperimentSupportExamCheckRequestRs implements Serializable {
   @Schema(title = "json辅助检查明细数据")
   private String data;
 
+  @Schema(title = "所在天数")
+  private Integer onDay;
+
+  @Schema(title = "检查时间(仿真时间)")
+  private Date onDate;
 
 }
