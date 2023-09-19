@@ -150,7 +150,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         List<EchartsDataResonse> statList = new ArrayList<>();
 
         List<ExperimentPersonEntity> personEntities=experimentPersonCache.getPersonsByOrgId(experimentIndicatorInstanceRequest.getExperimentInstanceId(),
-                experimentIndicatorInstanceRequest.getExperimentPersonId());
+                experimentIndicatorInstanceRequest.getExperimentOrgId());
         if(ShareUtil.XObject.isEmpty(personEntities)){
             return statList;
         }
@@ -269,11 +269,11 @@ public class ExperimentIndicatorInstanceRsBiz {
                     }
                 }
                 //2.7、计算比例
-                EchartsDataResonse stat1 = new EchartsDataResonse("0-6岁儿童", Long.valueOf(sum), String.format("%.2f", (float) (long) age1 / sum));
-                EchartsDataResonse stat2 = new EchartsDataResonse("7-17岁少年", Long.valueOf(sum), String.format("%.2f", (float) (long) age2 / sum));
-                EchartsDataResonse stat3 = new EchartsDataResonse("18-40岁青年", Long.valueOf(sum), String.format("%.2f", (float) (long) age3 / sum));
-                EchartsDataResonse stat4 = new EchartsDataResonse("41-59岁中年", Long.valueOf(sum), String.format("%.2f", (float) (long) age4 / sum));
-                EchartsDataResonse stat5 = new EchartsDataResonse("60岁以上老年", Long.valueOf(sum), String.format("%.2f", (float) (long) age5 / sum));
+                EchartsDataResonse stat1 = new EchartsDataResonse("0-6岁儿童", Long.valueOf(sum), String.format("%.2f", (double)  age1 / sum));
+                EchartsDataResonse stat2 = new EchartsDataResonse("7-17岁少年", Long.valueOf(sum), String.format("%.2f", (double) age2 / sum));
+                EchartsDataResonse stat3 = new EchartsDataResonse("18-40岁青年", Long.valueOf(sum), String.format("%.2f", (double) age3 / sum));
+                EchartsDataResonse stat4 = new EchartsDataResonse("41-59岁中年", Long.valueOf(sum), String.format("%.2f",  (double)  age4 / sum));
+                EchartsDataResonse stat5 = new EchartsDataResonse("60岁以上老年", Long.valueOf(sum), String.format("%.2f",  (double)  age5 / sum));
                 statList.add(stat1);
                 statList.add(stat2);
                 statList.add(stat3);
@@ -300,7 +300,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         List<EchartsDataResonse> statList = new ArrayList<>();
 
         List<ExperimentPersonEntity> personEntities=experimentPersonCache.getPersonsByOrgId(experimentIndicatorInstanceRequest.getExperimentInstanceId(),
-                experimentIndicatorInstanceRequest.getExperimentPersonId());
+                experimentIndicatorInstanceRequest.getExperimentOrgId());
         if(ShareUtil.XObject.isEmpty(personEntities)){
             return statList;
         }
@@ -330,8 +330,8 @@ public class ExperimentIndicatorInstanceRsBiz {
                     gender2 += 1;
                 }
             }
-            EchartsDataResonse stat1 = new EchartsDataResonse("女性", Long.valueOf(sum), String.format("%.2f", (float) (long) gender1 / sum));
-            EchartsDataResonse stat2 = new EchartsDataResonse("男性", Long.valueOf(sum), String.format("%.2f", (float) (long) gender2 / sum));
+            EchartsDataResonse stat1 = new EchartsDataResonse("女性", Long.valueOf(sum), String.format("%.2f", (double)  gender1 / sum));
+            EchartsDataResonse stat2 = new EchartsDataResonse("男性", Long.valueOf(sum), String.format("%.2f", (double)  gender2 / sum));
             statList.add(stat1);
             statList.add(stat2);
             //2.5、保证数据总和一百

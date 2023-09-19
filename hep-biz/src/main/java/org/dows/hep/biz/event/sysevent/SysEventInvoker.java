@@ -86,7 +86,7 @@ public class SysEventInvoker {
                 logError("manulTriggering", "missSetting expt:%s", exptKey);
                 return false;
             }
-            SysEventCollection eventColl = SysEventCache.Instance().caffineCache().getIfPresent(exptKey);
+            SysEventCollection eventColl = SysEventCache.Instance().loadingCache().get(exptKey);
             if (ShareUtil.XObject.anyEmpty(eventColl, () -> eventColl.getEventRows())) {
                 logError("manulTriggering", "emptyEvents expt:%s", exptKey);
                 return false;
@@ -113,7 +113,7 @@ public class SysEventInvoker {
                 logError("manulTriggering", "failSave time:%s expt:%s deal:%s period:%s group:%s person:%s",
                         triggeringTime.getTime(), exptKey, dealType, period, exptGroupId, exptPersonId);
             }
-            SysEventCache.Instance().caffineCache().invalidate(exptKey);
+            SysEventCache.Instance().loadingCache().invalidate(exptKey);
             EventScheduler.Instance().scheduleSysEvent(appId, exptId, 3);
             return true;
         }catch (Exception ex){
@@ -153,7 +153,7 @@ public class SysEventInvoker {
             logError("manualDeal", "missTimePoint expt:%s",exptKey);
             return false;
         }
-        SysEventCollection eventColl= SysEventCache.Instance().caffineCache().getIfPresent(exptKey);
+        SysEventCollection eventColl= SysEventCache.Instance().loadingCache().get(exptKey);
         if(ShareUtil.XObject.anyEmpty(eventColl,()->eventColl.getEventRows()) ){
             logError("manualDeal", "emptyEvents expt:%s",exptKey);
             return false;
@@ -228,22 +228,7 @@ public class SysEventInvoker {
        return dealType.dealEvent(row,stat);
     }
 
-    public List<ExperimentSysEventEntity> buildEvents(ExperimentSettingCollection exptColl) {
-        List<ExperimentSysEventEntity> rst=new ArrayList<>();
-        Arrays.stream(EnumSysEventDealType.values()).forEach(item->{
-            if(item==EnumSysEventDealType.NONE){
-                return;
-            }
-            List<ExperimentSysEventEntity> events=item.buildEvents(exptColl);
-            if(ShareUtil.XObject.isEmpty(events)){
-                return;
-            }
-            rst.addAll(events);
-        });
-        rst.sort(Comparator.comparingInt(ExperimentSysEventEntity::getPeriods)
-                .thenComparingInt(ExperimentSysEventEntity::getDealSeq));
-        return rst;
-    }
+
 
     public ExperimentTimePoint getTriggerTime(ExperimentSysEventEntity entity,ExperimentSettingCollection exptColl,long cntPauseSeconds) {
         if (ShareUtil.XObject.isEmpty(entity)) {
