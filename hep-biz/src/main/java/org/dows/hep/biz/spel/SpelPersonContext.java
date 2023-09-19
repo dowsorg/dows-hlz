@@ -82,6 +82,7 @@ public class SpelPersonContext extends StandardEvaluationContext {
                     .map(ExperimentIndicatorInstanceRsEntity::getDef)
                     .orElse(str);
         }
+        str=str.trim();
         return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str) : str;
     }
 }

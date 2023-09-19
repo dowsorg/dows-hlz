@@ -242,6 +242,7 @@ public class SpelEngine {
             change = valNumber.subtract(curValNumber);
             coreEvalSum(mapSum, rst.setVal(change).setValNumber(change));
         }catch (Exception ex){
+            log.error(String.format("EVALError %s", input), ex);
             throw ex;
         }
         return rst;
