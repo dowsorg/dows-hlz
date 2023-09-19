@@ -94,7 +94,7 @@ pipeline {
                         /usr/local/mvn/bin/mvn -Dmaven.test.skip=true clean package -U
                     '''
                     if (branch.startsWith('lte-')) {
-                        echo "====== Building for sit environment for $branch ======="
+                        echo "Building for sit environment for $branch"
                         sh "$DOCKER_OFFLINE_LOGIN"
                         sh "docker build . --file Dockerfile -t 192.168.1.60:7080/hep/api-hep-admin-lte:$ver"
                         sh "docker push 192.168.1.60:7080/hep/api-hep-admin-lte:$ver"
@@ -103,7 +103,7 @@ pipeline {
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_LTE_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_LTE_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_LTE_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$DOCKER_CONTAINER_START'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_LTE_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'LTE环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST sh $TO_LTE_CD_PATH/admin/robot.sh '\"$branch\" \"$gitCommitAuthorName\" \"api-ops-admin\" \"LTE环境\" \"$gitCommitMessage\" \"$changes\" \"green\"'"
 
                     } else if (branch.startsWith('dev-')) {
                         echo "Building for development environment for ${branch}"
@@ -115,7 +115,7 @@ pipeline {
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_DEV_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_DEV_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_DEV_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$DOCKER_CONTAINER_START'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_DEV_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'DEV环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST sh $TO_DEV_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'DEV环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
 
                     } else if (branch.startsWith('sit-')) {
                         echo "Building for sit environment for $branch"
@@ -128,7 +128,7 @@ pipeline {
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_SIT_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_SIT_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_SIT_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$DOCKER_CONTAINER_START'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
+                        sh "sshpass -p $OFFLINE_AS_USERNAME ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '"$branch"' '"$gitCommitAuthorName"' 'api-hep-admin' 'SIT环境发布' '"$gitCommitMessage"' '"$changes"' 'green'"
 
                     } else if (branch.startsWith('uat-')) {
@@ -142,7 +142,7 @@ pipeline {
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_UAT_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_UAT_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_UAT_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$DOCKER_CONTAINER_START'"
 
-                        sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'UAT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
+                        sh "sshpass -p $OFFLINE_AS_USERNAME ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'UAT环境发布' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '$branch' '$gitCommitAuthorName' 'api-hep-admin' 'UAT环境发布' '$gitCommitMessage' '$changes' 'green'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_UAT_CD_PATH/admin/robot.sh '\"${branch}\"' '\"${gitCommitAuthorName}\"' 'api-hep-admin' 'UAT环境构建、打包、传输成功' 'green' '\"${gitCommitMessage}\"'"
                     } else if (branch.startsWith('prd-')){
