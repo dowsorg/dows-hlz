@@ -63,6 +63,9 @@ public class ExperimentPersonEntity implements CrudEntity {
     @Schema(title = "uim用户名称")
     private String userName;
 
+    @Schema(title = "uim人物头像")
+    private String avatar;
+
     @Schema(title = "案例人物ID")
     private String casePersonId;
 

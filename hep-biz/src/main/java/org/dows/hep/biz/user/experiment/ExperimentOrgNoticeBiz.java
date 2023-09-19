@@ -79,6 +79,11 @@ public class ExperimentOrgNoticeBiz {
         return createNotice(src, new HashMap<>());
     }
     public ExperimentOrgNoticeEntity createNotice(ExperimentEventEntity src,Map<String,String> mapAvatar) throws JsonProcessingException {
+        ExperimentPersonEntity rowPerson= ExperimentPersonCache.Instance().getPerson(src.getExperimentInstanceId(), src.getExperimentPersonId());
+        if(ShareUtil.XObject.isEmpty(rowPerson)){
+            return null;
+        }
+
         ExperimentEventBox eventBox = ExperimentEventBox.create(src);
         ExperimentEventJson eventData = eventBox.fromEventJsonOrDefault(false);
 
@@ -101,11 +106,12 @@ public class ExperimentOrgNoticeBiz {
                 .setContent(eventData.getDescr())
                 .setTips(eventData.getTips())
                 .setReadState(0)
-                .setActionState(EnumEventActionState.TODO.getCode());
+                .setActionState(EnumEventActionState.TODO.getCode())
+                .setAvatar(rowPerson.getAvatar());
         ExperimentOrgNoticeBox.create(rst)
                 .setJsonData(createNoticeAction(eventBox))
                 .toActionsJson(true);
-        return fillAvatar(mapAvatar, rst);
+        return rst;
     }
 
     public List<ExptOrgNoticeActionVO> createNoticeAction(ExperimentEventBox src) throws JsonProcessingException {
@@ -123,7 +129,7 @@ public class ExperimentOrgNoticeBiz {
             return null;
         }
         String context=String.format("%s的预约随访时间到了", rowPerson.getUserName());
-        ExperimentOrgNoticeEntity rst = new ExperimentOrgNoticeEntity()
+        return new ExperimentOrgNoticeEntity()
                 .setAppId(src.getAppId())
                 .setExperimentInstanceId(src.getExperimentInstanceId())
                 .setExperimentGroupId(src.getExperimentGroupId())
@@ -140,9 +146,10 @@ public class ExperimentOrgNoticeBiz {
                 .setContent(context)
                 .setTips("监测随访")
                 .setReadState(0)
-                .setActionState(EnumEventActionState.TODO.getCode());
+                .setActionState(EnumEventActionState.TODO.getCode())
+                .setAvatar(rowPerson.getAvatar());
 
-        return fillAvatar(new HashMap<>(), rst);
+
     }
     //endregion
 

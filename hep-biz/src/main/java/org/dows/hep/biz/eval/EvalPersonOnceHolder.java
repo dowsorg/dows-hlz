@@ -54,6 +54,8 @@ public class EvalPersonOnceHolder {
 
     private EvalPersonOnceData cacheData;
 
+    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压");
+
     //region holders
     public EvalPersonOnceHolder getLastHolder(){
         return getHolder(cacheKey.getEvalNo()-1);
@@ -289,7 +291,7 @@ public class EvalPersonOnceHolder {
             return;
         }
         final boolean isChanged=src.isChanged();
-        final int SCALE4Value=2;
+        final int SCALE4Value=INDICTATORNameBloodPressure.contains(src.getIndicatorName())?0:2;
         BigDecimal changingVal=src.getChangingVal();
         if(ShareUtil.XObject.notEmpty(changingVal)
                 &&changingVal.compareTo(BigDecimal.ZERO)!=0){

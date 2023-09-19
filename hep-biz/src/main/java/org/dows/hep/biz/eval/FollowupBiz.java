@@ -106,8 +106,8 @@ public class FollowupBiz {
                 .checkOrgFlowRunning(periods);
         final String operateFlowId = flowValidator.getOperateFlowId();
         ExperimentFollowupPlanEntity rowPlan = experimentFollowupPlanDao.getByExperimentPersonId(experimentPersonId, indicatorFuncId).orElse(null);
-        AssertUtil.trueThenThrow(null != rowPlan && ShareUtil.XObject.nullSafeEquals(operateFlowId, rowPlan.getOperateFlowId()))
-                .throwMessage("挂号期内只能随访一次");
+        /*AssertUtil.trueThenThrow(null != rowPlan && ShareUtil.XObject.nullSafeEquals(operateFlowId, rowPlan.getOperateFlowId()))
+                .throwMessage("挂号期内只能随访一次");*/
         ExperimentIndicatorViewMonitorFollowupRsEntity experimentIndicatorViewMonitorFollowupRsEntity = experimentIndicatorViewMonitorFollowupRsService.lambdaQuery()
                 .eq(ExperimentIndicatorViewMonitorFollowupRsEntity::getExperimentIndicatorViewMonitorFollowupId, indicatorViewMonitorFollowupId)
                 .last("limit 1")

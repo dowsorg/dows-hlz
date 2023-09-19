@@ -3,6 +3,7 @@ package org.dows.hep.api.user.experiment.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
  * @date 2023/5/10 10:28
  */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "ExperimentPerson 对象", title = "实验人物")
 public class ExperimentPersonResponse {

@@ -93,6 +93,13 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         }
         return cached.getMapGroupPersons().get(experimentGroupId);
     }
+    public List<ExperimentPersonEntity> getPersonsByOrgId(String experimentId,String experimentOrgId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return Collections.emptyList();
+        }
+        return cached.getMapOrgPersons().get(experimentOrgId);
+    }
     public Map<String,ExperimentPersonEntity> getMapPersons(String experimentId){
         ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
         if(null==cached){
@@ -146,6 +153,7 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         rowsPerson.forEach(i->{
             rst.mapPersons.put(i.getExperimentPersonId(),i);
             rst.mapGroupPersons.computeIfAbsent(i.getExperimentGroupId(), k->new ArrayList<>()).add(i);
+            rst.mapOrgPersons.computeIfAbsent(i.getExperimentOrgId(), k->new ArrayList<>()).add(i);
         });
         List<ExperimentGroupEntity> rowsGroup=experimentGroupDao.getByExperimentId(key.getExperimentInstanceId() );
         rowsGroup.forEach(i->{
@@ -165,6 +173,8 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         private final ConcurrentMap<String, ExperimentPersonEntity> mapPersons=new ConcurrentHashMap<>();
 
         private final Map<String, List<ExperimentPersonEntity>> mapGroupPersons=new HashMap<>();
+
+        private final Map<String,List<ExperimentPersonEntity>> mapOrgPersons=new HashMap<>();
 
         private final Map<String, ExperimentGroupEntity> mapGroups=new HashMap<>();
 

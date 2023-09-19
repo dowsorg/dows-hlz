@@ -127,8 +127,9 @@ public abstract class BaseEventDealer implements ISysEventDealer {
                     logError(ex, "dealEvent", "saveError. rst:%s",rst);
                 }
             }
+            logInfo("dealEvent", "rst:%s", rst);
         }
-        logInfo("dealEvent", "rst:%s", rst);
+
         return rst.isSucc();
     }
 

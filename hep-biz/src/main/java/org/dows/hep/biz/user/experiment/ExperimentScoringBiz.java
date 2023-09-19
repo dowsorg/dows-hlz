@@ -14,7 +14,6 @@ import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumESC;
-import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.exception.ExperimentScoringException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -25,12 +24,9 @@ import org.dows.hep.biz.eval.EvalCompetitiveScoreBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
-import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.OperateCostBiz;
-import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
-import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -39,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -450,22 +445,6 @@ public class ExperimentScoringBiz {
             BigDecimal finalHealthIndexScore = groupCompetitiveScoreBigDecimal.multiply(healthIndexWeight);
             BigDecimal finalMedicalRatioScoreScore = groupIdVGroupMoneyScoreBigDecimal.multiply(medicalRatioWeight);
 
-            //当前期排行
-            int rank = 0;
-            AtomicInteger curRank = new AtomicInteger(1);
-            Map<String, Integer> kExperimentGroupIdVRankMap = new HashMap<>();
-            experimentScoringService.lambdaQuery()
-                    .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentInstanceId)
-                    .eq(ExperimentScoringEntity::getPeriods, periods)
-                    .eq(ExperimentScoringEntity::getScoringCount,scoringCountAtomicInteger.get() -1)
-                    .orderByDesc(ExperimentScoringEntity::getTotalScore,ExperimentScoringEntity::getId)
-                    .list()
-                    .forEach(experimentScoringEntity -> {
-                        kExperimentGroupIdVRankMap.put(experimentScoringEntity.getExperimentGroupId(), curRank.getAndIncrement());
-                    });
-            if (Objects.nonNull(kExperimentGroupIdVRankMap.get(experimentGroupId))) {
-                rank = kExperimentGroupIdVRankMap.get(experimentGroupId);
-            }
             experimentScoringEntityList.add(ExperimentScoringEntity
                     .builder()
                     .experimentScoringId(idGenerator.nextIdStr())
@@ -478,15 +457,18 @@ public class ExperimentScoringBiz {
                     .healthIndexScore(groupCompetitiveScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .totalScore(totalScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
-                    .percentKnowledgeScore(finalKnowledgeScore.divide(totalScoreBigDecimal,2,RoundingMode.HALF_UP).toString())
-                    .percentHealthIndexScore(finalHealthIndexScore.divide(totalScoreBigDecimal,2, RoundingMode.HALF_UP).toString())
-                    .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal,2, RoundingMode.HALF_UP).toString())
-                    .rankNo(rank)
+                    .percentKnowledgeScore(finalKnowledgeScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
+                    .percentHealthIndexScore(finalHealthIndexScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
+                    .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
                     .scoringCount(scoringCountAtomicInteger.get())
                     .periods(periods)
                     .build());
         });
-
+        //计算排名
+        experimentScoringEntityList.sort(Comparator.comparing(ExperimentScoringEntity::getTotalScore, Comparator.reverseOrder())
+                .thenComparing(ExperimentScoringEntity::getHealthIndexScore, Comparator.reverseOrder()));
+        AtomicInteger curRank = new AtomicInteger(1);
+        experimentScoringEntityList.forEach(experimentScoringEntity -> experimentScoringEntity.setRankNo(curRank.getAndIncrement()));
         experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
     }
 
@@ -778,9 +760,11 @@ public class ExperimentScoringBiz {
             }
             kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.put(periods1, kExperimentGroupIdVExperimentScoringEntityMap);
         });
+        AtomicInteger scoreSize=new AtomicInteger();
 
         /* runsix:算每期列表 */
         kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.forEach((period, kExperimentGroupIdVExperimentScoringEntityMap) -> {
+            scoreSize.addAndGet(kExperimentGroupIdVExperimentScoringEntityMap.size());
             /* runsix:12345期数据 */
             ExperimentRankItemResponse experimentRankItemResponse = kPeriodVExperimentRankItemResponseMap.get(period);
             List<ExperimentRankGroupItemResponse> experimentRankGroupItemResponseList = experimentRankItemResponse.getExperimentRankGroupItemResponseList();
@@ -821,7 +805,7 @@ public class ExperimentScoringBiz {
                 .list()
                 .size();
 
-        if (list.size() != totalPeriods * size) {
+        if (scoreSize.get() < totalPeriods * size) {
             return ExperimentRankResponse
                     .builder()
                     .totalPeriod(totalPeriods)
@@ -1000,7 +984,7 @@ public class ExperimentScoringBiz {
             String percentKnowledge = "0";
             String percentHealthIndex = "0";
             String percentTreatmentPercent = "0";
-            String rankNo = "0";
+            String rankNo = "1";
             ExperimentScoringEntity experimentScoringEntity = kExperimentGroupIdVExperimentScoringEntityMap.get(experimentGroupId);
             if (Objects.nonNull(experimentScoringEntity)) {
                 //权重

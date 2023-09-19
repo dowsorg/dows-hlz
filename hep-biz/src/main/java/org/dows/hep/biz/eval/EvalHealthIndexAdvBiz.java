@@ -77,7 +77,7 @@ public class EvalHealthIndexAdvBiz {
                 CompletableFuture[] futures = new CompletableFuture[groups.size()];
                 int pos = 0;
                 for (List<String> personIds : groups) {
-                    futures[pos++] = CompletableFuture.runAsync(() -> evalPersonHealthIndex(req, experimentPersonIdSet,crowds),
+                    futures[pos++] = CompletableFuture.runAsync(() -> evalPersonHealthIndex(req, personIds,crowds),
                             EvalPersonExecutor.Instance().getThreadPool());
                 }
                 CompletableFuture.allOf(futures).join();

@@ -1,7 +1,10 @@
-package org.dows.hep.biz.spel;
+package org.dows.hep.biz.eval;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.spel.ExperimentSpelCache;
+import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.ShareUtil;
 import org.springframework.stereotype.Component;
 
@@ -15,15 +18,15 @@ import java.util.Set;
  */
 @Component
 @Slf4j
-public class SpelCacheExecutor {
+public class ExperimentCacheExecutor {
 
-    private static volatile SpelCacheExecutor s_instance;
+    private static volatile ExperimentCacheExecutor s_instance;
 
-    public static SpelCacheExecutor Instance(){
+    public static ExperimentCacheExecutor Instance(){
         return s_instance;
     }
 
-    private SpelCacheExecutor(){
+    private ExperimentCacheExecutor(){
         s_instance=this;
     }
     private final static int CONCURRENTNum=3;
@@ -55,6 +58,10 @@ public class SpelCacheExecutor {
                 ExperimentCacheKey key=ExperimentCacheKey.create(APPId,experimentId);
                 try{
                     ExperimentSpelCache.Instance().loadingCache().get(key);
+                    Set<String> personIds= ExperimentPersonCache.Instance().getPersondIdSet(experimentId, null);
+                    personIds.forEach(personId-> PersonIndicatorIdCache.Instance().loadingCache().get(personId));
+                    ExperimentSettingCache.Instance().getSet(key, true);
+
                 }catch (Exception ex){
                     ts=logCostTime(sb,String.format("loaderror %s %s", experimentId,ex.getMessage()),ts);
                     log.error(String.format("SPELTRACE--load--error exptKey[%s]",key), ex);
