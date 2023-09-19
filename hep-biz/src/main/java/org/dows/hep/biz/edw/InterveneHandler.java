@@ -16,7 +16,9 @@ import org.dows.edw.HepOperateTypeEnum;
 import org.dows.edw.domain.HepHealthExamination;
 import org.dows.edw.repository.HepOperateGetRepository;
 import org.dows.edw.repository.HepOperateSetRepository;
+import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
+import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
 import org.dows.hep.api.core.ExptOperateOrgFuncRequest;
 import org.dows.hep.api.edw.request.HepOperateGetRequest;
@@ -24,17 +26,33 @@ import org.dows.hep.api.edw.request.HepOperateSetRequest;
 import org.dows.hep.api.enums.EnumIndicatorExpressionField;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
+import org.dows.hep.api.enums.EnumOrgFeeType;
+import org.dows.hep.biz.base.evaluate.EvaluateBaseBiz;
+import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentIndicatorExpressionBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentIndicatorInstanceBiz;
+import org.dows.hep.biz.eval.EvalPersonCache;
+import org.dows.hep.biz.eval.EvalPersonOnceHolder;
 import org.dows.hep.biz.eval.QueryPersonBiz;
+import org.dows.hep.biz.operate.CostRequest;
+import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.request.CaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.DatabaseCalIndicatorExpressionRequest;
 import org.dows.hep.biz.request.ExperimentCalIndicatorExpressionRequest;
+import org.dows.hep.biz.spel.SpelEngine;
+import org.dows.hep.biz.spel.SpelPersonContext;
+import org.dows.hep.biz.spel.meta.SpelEvalResult;
 import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.ShareBiz;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
 import org.dows.hep.properties.MongoProperties;
+import org.dows.hep.service.CaseOrgFeeService;
+import org.dows.hep.service.ExperimentOrgService;
+import org.dows.hep.service.ExperimentPersonService;
+import org.dows.hep.service.OperateInsuranceService;
+import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -66,6 +84,20 @@ public class InterveneHandler {
 
     // properties
     private final MongoProperties mongoProperties;
+
+    private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
+
+    private final SpelEngine spelEngine;
+
+    private EvaluateBaseBiz baseBiz;
+
+    private final ExperimentPersonService experimentPersonService;
+
+    private final OperateInsuranceService operateInsuranceService;
+    private final ExperimentOrgService experimentOrgService;
+    private final CaseOrgFeeService caseOrgFeeService;
+    private final IdGenerator idGenerator;
+    private final OperateCostBiz operateCostBiz;
 
     /**
      * @param rowOrgFunc     - 功能点
@@ -106,30 +138,110 @@ public class InterveneHandler {
         return supplier.get();
     }
     /**
-     * @param supportExamCheck     - 功能点
+     * @param hepOperateSetRequest     - 功能点
      * @param clazz      1    - 操作对象
      * @author shi
      * @description useMongo ? mongo : mysql
      * @date 2023/9/15 11:34
      */
-    public <T extends HepOperateEntity> void write(ExperimentSupportExamCheckRequestRs supportExamCheck, Class<T> clazz) {
+    public <T extends HepOperateEntity> void write(HepOperateSetRequest hepOperateSetRequest, Class<T> clazz) {
 
-        HepOperateSetRequest hepOperateSetRequest = HepOperateSetRequest.builder()
-                .type(HepOperateTypeEnum.getNameByCode(clazz))
-                .experimentInstanceId(Long.valueOf(supportExamCheck.getExperimentId()))
-                .experimentGroupId(Long.valueOf(supportExamCheck.getExperimentGroupId()))
-                .operatorId(Long.valueOf(supportExamCheck.getOperatorId()))
-                .orgTreeId(Long.valueOf(supportExamCheck.getExperimentOrgId()))
-                .flowId(supportExamCheck.getOperateFlowId())
-                .personId(Long.valueOf(supportExamCheck.getExperimentPersonId()))
-                .orgName(supportExamCheck.getOrgName())
-                .functionName(supportExamCheck.getFunctionName())
-                .functionCode(supportExamCheck.getIndicatorFuncId())
-                .data(supportExamCheck.getData())
-                .period(supportExamCheck.getPeriods())
-                .onDate(null)
-                .onDay(null)
+        List<JSONObject> list = getItemListFromJson(hepOperateSetRequest.getData());
+
+        Set<String> indicatorInstanceIdSet = new HashSet<>();
+        List<JSONObject> examItemList = new ArrayList<>();
+        if (Objects.nonNull(list) && !list.isEmpty()) {
+            list.forEach(examItem -> {
+                indicatorInstanceIdSet.add(examItem.getStr("indicatorInstanceId"));
+                examItemList.add(examItem);
+            });
+        }
+        AtomicReference<BigDecimal> totalFeeAtomicReference = new AtomicReference<>(BigDecimal.ZERO);
+        totalFeeAtomicReference.set(totalFeeAtomicReference.get().subtract(getTotalFeeFromRequest(hepOperateSetRequest.getData())));
+
+        // 检查实例ID
+        String experimentInstanceId = String.valueOf(hepOperateSetRequest.getExperimentInstanceId());
+        // 检查人ID
+        String personId = String.valueOf(hepOperateSetRequest.getPersonId());
+        // 期数
+        Integer period = hepOperateSetRequest.getPeriod();
+        // 操作人ID
+        String operatorId = String.valueOf(hepOperateSetRequest.getOperatorId());
+        // 实验机构ID
+        String orgTreeId = String.valueOf(hepOperateSetRequest.getOrgTreeId());
+        // 流程ID
+        String flowId = String.valueOf(hepOperateSetRequest.getFlowId());
+        Map<String, ExperimentIndicatorInstanceRsEntity> kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
+        rsExperimentIndicatorInstanceBiz.populateKIndicatorInstanceIdVExperimentIndicatorInstanceMap(
+                kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap,personId, indicatorInstanceIdSet
+        );
+
+        Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
+        if (!indicatorInstanceIdSet.isEmpty()) {
+            indicatorInstanceIdSet.forEach(indicatorInstanceId -> {
+                ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
+                if (Objects.nonNull(experimentIndicatorInstanceRsEntity) && StringUtils.isNotBlank(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())) {
+                    experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
+                }
+            });
+        }
+
+        SpelPersonContext context = new SpelPersonContext().setVariables(personId, null);
+        final EvalPersonOnceHolder evalHolder = EvalPersonCache.Instance().getCurHolder(experimentInstanceId,personId);
+        examItemList.forEach(examItem -> {
+            String indicatorInstanceId = examItem.getStr("indicatorInstanceId");
+            String currentVal = evalHolder.getIndicatorVal(indicatorInstanceId,false);
+            String unit = null;
+            AtomicReference<String> resultExplainAtomicReference = new AtomicReference<>("");
+
+            ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
+            if (Objects.nonNull(experimentIndicatorInstanceRsEntity)) {
+                unit = experimentIndicatorInstanceRsEntity.getUnit();
+                SpelEvalResult evalRst= spelEngine.loadFromSpelCache().withReasonId(experimentInstanceId, personId,
+                                experimentIndicatorInstanceRsEntity.getCaseIndicatorInstanceId(), EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
+                        .eval(context);
+                if(ShareUtil.XObject.notEmpty(evalRst)) {
+                    resultExplainAtomicReference.set(evalRst.getValString());
+                }
+            }
+            examItem.set("operateFlowId",hepOperateSetRequest.getFlowId());
+            examItem.set("unit",unit);
+            examItem.set("currentVal",Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.HALF_UP))
+                    .orElse(currentVal));
+        });
+        hepOperateSetRequest.setData(JSONUtil.toJsonStr(examItemList));
+        experimentIndicatorInstanceRsBiz.changeMoney(RsChangeMoneyRequest
+                .builder()
+                .appId(baseBiz.getAppId())
+                .experimentId(experimentInstanceId)
+                .experimentPersonId(personId)
+                .periods(period)
+                .moneyChange(totalFeeAtomicReference.get())
+                .assertEnough(true)
+                .build());
+
+        // 获取小组信息
+        ExperimentPersonEntity personEntity = experimentPersonService.lambdaQuery()
+                .eq(ExperimentPersonEntity::getExperimentPersonId,personId)
+                .eq(ExperimentPersonEntity::getDeleted,false)
+                .one();
+        //计算每次操作应该返回的报销金额
+        BigDecimal reimburse = getExperimentPersonRestitution(totalFeeAtomicReference.get().negate(),personId);
+        CostRequest costRequest = CostRequest.builder()
+                .operateCostId(idGenerator.nextIdStr())
+                .experimentInstanceId(experimentInstanceId)
+                .experimentGroupId(personEntity.getExperimentGroupId())
+                .operatorId(operatorId)
+                .experimentOrgId(orgTreeId)
+                .operateFlowId(flowId)
+                .patientId(personId)
+                .feeName(EnumOrgFeeType.FZJCF.getName())
+                .feeCode(EnumOrgFeeType.FZJCF.getCode())
+                .cost(totalFeeAtomicReference.get().negate())
+                .restitution(reimburse)
+                .period(period)
                 .build();
+        operateCostBiz.saveCost(costRequest);
         hepOperateSetRepository.setOperateEntity(hepOperateSetRequest, clazz);
     }
     /**
@@ -178,133 +290,22 @@ public class InterveneHandler {
     }
     /**
      * @param hepOperateGetRequest: 查询mongodb的参数
-     //* @param eClass: 调用改接口需要返回的对象类型?如何设计成通用接口
+     * @param eClass: 调用改接口需要返回的对象类型?如何设计成通用接口
      * @param clazz: 查询mongodb需要的对象类型
      * @return List<ExperimentSupportExamReportResponseRs> 返回的集合对象
      * @author shi
      * @description 查询mongodb返回结果
      * @date 2023/9/17 0:23
      */
-    public <T extends HepOperateEntity> List<ExperimentSupportExamReportResponseRs> read(HepOperateGetRequest hepOperateGetRequest,Class<T> clazz){
+    public <T extends HepOperateEntity,E> List<E> read(HepOperateGetRequest hepOperateGetRequest,Class<E> eClass,Class<T> clazz){
 
         T operateEntity = hepOperateGetRepository.getOperateEntity(hepOperateGetRequest, clazz);
-        ExperimentSupportExamReportResponseRs experimentSupportExamReportResponseRs = new ExperimentSupportExamReportResponseRs();
-        List<ExperimentSupportExamReportResponseRs> experimentSupportExamReportResponseRsList = new ArrayList<>();
         List<JSONObject> list = getItemListFromJson(operateEntity.getData());
-
-        Set<String> indicatorInstanceIdSet = new HashSet<>();
-
-        if (Objects.nonNull(list) && !list.isEmpty()) {
-            list.forEach(experimentIndicatorViewSupportExamRsEntity -> {
-                indicatorInstanceIdSet.add(experimentIndicatorViewSupportExamRsEntity.getStr("indicatorInstanceId"));
-            });
-        }
-        Map<String, ExperimentIndicatorInstanceRsEntity> kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
-        rsExperimentIndicatorInstanceBiz.populateKIndicatorInstanceIdVExperimentIndicatorInstanceMap(
-                kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, String.valueOf(hepOperateGetRequest.getExperimentInstanceId()), indicatorInstanceIdSet
-        );
-
-        Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
-        if (!indicatorInstanceIdSet.isEmpty()) {
-            indicatorInstanceIdSet.forEach(indicatorInstanceId -> {
-                ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
-                if (Objects.nonNull(experimentIndicatorInstanceRsEntity) && StringUtils.isNotBlank(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())) {
-                    experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
-                }
-            });
-        }
-
-        Map<String, ExperimentIndicatorExpressionRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap = new HashMap<>();
-        rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap(
-                kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap, experimentIndicatorInstanceIdSet
-        );
-
-        Set<String> experimentIndicatorExpressionIdSet = kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap.values()
-                .stream().map(ExperimentIndicatorExpressionRsEntity::getExperimentIndicatorExpressionId).collect(Collectors.toSet());
-        Map<String, List<ExperimentIndicatorExpressionItemRsEntity>> kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap = new HashMap<>();
-        rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemListMap(
-                kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap, experimentIndicatorExpressionIdSet
-        );
-
-        Set<String> minAndMaxExperimentIndicatorExpressionItemIdSet = new HashSet<>();
-        Map<String, ExperimentIndicatorExpressionItemRsEntity> kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap = new HashMap<>();
-        kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap.values().forEach(experimentIndicatorExpressionRsEntity -> {
-            String minIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
-            String maxIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
-            if (StringUtils.isNotBlank(minIndicatorExpressionItemId)) {
-                minAndMaxExperimentIndicatorExpressionItemIdSet.add(minIndicatorExpressionItemId);
-            }
-            if (StringUtils.isNotBlank(maxIndicatorExpressionItemId)) {
-                minAndMaxExperimentIndicatorExpressionItemIdSet.add(maxIndicatorExpressionItemId);
-            }
+        List<E> resList = new ArrayList<>();
+        list.forEach(entity -> {
+            resList.add(JSONUtil.toBean(entity,eClass));
         });
-        rsExperimentIndicatorExpressionBiz.populateKExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap(
-                kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap, minAndMaxExperimentIndicatorExpressionItemIdSet
-        );
-
-
-        Map<String, ExperimentIndicatorValRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap =
-                queryPersonBiz.populateOnePersonKExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap
-                        (String.valueOf(hepOperateGetRequest.getPersonId()),hepOperateGetRequest.getPeriod());
-
-
-        list.forEach(experimentIndicatorViewSupportExamRsEntity -> {
-                    String currentVal = "";
-                    String unit = null;
-                    AtomicReference<String> resultExplainAtomicReference = new AtomicReference<>("");
-                    String indicatorInstanceId = experimentIndicatorViewSupportExamRsEntity.getStr("indicatorInstanceId");
-                    ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
-                    if (Objects.nonNull(experimentIndicatorInstanceRsEntity)) {
-                        unit = experimentIndicatorInstanceRsEntity.getUnit();
-                        String experimentIndicatorInstanceId = experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId();
-                        ExperimentIndicatorValRsEntity experimentIndicatorValRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap.get(experimentIndicatorInstanceId);
-                        if (Objects.nonNull(experimentIndicatorValRsEntity)) {
-                            currentVal = experimentIndicatorValRsEntity.getCurrentVal();
-                            ExperimentIndicatorExpressionRsEntity experimentIndicatorExpressionRsEntity = kExperimentIndicatorInstanceIdVExperimentIndicatorExpressionRsEntityMap.get(experimentIndicatorInstanceId);
-                            if (Objects.nonNull(experimentIndicatorExpressionRsEntity)) {
-                                String experimentIndicatorExpressionId = experimentIndicatorExpressionRsEntity.getExperimentIndicatorExpressionId();
-                                List<ExperimentIndicatorExpressionItemRsEntity> experimentIndicatorExpressionItemRsEntityList = kExperimentIndicatorExpressionIdVExperimentIndicatorExpressionItemRsEntityListMap.get(experimentIndicatorExpressionId);
-                                ExperimentIndicatorExpressionItemRsEntity minExperimentIndicatorExpressionItemRsEntity = null;
-                                ExperimentIndicatorExpressionItemRsEntity maxExperimentIndicatorExpressionItemRsEntity = null;
-                                String minIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMinIndicatorExpressionItemId();
-                                String maxIndicatorExpressionItemId = experimentIndicatorExpressionRsEntity.getMaxIndicatorExpressionItemId();
-                                if (StringUtils.isNotBlank(minIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId))) {
-                                    minExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(minIndicatorExpressionItemId);
-                                }
-                                if (StringUtils.isNotBlank(maxIndicatorExpressionItemId) && Objects.nonNull(kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId))) {
-                                    maxExperimentIndicatorExpressionItemRsEntity = kExperimentIndicatorExpressionItemIdVExperimentIndicatorExpressionItemRsEntityMap.get(maxIndicatorExpressionItemId);
-                                }
-
-                                if (Objects.nonNull(experimentIndicatorExpressionItemRsEntityList)) {
-                                    rsExperimentIndicatorExpressionBiz.parseExperimentIndicatorExpression(
-                                            EnumIndicatorExpressionField.EXPERIMENT.getField(),
-                                            EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
-                                            EnumIndicatorExpressionScene.PHYSICAL_EXAM.getScene(),
-                                            resultExplainAtomicReference,
-                                            new HashMap<>(),
-                                            DatabaseCalIndicatorExpressionRequest.builder().build(),
-                                            CaseCalIndicatorExpressionRequest.builder().build(),
-                                            ExperimentCalIndicatorExpressionRequest
-                                                    .builder()
-                                                    .kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap(kExperimentIndicatorInstanceIdVExperimentIndicatorValRsEntityMap)
-                                                    .experimentIndicatorExpressionRsEntity(experimentIndicatorExpressionRsEntity)
-                                                    .experimentIndicatorExpressionItemRsEntityList(experimentIndicatorExpressionItemRsEntityList)
-                                                    .minExperimentIndicatorExpressionItemRsEntity(minExperimentIndicatorExpressionItemRsEntity)
-                                                    .maxExperimentIndicatorExpressionItemRsEntity(maxExperimentIndicatorExpressionItemRsEntity)
-                                                    .build()
-                                    );
-                                }
-                            }
-                        }
-                    }
-            experimentSupportExamReportResponseRs.setName(experimentIndicatorViewSupportExamRsEntity.getStr("name"));
-            experimentSupportExamReportResponseRs.setFee(experimentIndicatorViewSupportExamRsEntity.getBigDecimal("fee"));
-            experimentSupportExamReportResponseRs.setCurrentVal(currentVal);
-            experimentSupportExamReportResponseRs.setUnit(unit);
-            experimentSupportExamReportResponseRs.setResultExplain(experimentIndicatorViewSupportExamRsEntity.getStr("resultAnalysis"));
-            experimentSupportExamReportResponseRsList.add(experimentSupportExamReportResponseRs);
-        });
-        return experimentSupportExamReportResponseRsList;
+        return resList;
     }
 
     /**
@@ -382,5 +383,34 @@ public class InterveneHandler {
             }
         }
         return list;
+    }
+    private BigDecimal getExperimentPersonRestitution(BigDecimal fee,String experimentPersonId){
+        //获取在该消费之前的保险购买记录并计算报销比例
+        List<OperateInsuranceEntity> insuranceEntityList = operateInsuranceService.lambdaQuery()
+                .eq(OperateInsuranceEntity::getExperimentPersonId, experimentPersonId)
+                .le(OperateInsuranceEntity::getIndate, new Date())
+                .ge(OperateInsuranceEntity::getExpdate, new Date())
+                .list();
+        //可能会存在多个机构购买情况，金钱要叠加
+        BigDecimal reimburse = new BigDecimal(0);
+        if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
+            for (int j = 0; j < insuranceEntityList.size(); j++) {
+                //3.4、通过机构获取报销比例
+                ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
+                        .eq(ExperimentOrgEntity::getExperimentOrgId, insuranceEntityList.get(j).getExperimentOrgId())
+                        .eq(ExperimentOrgEntity::getDeleted, false)
+                        .one();
+                if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
+                    CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
+                            .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                            .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
+                            .one();
+                    if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
+                        reimburse = reimburse.add(fee.multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio())).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+                    }
+                }
+            }
+        }
+        return reimburse;
     }
 }
