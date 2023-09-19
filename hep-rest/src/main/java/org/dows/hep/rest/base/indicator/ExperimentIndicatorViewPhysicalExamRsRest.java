@@ -22,9 +22,7 @@ public class ExperimentIndicatorViewPhysicalExamRsRest {
 
   @Operation(summary = "根据功能点id查询出所有的查看指标-体格检查")
   @GetMapping("v1/userExperiment/physicalExam/get")
-  public List<FirstPhysicalExamTabRsResponse> get(
-      @RequestParam String indicatorFuncId
-  ) {
+  public List<FirstPhysicalExamTabRsResponse> get(@RequestParam String indicatorFuncId) {
     return experimentIndicatorViewPhysicalExamRsBiz.get(indicatorFuncId);
   }
 }

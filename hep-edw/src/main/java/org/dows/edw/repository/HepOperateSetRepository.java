@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.edw.HepOperateEntity;
 import org.dows.hep.api.edw.request.HepOperateGetRequest;
 import org.dows.hep.api.edw.request.HepOperateSetRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -36,7 +37,7 @@ public class HepOperateSetRepository {
      * @description 新增或更新
      * @date 2023/9/13 11:26
      */
-    public <T> T setOperateEntity(HepOperateSetRequest request, Class<T> clazz) {
+    public <T extends HepOperateEntity> T setOperateEntity(HepOperateSetRequest request, Class<T> clazz) {
         HepOperateGetRequest hepOperateGetRequest = HepOperateGetRequest.builder()
                 .type(request.getType())
                 .experimentInstanceId(request.getExperimentInstanceId())

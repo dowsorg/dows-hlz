@@ -4,15 +4,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.edw.HepOperateTypeEnum;
+import org.dows.edw.domain.HepHealthExamination;
+import org.dows.edw.domain.HepHealthTherapy;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.ExperimentPhysicalExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentPhysicalExamReportResponseRs;
+import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
 import org.dows.hep.api.config.ConfigExperimentFlow;
+import org.dows.hep.api.edw.request.HepOperateGetRequest;
+import org.dows.hep.api.edw.request.HepOperateSetRequest;
 import org.dows.hep.api.enums.EnumIndicatorExpressionField;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumOrgFeeType;
+import org.dows.hep.biz.edw.InterveneHandler;
 import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.eval.QueryPersonBiz;
 import org.dows.hep.biz.operate.CostRequest;
@@ -25,6 +32,7 @@ import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
+import org.dows.hep.properties.MongoProperties;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
@@ -60,6 +68,8 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   private final QueryPersonBiz queryPersonBiz;
 
   private final EvalPersonBiz evalPersonBiz;
+  private final InterveneHandler interveneHandler;
+  private final MongoProperties mongoProperties;
 
   public static ExperimentPhysicalExamReportResponseRs experimentPhysicalExamReport2ResponseRs(ExperimentIndicatorViewPhysicalExamReportRsEntity experimentIndicatorViewPhysicalExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewPhysicalExamReportRsEntity)) {
@@ -82,6 +92,30 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   */
   @Transactional(rollbackFor = Exception.class)
   public void physicalExamCheck(ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
+
+    boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+    // 保存数据到mongodb
+    if(useMongo){
+      LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+      HepOperateSetRequest hepOperateSetRequest = HepOperateSetRequest.builder()
+              .type(HepOperateTypeEnum.getNameByCode(HepHealthExamination.class))
+              .experimentInstanceId(Long.valueOf(experimentPhysicalExamCheckRequestRs.getExperimentId()))
+              .experimentGroupId(Long.valueOf(experimentPhysicalExamCheckRequestRs.getExperimentGroupId()))
+              .operatorId(Long.valueOf(voLogin.getAccountId()))
+              .orgTreeId(Long.valueOf(experimentPhysicalExamCheckRequestRs.getExperimentOrgId()))
+              .flowId(experimentPhysicalExamCheckRequestRs.getOperateFlowId())
+              .personId(Long.valueOf(experimentPhysicalExamCheckRequestRs.getExperimentPersonId()))
+              .orgName(experimentPhysicalExamCheckRequestRs.getOrgName())
+              .functionName(experimentPhysicalExamCheckRequestRs.getFunctionName())
+              .functionCode(experimentPhysicalExamCheckRequestRs.getIndicatorFuncId())
+              .data(experimentPhysicalExamCheckRequestRs.getData())
+              .period(experimentPhysicalExamCheckRequestRs.getPeriods())
+              .onDate(null)
+              .onDay(null)
+              .build();
+      interveneHandler.write(hepOperateSetRequest,HepHealthExamination.class);
+      return;
+    }
     if(ConfigExperimentFlow.SWITCH2SpelCache){
       evalPersonBiz.physicalExamCheck(experimentPhysicalExamCheckRequestRs,request);
       return;
@@ -274,18 +308,33 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
     if(ShareUtil.XObject.isEmpty(operateFlowId)){
       return Collections.emptyList();
     }
-    return experimentIndicatorViewPhysicalExamReportRsService.lambdaQuery()
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getAppId, appId)
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getPeriod, periods)
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getIndicatorFuncId, indicatorFuncId)
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getExperimentPersonId, experimentPersonId)
-        .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getOperateFlowId, operateFlowId)
-        .orderByDesc(ExperimentIndicatorViewPhysicalExamReportRsEntity::getDt)
-        .list()
-        .stream()
-        .map(ExperimentIndicatorViewPhysicalExamReportRsBiz::experimentPhysicalExamReport2ResponseRs)
-        .collect(Collectors.toList());
+    boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+    if(useMongo){
+      HepOperateGetRequest hepOperateGetRequest = HepOperateGetRequest.builder()
+              .type(HepOperateTypeEnum.getNameByCode(HepHealthExamination.class))
+              .experimentInstanceId(Long.valueOf(experimentId))
+              //             .experimentGroupId(Long.valueOf(experimentGroupId))
+              //            .operatorId(Long.valueOf(reqOperateFunc.getOperateAccountId()))
+              .orgTreeId(Long.valueOf(experimentOrgId))
+              .flowId(operateFlowId)
+              .personId(Long.valueOf(experimentPersonId))
+              .period(periods)
+              .build();
+      return interveneHandler.read(hepOperateGetRequest, ExperimentPhysicalExamReportResponseRs.class, HepHealthExamination.class);
+    }else {
+      return experimentIndicatorViewPhysicalExamReportRsService.lambdaQuery()
+              .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getAppId, appId)
+              .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getExperimentId, experimentId)
+              .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getPeriod, periods)
+              .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getIndicatorFuncId, indicatorFuncId)
+              .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getExperimentPersonId, experimentPersonId)
+              .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getOperateFlowId, operateFlowId)
+              .orderByDesc(ExperimentIndicatorViewPhysicalExamReportRsEntity::getDt)
+              .list()
+              .stream()
+              .map(ExperimentIndicatorViewPhysicalExamReportRsBiz::experimentPhysicalExamReport2ResponseRs)
+              .collect(Collectors.toList());
+    }
   }
 
   private BigDecimal getExperimentPersonRestitution(BigDecimal fee,String experimentPersonId){

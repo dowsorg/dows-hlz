@@ -1,0 +1,23 @@
+version: "3"
+services:
+  kibana-dev:
+    image: docker.elastic.co/kibana/kibana:8.4.2
+    container_name: kibana-dev
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - I18N_LOCALE=zh-CN
+      - "ELASTICSEARCH_USERNAME=elastic"
+      - "ELASTICSEARCH_PASSWORD=12345678"
+    ports:
+      - 15601:5601
+    links:
+      - "elasticsearch"
+    networks:
+      - dev_net
+    volumes:
+      -  ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+
+networks:
+  dev_net:
+    external: true
