@@ -96,7 +96,8 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
     if(ShareUtil.XObject.isEmpty(operateFlowId)){
       return Collections.emptyList();
     }
-    boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+    //boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+    boolean useMongo=false;
     if(useMongo){
       HepOperateGetRequest hepOperateGetRequest = HepOperateGetRequest.builder()
               .type(HepOperateTypeEnum.getNameByCode(HepHealthExamination.class))
@@ -128,7 +129,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
   @Transactional(rollbackFor = Exception.class)
   public void supportExamCheck(ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
     LoginContextVO voLogin= ShareBiz.getLoginUser(request);
-    boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+   /* boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
     // 保存数据到mongodb
     if(useMongo){
       HepOperateSetRequest hepOperateSetRequest = HepOperateSetRequest.builder()
@@ -149,7 +150,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
               .build();
       interveneHandler.write(hepOperateSetRequest,HepHealthTherapy.class);
       return;
-    }
+    }*/
     if(ConfigExperimentFlow.SWITCH2SpelCache){
       evalPersonBiz.supportExamCheck(experimentSupportExamCheckRequestRs,request);
       return;

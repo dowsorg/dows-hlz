@@ -300,7 +300,7 @@ public class FollowupBiz {
         }
         final ExperimentFollowupPlanEntity savePlan = rowPlan;
         final ExperimentOrgNoticeEntity saveNotice=topNotice;
-        // 保存数据到mongodb
+       /* // 保存数据到mongodb
         boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
         if(useMongo){
             HepOperateSetRequest hepOperateSetRequest = HepOperateSetRequest.builder()
@@ -320,7 +320,7 @@ public class FollowupBiz {
                     .onDay(null)
                     .build();
             interveneHandler.write(hepOperateSetRequest, HepFollowUp.class);
-        }
+        }*/
         if (!operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false, () -> {
             if(null!=saveNotice){
                 AssertUtil.falseThenThrow(experimentOrgNoticeDao.setTopFollowupNoticeAction(saveNotice.getExperimentOrgNoticeId(),

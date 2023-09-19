@@ -49,8 +49,8 @@ public class ExperimentPhysicalExamCheckRequestRs implements Serializable {
   private String orgName;
   @Schema(title = "(职责|能力|功能|菜单)名称[体格检查报告,辅助检查报告......]")
   private String functionName;
-  @Schema(title = "json辅助检查明细数据")
-  private String data;
+/*  @Schema(title = "json辅助检查明细数据")
+  private String data;*/
   @Schema(title = "所在天数")
   private Integer onDay;
   @Schema(title = "检查时间(仿真时间)")

@@ -6,15 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.edw.HepOperateTypeEnum;
 import org.dows.edw.domain.HepHealthExamination;
-import org.dows.edw.domain.HepHealthTherapy;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.ExperimentPhysicalExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentPhysicalExamReportResponseRs;
-import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.edw.request.HepOperateGetRequest;
-import org.dows.hep.api.edw.request.HepOperateSetRequest;
 import org.dows.hep.api.enums.EnumIndicatorExpressionField;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
@@ -93,7 +90,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
   @Transactional(rollbackFor = Exception.class)
   public void physicalExamCheck(ExperimentPhysicalExamCheckRequestRs experimentPhysicalExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
 
-    boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+   /* boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
     // 保存数据到mongodb
     if(useMongo){
       LoginContextVO voLogin= ShareBiz.getLoginUser(request);
@@ -115,7 +112,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
               .build();
       interveneHandler.write(hepOperateSetRequest,HepHealthExamination.class);
       return;
-    }
+    }*/
     if(ConfigExperimentFlow.SWITCH2SpelCache){
       evalPersonBiz.physicalExamCheck(experimentPhysicalExamCheckRequestRs,request);
       return;
@@ -308,7 +305,8 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
     if(ShareUtil.XObject.isEmpty(operateFlowId)){
       return Collections.emptyList();
     }
-    boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+    //boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+    boolean useMongo=false;
     if(useMongo){
       HepOperateGetRequest hepOperateGetRequest = HepOperateGetRequest.builder()
               .type(HepOperateTypeEnum.getNameByCode(HepHealthExamination.class))
