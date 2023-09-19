@@ -17,11 +17,13 @@ import org.dows.hep.api.user.experiment.request.ExperimentIndicatorInstanceReque
 import org.dows.hep.api.user.experiment.response.EchartsDataResonse;
 import org.dows.hep.biz.eval.EvalPersonCache;
 import org.dows.hep.biz.eval.EvalPersonOnceHolder;
+import org.dows.hep.biz.eval.ExperimentPersonCache;
 import org.dows.hep.biz.eval.QueryPersonBiz;
 import org.dows.hep.biz.eval.data.EvalIndicatorValues;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.EchartsUtils;
@@ -59,6 +61,9 @@ public class ExperimentIndicatorInstanceRsBiz {
 
     private final QueryPersonBiz queryPersonBiz;
 
+    private final ExperimentPersonCache experimentPersonCache;
+
+    private final PersonIndicatorIdCache personIndicatorIdCache;
 
     public String getHealthPoint(Integer periods, String experimentPersonId) {
         if (ConfigExperimentFlow.SWITCH2EvalCache) {
@@ -143,6 +148,73 @@ public class ExperimentIndicatorInstanceRsBiz {
      */
     public List<EchartsDataResonse> statAgeRate(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
         List<EchartsDataResonse> statList = new ArrayList<>();
+
+        List<ExperimentPersonEntity> personEntities=experimentPersonCache.getPersonsByOrgId(experimentIndicatorInstanceRequest.getExperimentInstanceId(),
+                experimentIndicatorInstanceRequest.getExperimentPersonId());
+        if(ShareUtil.XObject.isEmpty(personEntities)){
+            return statList;
+        }
+
+        List<ExperimentIndicatorInstanceRsEntity> indicatorInstanceRsEntities=new ArrayList<>();
+        personEntities.forEach(i-> {
+            Optional.ofNullable( personIndicatorIdCache.getSysIndicator(i.getExperimentPersonId(), EnumIndicatorType.AGE))
+                    .ifPresent(v->indicatorInstanceRsEntities.add(v));
+        });
+
+        if (indicatorInstanceRsEntities == null || indicatorInstanceRsEntities.size() == 0) {
+            //2.2、年龄段为空赋值0
+            List<String> ageList = Arrays.asList(new String[]{"0-6岁儿童", "7-17岁少年", "18-40岁青年", "41-59岁中年", "60岁以上老年"});
+            statList = EchartsUtils.fillEmptydata(statList, ageList);
+        } else {
+            //2.3、计算年龄数据总数
+            int sum = indicatorInstanceRsEntities.size();
+            //2.4、计算每个阶段人数比例
+            Integer age1 = 0;
+            Integer age2 = 0;
+            Integer age3 = 0;
+            Integer age4 = 0;
+            Integer age5 = 0;
+            for (ExperimentIndicatorInstanceRsEntity indicatorInstanceRsEntity : indicatorInstanceRsEntities) {
+                //2.5、判断是否为数字
+                Pattern pattern = Pattern.compile("[0-9]*");
+                Matcher isNum = pattern.matcher(indicatorInstanceRsEntity.getDef());
+                if (isNum.matches()) {
+                    //2.6、判断属于某个区间
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[0,6]")) {
+                        age1 += 1;
+                    }
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[7,17]")) {
+                        age2 += 1;
+                    }
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[18,40]")) {
+                        age3 += 1;
+                    }
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[41,59]")) {
+                        age4 += 1;
+                    }
+                    if (EchartsUtils.inNumRange(Integer.parseInt(indicatorInstanceRsEntity.getDef()), "[60,)")) {
+                        age5 += 1;
+                    }
+                }
+            }
+            //2.7、计算比例
+            EchartsDataResonse stat1 = new EchartsDataResonse("0-6岁儿童", Long.valueOf(sum), String.format("%.2f", (float) (long) age1 / sum));
+            EchartsDataResonse stat2 = new EchartsDataResonse("7-17岁少年", Long.valueOf(sum), String.format("%.2f", (float) (long) age2 / sum));
+            EchartsDataResonse stat3 = new EchartsDataResonse("18-40岁青年", Long.valueOf(sum), String.format("%.2f", (float) (long) age3 / sum));
+            EchartsDataResonse stat4 = new EchartsDataResonse("41-59岁中年", Long.valueOf(sum), String.format("%.2f", (float) (long) age4 / sum));
+            EchartsDataResonse stat5 = new EchartsDataResonse("60岁以上老年", Long.valueOf(sum), String.format("%.2f", (float) (long) age5 / sum));
+            statList.add(stat1);
+            statList.add(stat2);
+            statList.add(stat3);
+            statList.add(stat4);
+            statList.add(stat5);
+            //2.8、保证数据总和一百
+            statList = EchartsUtils.sum100(statList);
+        }
+        return statList;
+    }
+    public List<EchartsDataResonse> statAgeRateOld(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+        List<EchartsDataResonse> statList = new ArrayList<>();
         //1、根据实验实例ID、小组ID以及机构ID获取对应的人物列表
         LambdaQueryWrapper<ExperimentPersonEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ExperimentPersonEntity::getExperimentInstanceId, experimentIndicatorInstanceRequest.getExperimentInstanceId())
@@ -225,6 +297,49 @@ public class ExperimentIndicatorInstanceRsBiz {
      * @创建时间: 2023/7/13 11:31
      */
     public List<EchartsDataResonse> statGenderRate(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+        List<EchartsDataResonse> statList = new ArrayList<>();
+
+        List<ExperimentPersonEntity> personEntities=experimentPersonCache.getPersonsByOrgId(experimentIndicatorInstanceRequest.getExperimentInstanceId(),
+                experimentIndicatorInstanceRequest.getExperimentPersonId());
+        if(ShareUtil.XObject.isEmpty(personEntities)){
+            return statList;
+        }
+
+        List<ExperimentIndicatorInstanceRsEntity> indicatorInstanceRsEntities=new ArrayList<>();
+        personEntities.forEach(i-> {
+            Optional.ofNullable( personIndicatorIdCache.getSysIndicator(i.getExperimentPersonId(), EnumIndicatorType.SEX))
+                    .ifPresent(v->indicatorInstanceRsEntities.add(v));
+        });
+
+
+        if (indicatorInstanceRsEntities == null || indicatorInstanceRsEntities.size() == 0) {
+            //2.2、性别为空赋值0
+            List<String> ageList = Arrays.asList(new String[]{"女性", "男性"});
+            statList = EchartsUtils.fillEmptydata(statList, ageList);
+        } else {
+            //2.3、计算性别数据总数
+            int sum = indicatorInstanceRsEntities.size();
+            //2.4、计算每个阶段人数比例
+            Integer gender1 = 0;
+            Integer gender2 = 0;
+            for (ExperimentIndicatorInstanceRsEntity indicatorInstanceRsEntity : indicatorInstanceRsEntities) {
+                if (indicatorInstanceRsEntity.getDef().equals("女")) {
+                    gender1 += 1;
+                }
+                if (indicatorInstanceRsEntity.getDef().equals("男")) {
+                    gender2 += 1;
+                }
+            }
+            EchartsDataResonse stat1 = new EchartsDataResonse("女性", Long.valueOf(sum), String.format("%.2f", (float) (long) gender1 / sum));
+            EchartsDataResonse stat2 = new EchartsDataResonse("男性", Long.valueOf(sum), String.format("%.2f", (float) (long) gender2 / sum));
+            statList.add(stat1);
+            statList.add(stat2);
+            //2.5、保证数据总和一百
+            statList = EchartsUtils.sum100(statList);
+        }
+        return statList;
+    }
+    public List<EchartsDataResonse> statGenderRateOld(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
         List<EchartsDataResonse> statList = new ArrayList<>();
         //1、根据实验实例ID、小组ID以及机构ID获取对应的人物列表
         LambdaQueryWrapper<ExperimentPersonEntity> queryWrapper = new LambdaQueryWrapper<>();
