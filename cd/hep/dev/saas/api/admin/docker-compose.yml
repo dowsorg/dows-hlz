@@ -1,7 +1,7 @@
 version: '3'
 services:
   api-hep-admin-dev:
-    image: registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-dev:$TAG
+    image: 192.168.1.60:7080/hep/api-hep-admin-dev:$TAG
     restart: on-failure:3
     container_name: api-hep-admin-dev
     environment:
