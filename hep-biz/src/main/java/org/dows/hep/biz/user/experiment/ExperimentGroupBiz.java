@@ -293,6 +293,7 @@ public class ExperimentGroupBiz {
                     .experimentOrgIds(request.getExperimentOrgIds())
                     .experimentOrgNames(request.getExperimentOrgNames())
                     .participatorState(3)
+                    .state(EnumExperimentState.ONGOING.getState())
                     .id(model.getId())
                     .build();
             entityList.add(entity);

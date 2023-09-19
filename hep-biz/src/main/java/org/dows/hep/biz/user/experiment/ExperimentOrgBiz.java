@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountUserApi;
 import org.dows.account.response.AccountUserResponse;
@@ -26,6 +27,7 @@ import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.dao.ExperimentOrgNoticeDao;
 import org.dows.hep.biz.dao.ExperimentPersonDao;
 import org.dows.hep.biz.dao.OperateFlowDao;
+import org.dows.hep.biz.event.EventExecutor;
 import org.dows.hep.biz.event.ExperimentEventRules;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
@@ -52,6 +54,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -298,9 +301,14 @@ public class ExperimentOrgBiz {
      * @param saveNoticeAction
      * @param request
      * @return
-     * @throws JsonProcessingException
      */
-    public OrgNoticeResponse saveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) throws JsonProcessingException {
+    public OrgNoticeResponse saveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) {
+        CompletableFuture<OrgNoticeResponse> future=CompletableFuture.supplyAsync(()->coreSaveOrgNoticeAction(saveNoticeAction,request),
+                EventExecutor.Instance().getFixedThreadPool());
+        return future.join();
+    }
+    @SneakyThrows
+    public OrgNoticeResponse coreSaveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request)  {
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveNoticeAction.getActions()))
                 .throwMessage("请选择事件处理措施");
         //校验登录
