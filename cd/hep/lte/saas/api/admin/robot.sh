@@ -20,6 +20,13 @@ COLOR="$7"
 echo "p5:"$COMMIT
 echo "p6:"$CHANGES
 
+IFS=',' read -ra arr <<< "$CHANGES"
+result=""
+for item in "${arr[@]}"; do
+    result="$result$item"$'\n'
+done
+
+
 title='应用发布'
 time="$(date "+%Y-%m-%d")"
 times="$(date "+%H:%M:%S")"
@@ -44,7 +51,7 @@ curl $url \
           发布者: $AUTHOR_NAME
           COMMIT: $COMMIT
           CHANGES:
-          $CHANGES
+          $result
           HOST: $ip
           DISK: $lsblk
           MEM: $mem%
