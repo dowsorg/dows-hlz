@@ -24,7 +24,7 @@ spring:
         name: hep-admin
     profiles:
         include: mysql,mybatis,mvc,oss,apidoc,redisson,findsoft,websocket,pdf,mongodb
-        active: dev
+        active: sit
 
     jackson:
         default-property-inclusion: always
