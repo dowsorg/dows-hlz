@@ -1,0 +1,61 @@
+---
+#本地测试环境
+spring:
+  config:
+    activate:
+      on-profile: lte
+  data:
+    mongodb:
+      username: admin
+      password: "123456"
+      database: hep
+      port: 17017
+      host: 192.168.1.60
+      #collection-name: user
+      #authentication-database: user
+---
+#生产环境
+spring:
+  config:
+    activate:
+      on-profile: dev
+  data:
+    mongodb:
+      username: admin
+      password: "123456"
+      database: hep
+      port: 17017
+      host: 192.168.1.60
+      #collection-name: user
+      #authentication-database: user
+
+
+
+---
+#测试环境
+spring:
+  config:
+    activate:
+      on-profile: sit
+  data:
+    mongodb:
+      uri: mongodb://test:123456@192.168.1.60:27017/hep
+
+---
+#开发环境
+spring:
+  config:
+    activate:
+      on-profile: uat
+  data:
+    mongodb:
+      uri: mongodb://uat:123456@192.168.1.60:37017/hep
+---
+#本地环境
+spring:
+  config:
+    activate:
+      on-profile: prd
+  data:
+    mongodb:
+      uri: mongodb://prd:123456@192.168.1.60:47017/hep

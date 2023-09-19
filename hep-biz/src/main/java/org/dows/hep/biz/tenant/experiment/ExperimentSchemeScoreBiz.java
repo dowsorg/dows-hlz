@@ -567,9 +567,35 @@ public class ExperimentSchemeScoreBiz {
             totalScore = totalScore.add(scoreBy100);
         }
         // 计算平均值
-        finalScore = totalScore.divide(BigDecimal.valueOf(scoreInfos.size()), 0, RoundingMode.DOWN);
+        finalScore = totalScore.divide(BigDecimal.valueOf(scoreInfos.size()), 2, RoundingMode.HALF_DOWN);
         return finalScore;
     }
+
+//    public void reUpdSchemeScore(String exptInstanceId, float maxScore) {
+//        // 获取实验所有方案设计
+//        List<ExperimentSchemeResponse> schemeResponseList = experimentSchemeBiz.listScheme(exptInstanceId);
+//        // 遍历
+//        StringBuilder fsb = new StringBuilder();
+//        StringBuilder osb = new StringBuilder();
+//        schemeResponseList.forEach(scheme -> {
+//            String experimentSchemeId = scheme.getExperimentSchemeId();
+//            BigDecimal finalScore = calFinalScore(experimentSchemeId, maxScore);
+//            String experimentGroupId = scheme.getExperimentGroupId();
+//            String groupName = experimentGroupService.lambdaQuery()
+//                    .eq(ExperimentGroupEntity::getExperimentGroupId, experimentGroupId)
+//                    .one()
+//                    .getGroupName();
+//            fsb.append(groupName + " : " + finalScore + "\n");
+//            osb.append(groupName + " : " + scheme.getScore() + "\n");
+//            experimentSchemeService.lambdaUpdate()
+//                    .eq(ExperimentSchemeEntity::getExperimentSchemeId, experimentSchemeId)
+//                    .set(ExperimentSchemeEntity::getScore, finalScore)
+//                    .update();
+//        });
+//        System.out.println(fsb);
+//        System.out.println("--------------------");
+//        System.out.println(osb);
+//    }
 
     private boolean updSchemeState(BigDecimal score, String schemeId) {
         // 有任何一个未审批状态则为未审批
