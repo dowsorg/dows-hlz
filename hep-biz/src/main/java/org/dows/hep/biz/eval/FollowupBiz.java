@@ -3,11 +3,16 @@ package org.dows.hep.biz.eval;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.edw.HepOperateTypeEnum;
+import org.dows.edw.domain.HepFollowUp;
+import org.dows.edw.domain.HepHealthExamination;
+import org.dows.edw.domain.HepHealthTherapy;
 import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.core.ExptOrgFuncRequest;
+import org.dows.hep.api.edw.request.HepOperateSetRequest;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
 import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
@@ -18,12 +23,14 @@ import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.dao.ExperimentFollowupPlanDao;
 import org.dows.hep.biz.dao.ExperimentOrgNoticeDao;
 import org.dows.hep.biz.dao.OperateFlowDao;
+import org.dows.hep.biz.edw.InterveneHandler;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.event.followupplan.FollowupPlanCache;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
+import org.dows.hep.properties.MongoProperties;
 import org.dows.hep.service.ExperimentIndicatorInstanceRsService;
 import org.dows.hep.service.ExperimentIndicatorViewMonitorFollowupReportRsService;
 import org.dows.hep.service.ExperimentIndicatorViewMonitorFollowupRsService;
@@ -65,9 +72,11 @@ public class FollowupBiz {
     private final ExperimentFollowupPlanDao experimentFollowupPlanDao;
 
     private final ExperimentOrgNoticeDao experimentOrgNoticeDao;
-
+    private final InterveneHandler interveneHandler;
+    private final MongoProperties mongoProperties;
 
     public void monitorFollowupCheck(ExperimentMonitorFollowupCheckRequestRs experimentMonitorFollowupCheckRequestRs)  {
+
         Integer periods = experimentMonitorFollowupCheckRequestRs.getPeriods();
         String experimentGroupId = experimentMonitorFollowupCheckRequestRs.getExperimentGroupId();
         String experimentOrgId = experimentMonitorFollowupCheckRequestRs.getExperimentOrgId();
@@ -160,7 +169,6 @@ public class FollowupBiz {
                     exptValidator.getExperimentInstanceId(), exptValidator.getExperimentPersonId()), ex);
             AssertUtil.justThrow(String.format("功能点结算失败：%s", ex.getMessage()), ex);
         }
-
 
         String caseId = experimentIndicatorViewMonitorFollowupRsEntity.getCaseId();
         String name = experimentIndicatorViewMonitorFollowupRsEntity.getName();
@@ -292,6 +300,27 @@ public class FollowupBiz {
         }
         final ExperimentFollowupPlanEntity savePlan = rowPlan;
         final ExperimentOrgNoticeEntity saveNotice=topNotice;
+        // 保存数据到mongodb
+        boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+        if(useMongo){
+            HepOperateSetRequest hepOperateSetRequest = HepOperateSetRequest.builder()
+                    .type(HepOperateTypeEnum.getNameByCode(HepFollowUp.class))
+                    .experimentInstanceId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentId()))
+                    .experimentGroupId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentGroupId()))
+                    .operatorId(Long.valueOf(voLogin.getAccountId()))
+                    .orgTreeId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentOrgId()))
+                    .flowId(experimentMonitorFollowupCheckRequestRs.getOperateFlowId())
+                    .personId(Long.valueOf(experimentMonitorFollowupCheckRequestRs.getExperimentPersonId()))
+                    .orgName(experimentMonitorFollowupCheckRequestRs.getOrgName())
+                    .functionName(experimentMonitorFollowupCheckRequestRs.getFunctionName())
+                    .functionCode(experimentMonitorFollowupCheckRequestRs.getIndicatorFuncId())
+                    .data(experimentMonitorFollowupCheckRequestRs.getData())
+                    .period(experimentMonitorFollowupCheckRequestRs.getPeriods())
+                    .onDate(null)
+                    .onDay(null)
+                    .build();
+            interveneHandler.write(hepOperateSetRequest, HepFollowUp.class);
+        }
         if (!operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false, () -> {
             if(null!=saveNotice){
                 AssertUtil.falseThenThrow(experimentOrgNoticeDao.setTopFollowupNoticeAction(saveNotice.getExperimentOrgNoticeId(),
@@ -309,7 +338,6 @@ public class FollowupBiz {
         if(planChanged) {
             FollowupPlanCache.Instance().putPlan(ExperimentCacheKey.create(appId, experimentId), rowPlan);
         }
-
     }
     private ExperimentIndicatorFuncRsResponse getIndicatorFunc(String experimentOrgId, String indicatorFuncId){
         ExperimentIndicatorFuncRsResponse rst=new ExperimentIndicatorFuncRsResponse();

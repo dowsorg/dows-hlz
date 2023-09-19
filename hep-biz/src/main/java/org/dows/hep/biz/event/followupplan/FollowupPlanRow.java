@@ -52,13 +52,14 @@ public class FollowupPlanRow {
         entity.setTodoDay(this.nextTodoDay);
         return this;
     }
-    public FollowupPlanRow setNextTodoDay(int day){
+    public FollowupPlanRow setNextTodoDay(Integer day){
         nextTodoDay=day;
         return this;
     }
 
     public boolean isTriggering() {
-        return null == this.getDoingTime() || null == this.getDoneTime();
+        //return null == this.getDoingTime() || null == this.getDoneTime();
+        return null!=this.getTodoDay();
     }
     public boolean canTrigger(LocalDateTime now) {
         return null != this.getDoingTime() && this.getDoingTime().compareTo(now) <= 0;

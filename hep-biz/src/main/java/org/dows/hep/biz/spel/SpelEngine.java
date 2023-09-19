@@ -179,68 +179,74 @@ public class SpelEngine {
                 .min(input.getMin())
                 .max(input.getMax())
                 .build();
-        if (input.isRandom()) {
-            //随机
-            if (ShareUtil.XObject.notNumber(input.getMin())
-                    || ShareUtil.XObject.notNumber(input.getMax())) {
-                logError("coreEval", "invalidRandom input:%s", input);
+        try {
+            if (input.isRandom()) {
+                //随机
+                if (ShareUtil.XObject.notNumber(input.getMin())
+                        || ShareUtil.XObject.notNumber(input.getMax())) {
+                    logError("coreEval", "invalidRandom input:%s", input);
+                    return rst;
+                }
+                BigDecimal val = ShareUtil.XRandom.randomBigDecimal(input.getMin(), input.getMax(), 2);
+                coreEvalSum(mapSum, rst.setVal(val).setValNumber(val));
                 return rst;
             }
-            BigDecimal val = ShareUtil.XRandom.randomBigDecimal(input.getMin(), input.getMax(), 2);
-            coreEvalSum(mapSum, rst.setVal(val).setValNumber(val));
-            return rst;
-        }
 
-        if (ShareUtil.XObject.isEmpty(input.getExpressions())) {
-            return rst;
-        }
-        if(ShareUtil.XObject.notEmpty(input.getIndicatorId())) {
-            Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId(), false));
-            rst.setCurVal(curVal);
-        }
-
-        Object val = null;
-        for (SpelInput.SpelExpressionItem item : input.getExpressions()) {
-            if (ShareUtil.XObject.isEmpty(item.getResultExpression())) {
-                continue;
+            if (ShareUtil.XObject.isEmpty(input.getExpressions())) {
+                return rst;
             }
-            if (ShareUtil.XObject.isEmpty(item.getConditionExpression())
-                    || coreGetBoolean(parser, item.getConditionExpression(), context)) {
-                val = coreGetValue(parser, item.getResultExpression(), context);
-                break;
+            if (ShareUtil.XObject.notEmpty(input.getIndicatorId())) {
+                Object curVal = context.lookupVariable(SpelVarKeyFormatter.getVariableKey(input.getIndicatorId(), false));
+                rst.setCurVal(curVal);
             }
-        }
-        if (ShareUtil.XObject.isEmpty(val)) {
-            return rst;
-        }
-        if (ShareUtil.XObject.notNumber(val)) {
-            coreEvalSum(mapSum, rst.setVal(val).setValNumber(null));
-            return rst;
-        }
-        BigDecimal valNumber=BigDecimalUtil.valueOf(val);
-        if(!deltaFlag){
-            return rst.setVal(val).setValNumber(valNumber);
-        }
 
-        BigDecimal curValNumber = BigDecimalUtil.valueOf(rst.getCurVal(), BigDecimal.ZERO);
-        BigDecimal change = valNumber.subtract(curValNumber);
-        if (input.hasFactor()) {
-            change = change.multiply(input.getFactor());
-        }
-        if (ShareUtil.XObject.allEmpty(input.getMin(), input.getMax())) {
+            Object val = null;
+            for (SpelInput.SpelExpressionItem item : input.getExpressions()) {
+                if (ShareUtil.XObject.isEmpty(item.getResultExpression())) {
+                    continue;
+                }
+                if (ShareUtil.XObject.isEmpty(item.getConditionExpression())
+                        || coreGetBoolean(parser, item.getConditionExpression(), context)) {
+                    val = coreGetValue(parser, item.getResultExpression(), context);
+                    break;
+                }
+            }
+            if (ShareUtil.XObject.isEmpty(val)) {
+                return rst;
+            }
+            if (ShareUtil.XObject.notNumber(val)) {
+                coreEvalSum(mapSum, rst.setVal(val).setValNumber(null));
+                return rst;
+            }
+            BigDecimal valNumber = BigDecimalUtil.valueOf(val);
+            if (!deltaFlag) {
+                return rst.setVal(val).setValNumber(valNumber);
+            }
+
+            BigDecimal curValNumber = BigDecimalUtil.valueOf(rst.getCurVal(), BigDecimal.ZERO);
+            BigDecimal change = valNumber.subtract(curValNumber);
+            if (input.hasFactor()) {
+                change = change.multiply(input.getFactor());
+            }
+            if (ShareUtil.XObject.allEmpty(input.getMin(), input.getMax())) {
+                coreEvalSum(mapSum, rst.setVal(change).setValNumber(change));
+                return rst;
+            }
+            valNumber = curValNumber.add(change);
+            if (ShareUtil.XObject.notEmpty(input.getMin()) && valNumber.compareTo(input.getMin()) < 0) {
+                valNumber = input.getMin();
+            }
+            if (ShareUtil.XObject.notEmpty(input.getMax()) && input.getMax().compareTo(valNumber) < 0) {
+                valNumber = input.getMax();
+            }
+            change = valNumber.subtract(curValNumber);
             coreEvalSum(mapSum, rst.setVal(change).setValNumber(change));
-            return rst;
+        }catch (Exception ex){
+            log.error(String.format("EVALError %s", input), ex);
+            throw ex;
         }
-        valNumber = curValNumber.add(change);
-        if (ShareUtil.XObject.notEmpty(input.getMin()) && valNumber.compareTo(input.getMin()) < 0) {
-            valNumber = input.getMin();
-        }
-        if (ShareUtil.XObject.notEmpty(input.getMax()) && input.getMax().compareTo(valNumber) < 0) {
-            valNumber = input.getMax();
-        }
-        change = valNumber.subtract(curValNumber);
-        coreEvalSum(mapSum, rst.setVal(change).setValNumber(change));
         return rst;
+
     }
     private void coreEvalSum(Map<String, SpelEvalSumResult> mapSum,SpelEvalResult item) {
         if (null==mapSum|| ShareUtil.XObject.isEmpty(item)) {

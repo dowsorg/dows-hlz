@@ -14,6 +14,12 @@ springdoc:
     - group: hep-user
       packagesToScan: org.dows.hep.rest.user
 
+---
+#本地测试环境
+spring:
+  config:
+    activate:
+      on-profile: lte
 
 ---
 #生产环境

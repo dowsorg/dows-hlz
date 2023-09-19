@@ -65,8 +65,7 @@ public class SysEventTask extends BaseEventTask {
             raiseScheduler(DELAYSeconds4Poll,false,true);
             return 0;
         }
-        SysEventCollection eventColl= SysEventCache.Instance().caffineCache()
-                .get(experimentKey, k->loadEvents(experimentKey,exptColl));
+        SysEventCollection eventColl= SysEventCache.Instance().loadingCache().get(experimentKey);
         if(ShareUtil.XObject.isEmpty(eventColl.getEventRows()) ){
             logError("call", "emptyEvents");
             raiseScheduler(DELAYSeconds4Poll,false,true);
@@ -175,7 +174,7 @@ public class SysEventTask extends BaseEventTask {
             }
             if (stat.todoCounter.get() == 0){
                 stat.append("succEnd");
-                SysEventCache.Instance().caffineCache().invalidate(experimentKey);
+                SysEventCache.Instance().loadingCache().invalidate(experimentKey);
                 return;
             }
             stat.append("succPoll");
@@ -242,25 +241,7 @@ public class SysEventTask extends BaseEventTask {
     //endregion
 
 
-    //region load
 
-    SysEventCollection loadEvents(ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl) {
-        final String experimentId = exptKey.getExperimentInstanceId();
-        SysEventCollection rst = new SysEventCollection()
-                .setExperimentInstanceId(experimentId);
-        List<ExperimentSysEventEntity> rowsEvent = this.experimentSysEventDao.getByExperimentId(null, experimentId,null);
-        if (!ShareUtil.XCollection.isEmpty(rowsEvent)) {
-            rst.setInitFlag(true);
-
-        } else{
-            rowsEvent = sysEventInvoker.buildEvents(exptColl);
-            rst.setInitFlag(false);
-        }
-        rst.setEventRows(ShareUtil.XCollection.map(rowsEvent, i -> new SysEventRow(i)));
-        rowsEvent.clear();
-        return rst;
-    }
-    //endregion
 
 
 
