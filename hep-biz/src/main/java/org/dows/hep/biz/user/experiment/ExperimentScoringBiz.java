@@ -457,16 +457,16 @@ public class ExperimentScoringBiz {
                     .healthIndexScore(groupCompetitiveScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .totalScore(totalScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
-                    .percentKnowledgeScore(finalKnowledgeScore.divide(totalScoreBigDecimal,2,RoundingMode.HALF_UP).toString())
-                    .percentHealthIndexScore(finalHealthIndexScore.divide(totalScoreBigDecimal,2, RoundingMode.HALF_UP).toString())
-                    .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal,2, RoundingMode.HALF_UP).toString())
+                    .percentKnowledgeScore(finalKnowledgeScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
+                    .percentHealthIndexScore(finalHealthIndexScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
+                    .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
                     .scoringCount(scoringCountAtomicInteger.get())
                     .periods(periods)
                     .build());
         });
         //计算排名
         experimentScoringEntityList.sort(Comparator.comparing(ExperimentScoringEntity::getTotalScore)
-                .thenComparing(ExperimentScoringEntity::getHealthIndexScore,Comparator.reverseOrder()));
+                .thenComparing(ExperimentScoringEntity::getHealthIndexScore, Comparator.reverseOrder()));
         AtomicInteger curRank = new AtomicInteger(1);
         experimentScoringEntityList.forEach(experimentScoringEntity -> experimentScoringEntity.setRankNo(curRank.incrementAndGet()));
         experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
