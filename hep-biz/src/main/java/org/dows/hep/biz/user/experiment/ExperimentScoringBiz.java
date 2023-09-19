@@ -465,10 +465,10 @@ public class ExperimentScoringBiz {
                     .build());
         });
         //计算排名
-        experimentScoringEntityList.sort(Comparator.comparing(ExperimentScoringEntity::getTotalScore)
+        experimentScoringEntityList.sort(Comparator.comparing(ExperimentScoringEntity::getTotalScore, Comparator.reverseOrder())
                 .thenComparing(ExperimentScoringEntity::getHealthIndexScore, Comparator.reverseOrder()));
         AtomicInteger curRank = new AtomicInteger(1);
-        experimentScoringEntityList.forEach(experimentScoringEntity -> experimentScoringEntity.setRankNo(curRank.incrementAndGet()));
+        experimentScoringEntityList.forEach(experimentScoringEntity -> experimentScoringEntity.setRankNo(curRank.getAndIncrement()));
         experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
     }
 
