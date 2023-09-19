@@ -121,8 +121,8 @@ pipeline {
                         echo "Building for sit environment for $branch"
 
                         sh "$DOCKER_OFFLINE_LOGIN"
-                        sh "$DOCKER_OFFLINE_BUILD-sit:$ver"
-                        sh "$DOCKER_OFFLINE_PUSH-sit:$ver"
+                        sh "$DOCKER_OFFLINE_BUILD'-sit':$ver"
+                        sh "$DOCKER_OFFLINE_PUSH'-sit':$ver"
 
                         sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_SIT_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_SIT_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_SIT_CD_PATH"
@@ -135,8 +135,8 @@ pipeline {
                         echo "Building for uat environment for ${branch}"
 
                         sh "$DOCKER_OFFLINE_LOGIN"
-                        sh "$DOCKER_OFFLINE_BUILD-uat:$ver"
-                        sh "$DOCKER_OFFLINE_PUSH-uat:$ver"
+                        sh "$DOCKER_OFFLINE_BUILD'-uat':$ver"
+                        sh "$DOCKER_OFFLINE_PUSH'-uat':$ver"
 
                         sh "sshpass -p $OFFLINE_AS_PWD ssh -o StrictHostKeyChecking=no $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST mkdir -p $TO_UAT_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_UAT_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_UAT_CD_PATH"
@@ -149,8 +149,8 @@ pipeline {
                         echo "Building for production environment for ${branch}"
                         // 只做推送处理
                         sh "$DOCKER_ONLINE_LOGIN"
-                        sh "$DOCKER_ONLINE_BUILD-prd:$ver"
-                        sh "$DOCKER_ONLINE_PUSH-prd:$ver"
+                        sh "$DOCKER_ONLINE_BUILD'-prd':$ver"
+                        sh "$DOCKER_ONLINE_PUSH'-prd':$ver"
 
                         //sh "docker build . --file Dockerfile -t registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
                         //sh "docker push registry.cn-hangzhou.aliyuncs.com/findsoft/api-hep-admin-prd:$ver"
