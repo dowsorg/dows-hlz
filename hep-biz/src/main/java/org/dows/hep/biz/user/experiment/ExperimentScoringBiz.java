@@ -14,7 +14,6 @@ import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumCalcCode;
 import org.dows.hep.api.enums.EnumESC;
-import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.exception.ExperimentScoringException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
@@ -25,12 +24,9 @@ import org.dows.hep.biz.eval.EvalCompetitiveScoreBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
-import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.operate.OperateCostBiz;
-import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
-import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -39,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -462,16 +457,16 @@ public class ExperimentScoringBiz {
                     .healthIndexScore(groupCompetitiveScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .treatmentPercentScore(groupIdVGroupMoneyScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
                     .totalScore(totalScoreBigDecimal.setScale(2, RoundingMode.DOWN).toString())
-                    .percentKnowledgeScore(finalKnowledgeScore.divide(totalScoreBigDecimal,2,RoundingMode.HALF_UP).toString())
-                    .percentHealthIndexScore(finalHealthIndexScore.divide(totalScoreBigDecimal,2, RoundingMode.HALF_UP).toString())
-                    .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal,2, RoundingMode.HALF_UP).toString())
+                    .percentKnowledgeScore(finalKnowledgeScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
+                    .percentHealthIndexScore(finalHealthIndexScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
+                    .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
                     .scoringCount(scoringCountAtomicInteger.get())
                     .periods(periods)
                     .build());
         });
         //计算排名
         experimentScoringEntityList.sort(Comparator.comparing(ExperimentScoringEntity::getTotalScore)
-                .thenComparing(ExperimentScoringEntity::getHealthIndexScore,Comparator.reverseOrder()));
+                .thenComparing(ExperimentScoringEntity::getHealthIndexScore, Comparator.reverseOrder()));
         AtomicInteger curRank = new AtomicInteger(1);
         experimentScoringEntityList.forEach(experimentScoringEntity -> experimentScoringEntity.setRankNo(curRank.incrementAndGet()));
         experimentScoringService.saveOrUpdateBatch(experimentScoringEntityList);
