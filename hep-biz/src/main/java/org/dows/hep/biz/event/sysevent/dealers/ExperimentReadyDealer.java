@@ -99,7 +99,7 @@ public class ExperimentReadyDealer extends BaseEventDealer {
         }
 
         // 保存或更新实验计时器
-        if(!experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentInstanceId,rowsTimer, EnumExperimentState.ONGOING)){
+        if(!experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentInstanceId,rowsTimer, EnumExperimentState.ONGOING,false)){
             rst.append("failUpdateExptState[%s]",experimentInstanceId);
             return false;
         }

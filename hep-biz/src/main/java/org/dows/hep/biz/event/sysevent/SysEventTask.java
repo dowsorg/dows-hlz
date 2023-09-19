@@ -192,7 +192,7 @@ public class SysEventTask extends BaseEventTask {
     }
 
     long getRetryDelaySeconds(){
-        return DELAYSeconds4Fail*(1+experimentKey.getRetryTimes().get());
+        return DELAYSeconds4Fail;//DELAYSeconds4Fail*(1+experimentKey.getRetryTimes().get());
     }
 
 

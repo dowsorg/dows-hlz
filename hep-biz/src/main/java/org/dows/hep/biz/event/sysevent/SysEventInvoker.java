@@ -57,7 +57,7 @@ public class SysEventInvoker {
      * @return
      */
     public void dealExperimentReady(String appId,String exptId){
-        manualDealAysnc(EnumSysEventDealType.EXPERIMENTReady,appId,exptId,null, null, null);
+        manualDeal(EnumSysEventDealType.EXPERIMENTReady,appId,exptId,null, null, null);
     }
 
     /**

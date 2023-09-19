@@ -760,9 +760,11 @@ public class ExperimentScoringBiz {
             }
             kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.put(periods1, kExperimentGroupIdVExperimentScoringEntityMap);
         });
+        AtomicInteger scoreSize=new AtomicInteger();
 
         /* runsix:算每期列表 */
         kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.forEach((period, kExperimentGroupIdVExperimentScoringEntityMap) -> {
+            scoreSize.addAndGet(kExperimentGroupIdVExperimentScoringEntityMap.size());
             /* runsix:12345期数据 */
             ExperimentRankItemResponse experimentRankItemResponse = kPeriodVExperimentRankItemResponseMap.get(period);
             List<ExperimentRankGroupItemResponse> experimentRankGroupItemResponseList = experimentRankItemResponse.getExperimentRankGroupItemResponseList();
@@ -803,7 +805,7 @@ public class ExperimentScoringBiz {
                 .list()
                 .size();
 
-        if (list.size() != totalPeriods * size) {
+        if (scoreSize.get() < totalPeriods * size) {
             return ExperimentRankResponse
                     .builder()
                     .totalPeriod(totalPeriods)
