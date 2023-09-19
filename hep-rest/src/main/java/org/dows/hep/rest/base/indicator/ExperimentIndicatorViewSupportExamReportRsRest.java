@@ -24,12 +24,19 @@ public class ExperimentIndicatorViewSupportExamReportRsRest {
   @Operation(summary = "实验人物和在这个机构功能点下的体格检查报告")
   @PostMapping("v1/userExperiment/supportExamReport/check")
   public void supportExamCheck(@RequestBody ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
-    experimentIndicatorViewSupportExamReportRsBiz.supportExamCheck(experimentSupportExamCheckRequestRs,request);
+
+      experimentIndicatorViewSupportExamReportRsBiz.supportExamCheck(experimentSupportExamCheckRequestRs,request);
+
   }
 
   @Operation(summary = "根据实验人物id和功能点id查找辅助报告")
   @GetMapping("v1/userExperiment/supportExamReport/get")
-  public List<ExperimentSupportExamReportResponseRs> get(@RequestParam String appId, @RequestParam String experimentId, @RequestParam String indicatorFuncId, @RequestParam String experimentPersonId, String experimentOrgId, Integer periods) {
+  public List<ExperimentSupportExamReportResponseRs> get(@RequestParam String appId,
+                                                         @RequestParam String experimentId,
+                                                         @RequestParam String indicatorFuncId,
+                                                         @RequestParam String experimentPersonId,
+                                                         @RequestParam String experimentOrgId,
+                                                         @RequestParam Integer periods) {
     return experimentIndicatorViewSupportExamReportRsBiz.get(appId, experimentId, indicatorFuncId, experimentPersonId, experimentOrgId, periods);
   }
 }
