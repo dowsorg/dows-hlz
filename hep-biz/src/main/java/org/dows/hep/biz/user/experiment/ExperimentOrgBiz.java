@@ -494,12 +494,13 @@ public class ExperimentOrgBiz {
         if(ShareUtil.XObject.isEmpty(rowsPerson)){
             return new Page<>();
         }
-        final List<ExperimentPersonResponse> rst=new ArrayList<>();
+
         Integer pageSize=ShareUtil.XObject.defaultIfNull(personRequest.getPageSize(), 10);
         Integer pageNo=ShareUtil.XObject.defaultIfNull(personRequest.getPageNo(), 1);
 
-        rowsPerson= rowsPerson.stream().skip((pageNo-1)*pageSize).limit(pageSize).collect(Collectors.toList());
-
+        if(pageNo>1||pageSize<rowsPerson.size()) {
+            rowsPerson = rowsPerson.stream().skip((pageNo - 1) * pageSize).limit(pageSize).collect(Collectors.toList());
+        }
 
         //获取人物挂号状态
         ExperimentTimePoint timePoint = ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(personRequest.getAppId(), personRequest.getExperimentInstanceId()),
@@ -515,7 +516,7 @@ public class ExperimentOrgBiz {
         //关键指标
         Map<String, List<String>> mapCoreIndicators = experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period, personIds);
 
-        ShareUtil.XCollection.map(rowsPerson, true, src->{
+        List<ExperimentPersonResponse> rst=ShareUtil.XCollection.map(rowsPerson, true, src->{
             ExperimentPersonResponse dst= CopyWrapper.create(ExperimentPersonResponse::new)
                     .endFrom(src)
                     .setId(src.getId().toString())
