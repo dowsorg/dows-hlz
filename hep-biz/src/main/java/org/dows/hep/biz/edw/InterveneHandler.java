@@ -317,12 +317,8 @@ public class InterveneHandler {
     private BigDecimal getTotalFeeFromRequest(String str){
         BigDecimal res = new BigDecimal(0);
         // 辅助检查
-        JSONObject jsonObject = JSONUtil.parseObj(str);
-        // 辅助检查一级目录
-        JSONArray children = jsonObject.getJSONArray("children");
-        if(children==null){
-            BigDecimal fee = jsonObject.getBigDecimal("fee");
-            res.add(fee == null ? BigDecimal.ZERO : fee);
+        JSONArray children = JSONUtil.parseArray(str);
+        if(children.size() == 0){
             return res;
         }
         for(int i=0;i<children.size();i++){
@@ -331,8 +327,8 @@ public class InterveneHandler {
             JSONArray children2 = jsonObject2.getJSONArray("children");
             if(children2==null){
                 BigDecimal fee = jsonObject2.getBigDecimal("fee");
-                res.add(fee == null ? BigDecimal.ZERO : fee);
-                return res;
+                res = res.add(fee == null ? BigDecimal.ZERO : fee);
+                break;
             }
             for(int j=0;j<children2.size();j++){
                 JSONObject jsonObject3 = children2.getJSONObject(j);
@@ -340,12 +336,12 @@ public class InterveneHandler {
                 JSONArray children3 = jsonObject3.getJSONArray("children");
                 if(children3==null){
                     BigDecimal fee = jsonObject3.getBigDecimal("fee");
-                    res.add(fee == null ? BigDecimal.ZERO : fee);
-                    return res;
+                    res = res.add(fee == null ? BigDecimal.ZERO : fee);
+                    break;
                 }
                 for(int x=0;x<children3.size();x++){
                     BigDecimal fee = children3.getJSONObject(x).getBigDecimal("fee");
-                    res.add(fee);
+                    res = res.add(fee);
                 }
             }
         }
@@ -361,9 +357,7 @@ public class InterveneHandler {
     private <T> List<T> getItemListFromJson(String str,Class<T> eClass){
 
         List<T> list = new ArrayList<>();
-        JSONObject jsonObject = JSONUtil.parseObj(str);
-        // 一级目录
-        JSONArray children = jsonObject.getJSONArray("children");
+        JSONArray children = JSONUtil.parseArray(str);
         if(children == null){
             return null;
         }
@@ -373,6 +367,7 @@ public class InterveneHandler {
             JSONArray children2 = jsonObject2.getJSONArray("children");
             if(children2 == null){
                 list.add(JSONUtil.toBean(jsonObject2,eClass));
+                break;
             }
             for(int j=0;j<children2.size();j++){
                 JSONObject jsonObject3 = children2.getJSONObject(j);
@@ -380,6 +375,7 @@ public class InterveneHandler {
                 JSONArray children3 = jsonObject3.getJSONArray("children");
                 if(children3 == null){
                     list.add(JSONUtil.toBean(jsonObject3,eClass));
+                    break;
                 }
                 for(int x=0;x<children3.size();x++){
                     JSONObject object4 = children3.getJSONObject(x);
