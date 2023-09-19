@@ -25,7 +25,7 @@ result=""
 for item in "${arr[@]}"; do
     result="$result$item"$'\n'
 done
-
+echo "$result"
 
 title='应用发布'
 time="$(date "+%Y-%m-%d")"
