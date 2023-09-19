@@ -1,0 +1,36 @@
+management:
+    endpoints:
+        web:
+            exposure:
+                include: '*'
+
+server:
+    port: 8080
+    undertow:
+        buffer-size: 1024
+        direct-buffers: true
+        threads:
+            io: 4
+            worker: 32
+#    servlet:
+#        context-path: /hep
+soft:
+    info:
+        anonymous-paths: /login;/doc;/swagger;/api-docs;/hepapi;/report;/anonymous;/countdown;
+
+
+spring:
+    application:
+        name: hep-admin
+    profiles:
+        include: mysql,mybatis,mvc,oss,apidoc,redisson,findsoft,websocket,pdf,mongodb
+        active: sit
+
+    jackson:
+        default-property-inclusion: always
+        date-format: yyyy-MM-dd HH:mm:ss
+        time-zone: GMT+08:00
+        serialization:
+          write-dates-as-timestamps: false
+
+

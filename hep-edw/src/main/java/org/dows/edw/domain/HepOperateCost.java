@@ -1,10 +1,7 @@
 package org.dows.edw.domain;
 
 import lombok.Data;
-import org.dows.edw.FieldFill;
-import org.dows.edw.LogicDel;
-import org.dows.edw.MongoEntity;
-import org.dows.edw.MongoEntityId;
+import org.dows.edw.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -15,7 +12,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @MongoEntity
-public class HepOperateCost implements Serializable {
+public class HepOperateCost implements Serializable, HepOperateEntity {
     /**
      * 操作花费ID
      */
@@ -107,4 +104,9 @@ public class HepOperateCost implements Serializable {
     private LocalDateTime dt;
 
     private static final long serialVersionUID = 1L;
+
+    @Override
+    public String getData() {
+        return null;
+    }
 }

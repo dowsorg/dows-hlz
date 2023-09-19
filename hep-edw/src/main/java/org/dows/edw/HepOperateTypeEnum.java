@@ -3,7 +3,10 @@ package org.dows.edw;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.dows.edw.domain.*;
-import org.dows.hep.api.edw.HepOperateType;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author fhb
@@ -24,7 +27,19 @@ public enum HepOperateTypeEnum /*implements HepOperateType*/ {
     HEP_PSYCHOLOGY_INTERVENE(HepPsychologyIntervene.class),
     HEP_SPORT_INTERVENE(HepSportIntervene.class);
 
-    private final Class<?> clazz;
+    private final Class<? extends HepOperateEntity> clazz;
 
+    private static final Map<Class<? extends HepOperateEntity>, HepOperateTypeEnum> cacheByCode;
+    static {
+        cacheByCode = Arrays.stream(HepOperateTypeEnum.values()).collect(Collectors.toMap(HepOperateTypeEnum::getClazz, item -> item));
+    }
+
+    public static HepOperateTypeEnum getByCode(Class<? extends HepOperateEntity> clazz) {
+        return cacheByCode.get(clazz);
+    }
+
+    public static String getNameByCode(Class<? extends HepOperateEntity> clazz) {
+        return cacheByCode.get(clazz).name();
+    }
 
 }
