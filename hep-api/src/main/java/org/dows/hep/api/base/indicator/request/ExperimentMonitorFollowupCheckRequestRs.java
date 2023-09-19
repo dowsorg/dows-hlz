@@ -49,12 +49,12 @@ public class ExperimentMonitorFollowupCheckRequestRs implements Serializable {
   /**
    * 存mongodb新增字段
    */
-  @Schema(title = "流程id")
+  /*@Schema(title = "流程id")
   private String operateFlowId;
   @Schema(title = "机构名称")
   private String orgName;
   @Schema(title = "(职责|能力|功能|菜单)名称[体格检查报告,辅助检查报告......]")
   private String functionName;
   @Schema(title = "json辅助检查明细数据")
-  private String data;
+  private String data;*/
 }
