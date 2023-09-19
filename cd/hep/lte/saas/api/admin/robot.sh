@@ -4,23 +4,23 @@
 #!/bin/bash
 
 #分支名
-BRANCH_NAME="$1"
+BRANCH_NAME=$1
 #触发者
-AUTHOR_NAME="$2"
+AUTHOR_NAME=$2
 #项目名
-PROJECT_NAME="$3"
-#描述
-TITLE="$4"
+PROJECT_NAME=$3
+#环境
+PROJECT_ENV=$4
 #提交信息
-COMMIT="$5"
-CHANGES="$6"
+COMMIT=$5
+CHANGES=$6
 #颜色
-COLOR="$7"
+COLOR=$7
 
-echo "p5:"$COMMIT
-echo "p6:"$CHANGES
+echo "p5:$COMMIT"
+echo "p6:$CHANGES"
 
-IFS=',' read -ra arr <<< "$CHANGES"
+IFS=',' read -ra arr <<< "$6"
 result=""
 for item in "${arr[@]}"; do
     result="$result$item"$'\n'
@@ -41,22 +41,22 @@ url="https://oapi.dingtalk.com/robot/send?access_token=936103586e804f6f8dd6eb648
 curl $url \
 -H 'Content-Type: application/json' \
 -d "{
-    'msgtype': 'text',
+  'msgtype': 'text',
     'text': {
-        'content': '
-          项目: $TITLE
-          发布时间: $time $times $xingqi
-          项目名: $PROJECT_NAME
-          分支名: $BRANCH_NAME
-          发布者: $AUTHOR_NAME
-          COMMIT: $COMMIT
-          CHANGES:
-          $result
-          HOST: $ip
-          DISK: $lsblk
-          MEM: $mem%
-          CPU: $cpu%
-        '
+      'content': '
+        时间: $time $times $xingqi
+        发布者: $AUTHOR_NAME
+        项目: $PROJECT_NAME
+        分支: $BRANCH_NAME
+        环境: $PROJECT_ENV
+        说明: $COMMIT
+        变化列表:
+        $result
+        HOST: $ip
+        DISK: $lsblk
+        MEM: $mem%
+        CPU: $cpu%
+      '
     }
 }"
 
