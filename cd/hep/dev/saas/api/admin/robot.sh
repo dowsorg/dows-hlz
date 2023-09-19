@@ -35,7 +35,7 @@ ip=$(ifconfig | grep inet | awk 'NR==3{print $2}')
 lsblk=$(df -h / | awk '{print $5}' | tail -n 1 )
 mem=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
 cpu=$(top -b -n1 | grep "Cpu(s)" | awk '{print $2}')
-url="https://oapi.dingtalk.com/robot/send?access_token=a108a939447601fcd4a884751203f35b187301a93c5dc880794ba1370f063f74"
+url="https://oapi.dingtalk.com/robot/send?access_token=936103586e804f6f8dd6eb648990851153826ab5d55037ae8fe3bd9469ee5631"
 
 
 curl $url \
