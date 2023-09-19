@@ -320,7 +320,6 @@ public class FollowupBiz {
                     .onDay(null)
                     .build();
             interveneHandler.write(hepOperateSetRequest, HepFollowUp.class);
-            return;
         }
         if (!operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false, () -> {
             if(null!=saveNotice){
