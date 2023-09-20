@@ -57,10 +57,10 @@ public class ExperimentCacheExecutor {
             for(String experimentId:experimentIds){
                 ExperimentCacheKey key=ExperimentCacheKey.create(APPId,experimentId);
                 try{
-                    ExperimentSpelCache.Instance().loadingCache().get(key);
+                    ExperimentSettingCache.Instance().getSet(key, true);
                     Set<String> personIds= ExperimentPersonCache.Instance().getPersondIdSet(experimentId, null);
                     personIds.forEach(personId-> PersonIndicatorIdCache.Instance().loadingCache().get(personId));
-                    ExperimentSettingCache.Instance().getSet(key, true);
+                    ExperimentSpelCache.Instance().loadingCache().get(key);
 
                 }catch (Exception ex){
                     ts=logCostTime(sb,String.format("loaderror %s %s", experimentId,ex.getMessage()),ts);

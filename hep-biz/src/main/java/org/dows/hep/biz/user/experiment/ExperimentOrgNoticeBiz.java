@@ -231,20 +231,20 @@ public class ExperimentOrgNoticeBiz {
         return rst;
     }
 
-    public List<PushWebScoketResult> pushNoticeSilence(String experimentId,List<ExperimentOrgNoticeEntity> rowsNotice,boolean retry) {
+    public List<PushWebScoketResult> pushNoticeSilence(String experimentId,EnumWebSocketType socketType,List<ExperimentOrgNoticeEntity> rowsNotice,boolean retry) {
         try{
-            return pushNotice(experimentId, rowsNotice, retry);
+            return pushNotice(experimentId,socketType, rowsNotice, retry);
         }catch (Exception ex){
             log.error("ExperimentOrgNoticeBiz.pushNoticeSilence",ex);
             return Collections.emptyList();
         }
 
     }
-    public List<PushWebScoketResult> pushNotice(String experimentId,List<ExperimentOrgNoticeEntity> rowsNotice,boolean retry) throws JsonProcessingException{
+    public List<PushWebScoketResult> pushNotice(String experimentId,EnumWebSocketType socketType,List<ExperimentOrgNoticeEntity> rowsNotice,boolean retry) throws JsonProcessingException{
         Map<String, List<OrgNoticeResponse>> mapNotice = this.getWebSocketNotice(experimentId, rowsNotice);
-        return pushNotice(experimentId, mapNotice, retry);
+        return pushNotice(experimentId,socketType, mapNotice, retry);
     }
-    public List<PushWebScoketResult> pushNotice(String experimentId, Map<String, List<OrgNoticeResponse>> mapNotice, boolean retry){
+    public List<PushWebScoketResult> pushNotice(String experimentId,EnumWebSocketType socketType, Map<String, List<OrgNoticeResponse>> mapNotice, boolean retry){
         if(ShareUtil.XObject.isEmpty(mapNotice)){
             return Collections.emptyList();
         }
@@ -254,7 +254,7 @@ public class ExperimentOrgNoticeBiz {
         final List<PushWebScoketResult> rst=new ArrayList<>();
         try {
             mapNotice.forEach((k, v) -> {
-                PushWebScoketResult rstPush = PushWebSocketUtil.Instance().pushCommon(EnumWebSocketType.EVENT_TRIGGERED, experimentId, Set.of(k), v, retry);
+                PushWebScoketResult rstPush = PushWebSocketUtil.Instance().pushCommon(socketType, experimentId, Set.of(k), v, retry);
                 if (ShareUtil.XObject.notEmpty(rstPush)) {
                     rst.add(rstPush);
                 }
