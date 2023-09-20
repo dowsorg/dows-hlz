@@ -1,6 +1,7 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.entity.ExperimentPersonEntity;
 import org.dows.hep.service.ExperimentPersonService;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,9 @@ public class ExperimentPersonDao extends BaseDao<ExperimentPersonService, Experi
     protected SFunction<Integer, ?> setColState(ExperimentPersonEntity item) {
         return null;
     }
+
+
+
 
     public List<ExperimentPersonEntity> getByExperimentId(String appId, String experimentId,
                                                           SFunction<ExperimentPersonEntity,?>... cols){

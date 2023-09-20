@@ -3,7 +3,6 @@ package org.dows.hep.biz.event;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumWebSocketType;
-import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
 import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.spel.SpelInvoker;
 import org.dows.hep.biz.spel.meta.SpelEvalResult;
@@ -11,9 +10,7 @@ import org.dows.hep.biz.spel.meta.SpelEvalSumResult;
 import org.dows.hep.biz.user.experiment.ExperimentOrgNoticeBiz;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.JacksonUtil;
-import org.dows.hep.biz.util.PushWebSocketUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.biz.vo.PushWebScoketResult;
 import org.dows.hep.entity.ExperimentEventEntity;
 import org.dows.hep.entity.ExperimentOrgNoticeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +18,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author : wuzl
@@ -50,6 +46,9 @@ public class ExperimentEventRules {
 
     //region facade
     public boolean saveTriggeredTimeEvent(List<ExperimentEventEntity> events,boolean saveIndicators) throws JsonProcessingException {
+        if(ShareUtil.XObject.isEmpty(events)){
+            return true;
+        }
         List<ExperimentEventEntity> saveEvents = ShareUtil.XCollection.map(events, i ->
                 ExperimentEventEntity.builder()
                         .id(i.getId())
@@ -77,38 +76,15 @@ public class ExperimentEventRules {
         eventIds.clear();
         mapEvents.clear();
 
-        boolean rst = experimentEventDao.tranSaveBatch(saveEvents, false, true, () -> saveTriggeredTimeEventX(rowsNotice, saveIndicators ? events : null));
-        if (rst) {
-            StringBuilder sb=new StringBuilder();
-            try {
-                //发送webSocket
-                final String experimentId = rowsNotice.get(0).getExperimentInstanceId();
-                sb.append(String.format("ExperimentEventRules.pushWebSocket[%s] exptId:%s noticeIds:%s ",
-                        Thread.currentThread().getName(),
-                        experimentId,
-                        rowsNotice.stream()
-                                .map(ExperimentOrgNoticeEntity::getExperimentOrgNoticeId)
-                                .collect(Collectors.joining(","))));
 
-                Map<String, List<OrgNoticeResponse>> mapNotice = experimentOrgNoticeBiz.getWebSocketNotice(experimentId, rowsNotice);
-                if (ShareUtil.XObject.notEmpty(mapNotice)) {
-                    mapNotice.forEach((k,v)->{
-                        PushWebScoketResult rstPush= PushWebSocketUtil.Instance().pushCommon(EnumWebSocketType.EVENT_TRIGGERED, experimentId,Set.of(k), v,false);
-                        sb.append(String.format( " -loop clientId:%s noticeIds:%s miss:%s",
-                                k,
-                                v.stream().map(OrgNoticeResponse::getExperimentOrgNoticeId).collect(Collectors.joining(",")),
-                                String.join(",", rstPush.getMissClients())));
-                    });
-                }
-            }catch (Exception ex) {
-                sb.append(" error.").append(ex.getMessage());
-                throw ex;
-            }finally {
-                log.info(sb.toString());
-            }
+        if (!experimentEventDao.tranSaveBatch(saveEvents, false, true, () -> saveTriggeredTimeEventX(rowsNotice, saveIndicators ? events : null))) {
+            return false;
         }
-        return rst;
+        final String experimentId=rowsNotice.get(0).getExperimentInstanceId();
+        experimentOrgNoticeBiz.pushNoticeSilence(experimentId, EnumWebSocketType.EVENT_TRIGGERED, rowsNotice,false);
+        return true;
     }
+
     boolean saveTriggeredTimeEventX(List<ExperimentOrgNoticeEntity> notices,List<ExperimentEventEntity> events){
         AssertUtil.falseThenThrow(experimentOrgNoticeBiz.add(notices)).throwMessage("事件触发通知保存失败");
         if(ShareUtil.XObject.isEmpty(events)){

@@ -69,7 +69,7 @@ public class EvalHealthIndexAdvBiz {
             Collection<SnapCrowdsInstanceEntity> crowds=evalCrowdCache.getCrowds(experimentId);
             ts=logCostTime(sb,"2-crowds", ts);
 
-            final int CONCURRENTNum = 1;
+            final int CONCURRENTNum = 2;
             if (CONCURRENTNum <= 1 || experimentPersonIdSet.size() < CONCURRENTNum) {
                 evalPersonHealthIndex(req, experimentPersonIdSet,crowds);
             } else {
@@ -77,12 +77,12 @@ public class EvalHealthIndexAdvBiz {
                 CompletableFuture[] futures = new CompletableFuture[groups.size()];
                 int pos = 0;
                 for (List<String> personIds : groups) {
-                    futures[pos++] = CompletableFuture.runAsync(() -> evalPersonHealthIndex(req, experimentPersonIdSet,crowds),
+                    futures[pos++] = CompletableFuture.runAsync(() -> evalPersonHealthIndex(req, personIds,crowds),
                             EvalPersonExecutor.Instance().getThreadPool());
                 }
                 CompletableFuture.allOf(futures).join();
             }
-            ts=logCostTime(sb,"3-end", ts);
+            ts=logCostTime(sb,"3-eval", ts);
         }finally {
             log.info(sb.toString());
             log.error(sb.toString());
@@ -188,6 +188,7 @@ public class EvalHealthIndexAdvBiz {
         });
 
         BigDecimal personHealthIndex = EvalHealthIndexUtil.evalHealthIndex(vosHealthIndex, false);
+        vosHealthIndex.forEach(i->Optional.of(i.getRiskFactors()).ifPresent(v->v.sort(Comparator.comparing(iv->Optional.ofNullable(iv.getRiskFactorName()).orElse("")))));
         evalHolder.get().setEvalRisks(vosHealthIndex).setRisks(voRisks);
         evalHolder.putCurVal(personIndicatorIdCache.getSysIndicatorId(experimentPersonId, EnumIndicatorType.HEALTH_POINT),
                 BigDecimalUtil.formatRoundDecimal(personHealthIndex, 2), false);

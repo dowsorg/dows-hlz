@@ -1,18 +1,19 @@
 package org.dows.hep.biz.spel;
 
 import lombok.Getter;
+import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumIndicatorDocType;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.biz.cache.BaseLoadingCache;
-import org.dows.hep.biz.dao.ExperimentIndicatorExpressionRsDao;
-import org.dows.hep.biz.dao.ExperimentIndicatorInstanceRsDao;
-import org.dows.hep.biz.dao.ExperimentPersonDao;
+import org.dows.hep.biz.dao.*;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorExpressionItemRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorExpressionRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.ExperimentPersonEntity;
+import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionEntity;
+import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionItemEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +48,12 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
 
     @Autowired
     private ExperimentPersonDao experimentPersonDao;
+
+    @Autowired
+    private SnapCaseIndicatorExpressionDao snapCaseIndicatorExpressionDao;
+
+    @Autowired
+    private SnapCaseIndicatorExpressionItemDao snapCaseIndicatorExpressionItemDao;
 
 
     public PersonIndicatorIdCollection getCacheData(String exptPersonId){
@@ -143,11 +150,15 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
 
         List<ExperimentIndicatorInstanceRsEntity> rowsIndicator = experimentIndicatorInstanceRsDao.getByExperimentPersonId(key);
         rowsIndicator.forEach(i -> {
-            rst.getMapBaseCase2ExptId().put(i.getIndicatorInstanceId(), i.getExperimentIndicatorInstanceId());
-            rst.getMapBaseCase2ExptId().put(i.getCaseIndicatorInstanceId(), i.getExperimentIndicatorInstanceId());
+            if(ShareUtil.XObject.notEmpty(i.getIndicatorInstanceId())) {
+                rst.getMapBaseCase2ExptId().put(i.getIndicatorInstanceId(), i.getExperimentIndicatorInstanceId());
+            }
+            if(ShareUtil.XObject.notEmpty(i.getCaseIndicatorInstanceId())) {
+                rst.getMapBaseCase2ExptId().put(i.getCaseIndicatorInstanceId(), i.getExperimentIndicatorInstanceId());
+            }
             rst.getMapExptIndicators().put(i.getExperimentIndicatorInstanceId(), i);
             rst.getSortedIndicators().add(i);
-            i.setDocType(EnumIndicatorDocType.NONE);
+            i.setDocType(EnumIndicatorDocType.NONE).setMin(null).setMax(null);
             EnumIndicatorType indicatorType=EnumIndicatorType.of(i.getType());
             if(null==indicatorType){
                 return;
@@ -163,44 +174,97 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
             }
 
         });
-        rst.sortedIndicators.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
-        final List<ExperimentIndicatorExpressionRsEntity> rowsExperession = experimentIndicatorExpressionRsDao.getByExperimentIndicatorIds(rst.getMapExptIndicators().keySet(),
-                EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
-                ExperimentIndicatorExpressionRsEntity::getPrincipalId,
-                ExperimentIndicatorExpressionRsEntity::getMaxIndicatorExpressionItemId,
-                ExperimentIndicatorExpressionRsEntity::getMinIndicatorExpressionItemId);
-        final List<String> minMaxExpressionItemIds = new ArrayList<>();
-        rowsExperession.forEach(i -> {
-            if (ShareUtil.XObject.notEmpty(i.getMinIndicatorExpressionItemId())) {
-                minMaxExpressionItemIds.add(i.getMinIndicatorExpressionItemId());
-            }
-            if (ShareUtil.XObject.notEmpty(i.getMaxIndicatorExpressionItemId())) {
-                minMaxExpressionItemIds.add(i.getMaxIndicatorExpressionItemId());
-            }
-        });
-        final List<ExperimentIndicatorExpressionItemRsEntity> rowsExpressionItem = experimentIndicatorExpressionRsDao.getSubBySubIds(minMaxExpressionItemIds,
-                ExperimentIndicatorExpressionItemRsEntity::getExperimentIndicatorExpressionItemId,
-                ExperimentIndicatorExpressionItemRsEntity::getResultRaw);
-        Map<String,String> mapExpressionItem=ShareUtil.XCollection.toMap(rowsExpressionItem,
-                ExperimentIndicatorExpressionItemRsEntity::getExperimentIndicatorExpressionItemId,
-                ExperimentIndicatorExpressionItemRsEntity::getResultRaw);
-        rowsExperession.forEach(expression->{
-            ExperimentIndicatorInstanceRsEntity indicator=rst.mapExptIndicators.get(expression.getPrincipalId());
-            if(null==indicator){
-                return;
-            }
-            if(ShareUtil.XObject.notEmpty( expression.getMinIndicatorExpressionItemId())){
-                indicator.setMin(mapExpressionItem.get(expression.getMinIndicatorExpressionItemId()));
-            }
-            if(ShareUtil.XObject.notEmpty( expression.getMaxIndicatorExpressionItemId())){
-                indicator.setMax(mapExpressionItem.get(expression.getMaxIndicatorExpressionItemId()));
-            }
-        });
-
         rowsIndicator.clear();
-        rowsExperession.clear();
-        rowsExpressionItem.clear();
-        mapExpressionItem.clear();
+        rst.sortedIndicators.sort(Comparator.comparingInt(ExperimentIndicatorInstanceRsEntity::getRecalculateSeq));
+        if(ConfigExperimentFlow.SWITCH2SpelCache){
+            SnapshotRefValidator refValidator=new SnapshotRefValidator(rowPerson.getExperimentInstanceId());
+            final String refExperimentId4Expression=refValidator.checkExpression().getExpressionId();
+            final String refExperimentId4Item=refValidator.checkExpressionItem().getExpressionItemId();
+            if(ShareUtil.XObject.anyEmpty(refExperimentId4Expression,refExperimentId4Item)){
+                return rst;
+            }
+            final List<String> caseIndicatorIds=ShareUtil.XCollection.map(rst.sortedIndicators, ExperimentIndicatorInstanceRsEntity::getCaseIndicatorInstanceId);
+            final List<SnapCaseIndicatorExpressionEntity> rowsExperession = snapCaseIndicatorExpressionDao.getByCaseIndicatorIds(refExperimentId4Expression,
+                    caseIndicatorIds,
+                    EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
+                    SnapCaseIndicatorExpressionEntity::getCasePrincipalId,
+                    SnapCaseIndicatorExpressionEntity::getMaxIndicatorExpressionItemId,
+                    SnapCaseIndicatorExpressionEntity::getMinIndicatorExpressionItemId);
+            final List<String> minMaxExpressionItemIds = new ArrayList<>();
+            rowsExperession.forEach(i -> {
+                if (ShareUtil.XObject.notEmpty(i.getMinIndicatorExpressionItemId())) {
+                    minMaxExpressionItemIds.add(i.getMinIndicatorExpressionItemId());
+                }
+                if (ShareUtil.XObject.notEmpty(i.getMaxIndicatorExpressionItemId())) {
+                    minMaxExpressionItemIds.add(i.getMaxIndicatorExpressionItemId());
+                }
+            });
+            final List<SnapCaseIndicatorExpressionItemEntity> rowsExpressionItem = snapCaseIndicatorExpressionItemDao.getByExpressionItemId(refExperimentId4Item,
+                    minMaxExpressionItemIds,
+                    SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId,
+                    SnapCaseIndicatorExpressionItemEntity::getResultRaw);
+            Map<String, String> mapExpressionItem = ShareUtil.XCollection.toMap(rowsExpressionItem,
+                    SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId,
+                    SnapCaseIndicatorExpressionItemEntity::getResultRaw);
+            rowsExperession.forEach(expression -> {
+                String indicatorId=rst.mapBaseCase2ExptId.get(expression.getCasePrincipalId());
+                if(ShareUtil.XObject.isEmpty(indicatorId)){
+                    return;
+                }
+                ExperimentIndicatorInstanceRsEntity indicator = rst.getMapExptIndicators().get(indicatorId);
+                if (null == indicator) {
+                    return;
+                }
+                if (ShareUtil.XObject.notEmpty(expression.getMinIndicatorExpressionItemId())) {
+                    indicator.setMin(mapExpressionItem.get(expression.getMinIndicatorExpressionItemId()));
+                }
+                if (ShareUtil.XObject.notEmpty(expression.getMaxIndicatorExpressionItemId())) {
+                    indicator.setMax(mapExpressionItem.get(expression.getMaxIndicatorExpressionItemId()));
+                }
+            });
+            rowsExperession.clear();
+            rowsExpressionItem.clear();
+            mapExpressionItem.clear();
+
+        }else {
+            final List<ExperimentIndicatorExpressionRsEntity> rowsExperession = experimentIndicatorExpressionRsDao.getByExperimentIndicatorIds(rst.getMapExptIndicators().keySet(),
+                    EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource(),
+                    ExperimentIndicatorExpressionRsEntity::getPrincipalId,
+                    ExperimentIndicatorExpressionRsEntity::getMaxIndicatorExpressionItemId,
+                    ExperimentIndicatorExpressionRsEntity::getMinIndicatorExpressionItemId);
+            final List<String> minMaxExpressionItemIds = new ArrayList<>();
+            rowsExperession.forEach(i -> {
+                if (ShareUtil.XObject.notEmpty(i.getMinIndicatorExpressionItemId())) {
+                    minMaxExpressionItemIds.add(i.getMinIndicatorExpressionItemId());
+                }
+                if (ShareUtil.XObject.notEmpty(i.getMaxIndicatorExpressionItemId())) {
+                    minMaxExpressionItemIds.add(i.getMaxIndicatorExpressionItemId());
+                }
+            });
+            final List<ExperimentIndicatorExpressionItemRsEntity> rowsExpressionItem = experimentIndicatorExpressionRsDao.getSubBySubIds(minMaxExpressionItemIds,
+                    ExperimentIndicatorExpressionItemRsEntity::getExperimentIndicatorExpressionItemId,
+                    ExperimentIndicatorExpressionItemRsEntity::getResultRaw);
+            Map<String, String> mapExpressionItem = ShareUtil.XCollection.toMap(rowsExpressionItem,
+                    ExperimentIndicatorExpressionItemRsEntity::getExperimentIndicatorExpressionItemId,
+                    ExperimentIndicatorExpressionItemRsEntity::getResultRaw);
+            rowsExperession.forEach(expression -> {
+                ExperimentIndicatorInstanceRsEntity indicator = rst.mapExptIndicators.get(expression.getPrincipalId());
+                if (null == indicator) {
+                    return;
+                }
+                if (ShareUtil.XObject.notEmpty(expression.getMinIndicatorExpressionItemId())) {
+                    indicator.setMin(mapExpressionItem.get(expression.getMinIndicatorExpressionItemId()));
+                }
+                if (ShareUtil.XObject.notEmpty(expression.getMaxIndicatorExpressionItemId())) {
+                    indicator.setMax(mapExpressionItem.get(expression.getMaxIndicatorExpressionItemId()));
+                }
+            });
+            rowsExperession.clear();
+            rowsExpressionItem.clear();
+            mapExpressionItem.clear();
+        }
+
+
         return rst;
     }
 

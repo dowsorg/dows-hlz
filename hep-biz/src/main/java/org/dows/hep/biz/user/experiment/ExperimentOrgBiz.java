@@ -1,16 +1,13 @@
 package org.dows.hep.biz.user.experiment;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.AccountUserApi;
-import org.dows.account.response.AccountUserResponse;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
@@ -26,6 +23,8 @@ import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.dao.ExperimentOrgNoticeDao;
 import org.dows.hep.biz.dao.ExperimentPersonDao;
 import org.dows.hep.biz.dao.OperateFlowDao;
+import org.dows.hep.biz.eval.ExperimentPersonCache;
+import org.dows.hep.biz.event.EventExecutor;
 import org.dows.hep.biz.event.ExperimentEventRules;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
@@ -43,8 +42,6 @@ import org.dows.hep.service.ExperimentPersonService;
 import org.dows.hep.service.OperateInsuranceService;
 import org.dows.sequence.api.IdGenerator;
 import org.dows.user.api.api.UserInstanceApi;
-import org.dows.user.api.request.UserInstanceRequest;
-import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +49,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -241,6 +238,10 @@ public class ExperimentOrgBiz {
             findOrgNotice.setExperimentPersonIds(ShareUtil.XCollection.map(experimentPersonDao.getByOrgId(findOrgNotice.getExperimentOrgId(),
                     ExperimentPersonEntity::getExperimentPersonId), ExperimentPersonEntity::getExperimentPersonId));
         }
+        List<String> followupNoticeIds = ShareUtil.XCollection.map(experimentOrgNoticeDao.getTopFollowUpNoticeIds(findOrgNotice.getExperimentPersonIds()),
+                ExperimentOrgNoticeEntity::getExperimentOrgNoticeId);
+        findOrgNotice.setFollowUpNoticeIds(followupNoticeIds);
+
         return ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
                 ExperimentOrgNoticeEntity::getId,
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
@@ -294,9 +295,14 @@ public class ExperimentOrgBiz {
      * @param saveNoticeAction
      * @param request
      * @return
-     * @throws JsonProcessingException
      */
-    public OrgNoticeResponse saveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) throws JsonProcessingException {
+    public OrgNoticeResponse saveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request) {
+        CompletableFuture<OrgNoticeResponse> future=CompletableFuture.supplyAsync(()->coreSaveOrgNoticeAction(saveNoticeAction,request),
+                EventExecutor.Instance().getFixedThreadPool());
+        return future.join();
+    }
+    @SneakyThrows
+    public OrgNoticeResponse coreSaveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request)  {
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveNoticeAction.getActions()))
                 .throwMessage("请选择事件处理措施");
         //校验登录
@@ -327,6 +333,8 @@ public class ExperimentOrgBiz {
 
         AssertUtil.trueThenThrow(EnumEventActionState.DONE.getCode().equals(rowNotice.getActionState()))
                 .throwMessage("该事件已处理");
+
+
         AssertUtil.trueThenThrow(!EnumExperimentOrgNoticeType.EVENTTriggered.getCode().equals(rowNotice.getNoticeSrcType())
                         || ShareUtil.XObject.isEmpty(rowNotice.getNoticeSrcId()))
                 .throwMessage("未找到突发事件id");
@@ -483,6 +491,49 @@ public class ExperimentOrgBiz {
      * @创建时间: 2023年5月10日 上午10:11:34
      */
     public Page<ExperimentPersonResponse> pageExperimentPersons(ExperimentPersonRequest personRequest) {
+
+        List<ExperimentPersonEntity> rowsPerson= ExperimentPersonCache.Instance().getPersonsByOrgId(personRequest.getExperimentInstanceId(),personRequest.getExperimentOrgId());
+        if(ShareUtil.XObject.isEmpty(rowsPerson)){
+            return new Page<>();
+        }
+
+        Integer pageSize=ShareUtil.XObject.defaultIfNull(personRequest.getPageSize(), 10);
+        Integer pageNo=ShareUtil.XObject.defaultIfNull(personRequest.getPageNo(), 1);
+
+        if(pageNo>1||pageSize<rowsPerson.size()) {
+            rowsPerson = rowsPerson.stream().skip((pageNo - 1) * pageSize).limit(pageSize).collect(Collectors.toList());
+        }
+
+        //获取人物挂号状态
+        ExperimentTimePoint timePoint = ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(personRequest.getAppId(), personRequest.getExperimentInstanceId()),
+                LocalDateTime.now(), false);
+        final Integer period = timePoint.getPeriod();
+        final List<String> personIds = ShareUtil.XCollection.map(rowsPerson, ExperimentPersonEntity::getExperimentPersonId);
+        List<OperateFlowEntity> rowsFlow = operateFlowDao.getCurrentFlowList(personRequest.getExperimentOrgId(), personIds, period,
+                OperateFlowEntity::getExperimentPersonId,
+                OperateFlowEntity::getOperateFlowId,
+                OperateFlowEntity::getPeriods);
+        Map<String, OperateFlowEntity> mapFlow = ShareUtil.XCollection.toMap(rowsFlow, OperateFlowEntity::getExperimentPersonId);
+
+        //关键指标
+        Map<String, List<String>> mapCoreIndicators = experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period, personIds);
+
+        List<ExperimentPersonResponse> rst=ShareUtil.XCollection.map(rowsPerson, true, src->{
+            ExperimentPersonResponse dst= CopyWrapper.create(ExperimentPersonResponse::new)
+                    .endFrom(src)
+                    .setId(src.getId().toString())
+                    .setName(src.getUserName());
+            Optional.ofNullable(mapFlow.get(src.getExperimentPersonId()))
+                    .ifPresent(i->dst.setOperateFlowId(i.getOperateFlowId())
+                            .setFlowPeriod(i.getPeriods()));
+            return dst.setHealthPoint(experimentIndicatorInstanceRsBiz.getHealthPoint(period, src.getExperimentPersonId()))
+                    .setCoreIndicators(mapCoreIndicators.get(src.getExperimentPersonId()));
+        });
+
+        return Page.<ExperimentPersonResponse>of(pageNo, pageSize).setRecords(rst);
+
+/*
+
         List<ExperimentPersonResponse> responseList = new ArrayList<>();
         LambdaQueryWrapper<ExperimentPersonEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ExperimentPersonEntity::getExperimentOrgId, personRequest.getExperimentOrgId())
@@ -495,22 +546,6 @@ public class ExperimentOrgBiz {
         if(ShareUtil.XObject.isEmpty(entityIPage.getRecords())){
             return voPage.setRecords(responseList);
         }
-
-        //获取人物挂号状态
-        ExperimentTimePoint timePoint = ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(personRequest.getAppId(), personRequest.getExperimentInstanceId()),
-                LocalDateTime.now(), false);
-        final Integer period = timePoint.getPeriod();
-        final List<String> personIds = ShareUtil.XCollection.map(entityIPage.getRecords(), ExperimentPersonEntity::getExperimentPersonId);
-        List<OperateFlowEntity> rowsFlow = operateFlowDao.getCurrentFlowList(personRequest.getExperimentOrgId(), personIds, period,
-                OperateFlowEntity::getExperimentPersonId,
-                OperateFlowEntity::getOperateFlowId,
-                OperateFlowEntity::getPeriods);
-        Map<String, OperateFlowEntity> mapFlow = ShareUtil.XCollection.toMap(rowsFlow, OperateFlowEntity::getExperimentPersonId);
-
-        //关键指标
-        Map<String, List<String>> mapCoreIndicators = experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period, personIds);
-
-
 
         //实验人物账号
         List<String> accountIds = entityIPage.getRecords().stream().map(ExperimentPersonEntity::getAccountId)
@@ -540,11 +575,11 @@ public class ExperimentOrgBiz {
             person.setId(entity.getId().toString());
             String accountId = person.getAccountId();
 
-            /**
+            *//**
              * 1、获取用户姓名
              *String userId = accountUserApi.getUserByAccountId(entity.getAccountId()).getUserId();
              *UserInstanceResponse instanceResponse = userInstanceApi.getUserInstanceByUserId(userId);
-             */
+             *//*
             UserInstanceResponse userInstanceResponse = userInstanceResponseMap.get(accountId);
             if (BeanUtil.isNotEmpty(userInstanceResponse)) {
                 // 2、获取用户头像
@@ -566,7 +601,7 @@ public class ExperimentOrgBiz {
         }
 
         voPage.setRecords(responseList);
-        return voPage;
+        return voPage;*/
     }
 
     public Integer countExperimentPersons(ExperimentPersonRequest personRequest) {

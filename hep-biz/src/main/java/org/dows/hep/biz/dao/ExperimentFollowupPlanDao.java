@@ -1,6 +1,7 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentFollowupPlanEntity;
 import org.dows.hep.service.ExperimentFollowupPlanService;
 import org.springframework.stereotype.Component;
@@ -41,13 +42,15 @@ public class ExperimentFollowupPlanDao extends BaseDao<ExperimentFollowupPlanSer
     public List<ExperimentFollowupPlanEntity> getByExperimentId(String experimentId,SFunction<ExperimentFollowupPlanEntity,?>... cols){
         return service.lambdaQuery()
                 .eq(ExperimentFollowupPlanEntity::getExperimentInstanceId, experimentId)
+                .orderByDesc(ExperimentFollowupPlanEntity::getId)
                 .select(cols)
                 .list();
     }
 
-    public Optional<ExperimentFollowupPlanEntity> getByExperimentPersonId(String experimentPersonId, SFunction<ExperimentFollowupPlanEntity,?>... cols){
+    public Optional<ExperimentFollowupPlanEntity> getByExperimentPersonId(String experimentPersonId,String indicatorFuncId, SFunction<ExperimentFollowupPlanEntity,?>... cols){
         return service.lambdaQuery()
                 .eq(ExperimentFollowupPlanEntity::getExperimentPersonId, experimentPersonId)
+                .eq(ShareUtil.XObject.notEmpty(indicatorFuncId), ExperimentFollowupPlanEntity::getIndicatorFuncId, indicatorFuncId)
                 .orderByDesc(ExperimentFollowupPlanEntity::getId)
                 .last("limit 1")
                 .oneOpt();

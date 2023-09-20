@@ -66,7 +66,7 @@ public class FollowupPlanTask extends BaseEventTask {
             return 0;
         }
         FollowupPlanCollection planColl=FollowupPlanCache.Instance().loadingCache().get(experimentKey);
-        if(ShareUtil.XObject.isEmpty(planColl.getPlanRows()) ){
+        if(ShareUtil.XObject.isEmpty(planColl.getMapPlanRows()) ){
             logError("call", "emptyPlans");
             raiseScheduler(DELAYSeconds4Poll,false,true);
             return 0;
@@ -79,17 +79,18 @@ public class FollowupPlanTask extends BaseEventTask {
             raiseScheduler(getRetryDelaySeconds(),false,true);
             return 0;
         }
+        final List<FollowupPlanRow> planRows = planColl.getMapPlanRows().values().stream().toList();
         FollowupPlanRunStat runStat=new FollowupPlanRunStat();
         runStat.curTimePoint.set(timePoint);
-        runStat.nextTriggerIime.set(calcTriggeringTime(runStat, exptColl, planColl));
+        runStat.nextTriggerIime.set(calcTriggeringTime(runStat, exptColl, planRows));
         final ExecutorService executor= EventExecutor.Instance().getThreadPool();
-        CompletableFuture.runAsync(()->runPlans(runStat,exptColl,planColl), executor);
+        CompletableFuture.runAsync(()->runPlans(runStat,exptColl,planRows), executor);
         return 1;
     }
 
-    void runPlans(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl, FollowupPlanCollection planColl){
+    void runPlans(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl, List<FollowupPlanRow> planRows){
         try {
-            final List<FollowupPlanRow> planRows = planColl.getPlanRows();
+
             if (ShareUtil.XCollection.isEmpty(planRows)) {
                 stat.append("emptyRows");
                 return;
@@ -106,7 +107,7 @@ public class FollowupPlanTask extends BaseEventTask {
                 try{
                     if(!ExperimentFollowupPlanRules.Instance().saveTriggeredFollowupPlan(item
                             .setTriggered(stat.curTimePoint.get())
-                            .toSaveEntity())){
+                            .toSaveEntity(),stat.curTimePoint.get())){
                         AssertUtil.justThrow("failSaveFollowUpPlan");
                     }
                     item.saveNextTodoDay();
@@ -155,34 +156,43 @@ public class FollowupPlanTask extends BaseEventTask {
     }
 
 
-    LocalDateTime calcTriggeringTime(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl, FollowupPlanCollection planColl){
-        if (ShareUtil.XObject.isEmpty(planColl.getPlanRows())) {
+    LocalDateTime calcTriggeringTime(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl, List<FollowupPlanRow> planRows){
+        if (ShareUtil.XObject.isEmpty(planRows)) {
             return null;
         }
         final LocalDateTime ldtNow=stat.curTimePoint.get().getRealTime();
         LocalDateTime nextTime = LocalDateTime.MAX;
-        for (FollowupPlanRow item : planColl.getPlanRows()) {
-            if (item.isTriggering()) {
-                item.setTriggering(calcTriggeringTime(stat, exptColl, item));
-            }
-            item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item));
-            final LocalDateTime triggeringTime =item.getDoingTime();
-            if (null == triggeringTime) {
+        for (FollowupPlanRow item : planRows) {
+            if(!item.isTriggering()){
                 continue;
             }
-            if (ldtNow.compareTo(triggeringTime) < 0 && triggeringTime.compareTo(nextTime) < 0) {
+            item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item));
+            item.setTriggering(calcTriggeringTime(stat, exptColl, item.getTodoDay()));
+            if (null == item.getDoingTime()) {
+                continue;
+            }
+            LocalDateTime triggeringTime =item.getDoingTime();
+            if(triggeringTime.compareTo(ldtNow)<0){
+                triggeringTime =calcTriggeringTime(stat, exptColl, item.getNextTodoDay());
+            }
+            if (triggeringTime.compareTo(nextTime) < 0) {
                 nextTime = triggeringTime;
             }
         }
         return nextTime.isEqual(LocalDateTime.MAX) ? null : nextTime;
     }
-    LocalDateTime calcTriggeringTime(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl,FollowupPlanRow row){
+    LocalDateTime calcTriggeringTime(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl,Integer todoDays){
         final ExperimentTimePoint timePoint=stat.curTimePoint.get();
-        final ExperimentFollowupPlanEntity entity=row.getEntity();
-        if(ShareUtil.XObject.anyEmpty(timePoint,entity.getTodoDay(),entity.getDueDays())){
+        if(ShareUtil.XObject.anyEmpty(timePoint,todoDays)){
             return null;
         }
-        Integer rawSeconds=  exptColl.getRawSecondsByGameDay(row.getTodoDay());
+        if(exptColl.getTotalDays()< todoDays){
+            return null;
+        }
+        if(todoDays<= timePoint.getGameDay()){
+            return timePoint.getRealTime();
+        }
+        Integer rawSeconds=  exptColl.getRawSecondsByGameDay(todoDays);
         return exptColl.getSandStartTime().plusSeconds(rawSeconds+timePoint.getCntPauseSeconds());
 
     }

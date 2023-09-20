@@ -1,4 +1,9 @@
-
+---
+#本地测试环境
+spring:
+  config:
+    activate:
+      on-profile: lte
 ---
 #开发环境
 spring:

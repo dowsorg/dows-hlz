@@ -51,7 +51,7 @@ public class ExperimentManageRest {
     @GetMapping("v1/tenantExperiment/experimentTimer/countdown")
     public IntervalResponse countdown(@RequestParam String appId,@RequestParam String experimentInstanceId) {
 
-        IntervalResponse countdown = experimentTimerBiz.countdown(appId, experimentInstanceId);
+        IntervalResponse countdown = experimentTimerBiz.countdown(appId, experimentInstanceId,true);
 
         return countdown;
     }
@@ -231,4 +231,13 @@ public class ExperimentManageRest {
         String accountId = baseBiz.getAccountId(request);
         return experimentSchemeScoreBiz.submitSchemeScore(schemeScoreRequest, accountId);
     }
+
+    /**
+     * 修改得分
+     */
+//    @Operation(summary = "修改得分")
+//    @GetMapping("v1/tenantExperiment/experimentManage/reUpdSchemeScore")
+//    public void reUpdSchemeScore(@RequestParam("exptInstanceId") String exptInstanceId) {
+//        experimentSchemeScoreBiz.reUpdSchemeScore(exptInstanceId, 100);
+//    }
 }

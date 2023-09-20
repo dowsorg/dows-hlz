@@ -41,8 +41,8 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                 SnapCaseIndicatorExpressionRefEntity::getReasonId,
                 SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId);
         if(ShareUtil.XObject.isEmpty(rowsExpressionRef)){
-            logError("withReasonId", "miss expressionRef. experimentId:%s refExperimentId:%s reasonId:%s source:%s",
-                    experimentId,refExperimentId4ExpressionRef,reasonId,source);
+            /*logError("withReasonId", "miss expressionRef. experimentId:%s refExperimentId:%s reasonId:%s source:%s",
+                    experimentId,refExperimentId4ExpressionRef,reasonId,source);*/
             return rst;
         }
         if(rowsExpressionRef.size()==1){
@@ -102,8 +102,8 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                 SnapCaseIndicatorExpressionRefEntity::getReasonId,
                 SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId);
         if(ShareUtil.XObject.isEmpty(rowsExpressionRef)){
-            logError("withReasonId", "miss expressionRef. experimentId:%s refExperimentId:%s reasonIds:%s source:%s",
-                    experimentId,refExperimentId4ExpressionRef,String.join(",", reasonIds),source);
+            /*logError("withReasonId", "miss expressionRef. experimentId:%s refExperimentId:%s reasonIds:%s source:%s",
+                    experimentId,refExperimentId4ExpressionRef,String.join(",", reasonIds),source);*/
             return rst;
         }
         final List<String> expressionIds=ShareUtil.XCollection.map(rowsExpressionRef, SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId);
@@ -115,8 +115,8 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                 SnapCaseIndicatorExpressionEntity::getMinIndicatorExpressionItemId
         );
         if(ShareUtil.XObject.isEmpty(rowsExpression)){
-            logError("withReasonId","miss expressions. experimentId:%s refExperimentId:%s reasonIds:%s source:%s expressionIds:%s",
-                    experimentId,refExperimentId4Expression,String.join(",", reasonIds),source,String.join(",", expressionIds));
+            /*logError("withReasonId","miss expressions. experimentId:%s refExperimentId:%s reasonIds:%s source:%s expressionIds:%s",
+                    experimentId,refExperimentId4Expression,String.join(",", reasonIds),source,String.join(",", expressionIds));*/
             return rst;
         }
         Map<String,String> mapMinXMaxIds=new HashMap<>();
@@ -156,6 +156,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
             i.setMinOrMax(true)
                     .setIndicatorExpressionId(mapMinXMaxIds.get(i.getCaseIndicatorExpressionItemId()));
         });
+        rowsExpressionItem.addAll(rowsMinMaxExpressionItem);
 
         Map<String,SnapCaseIndicatorExpressionEntity> mapExpression=ShareUtil.XCollection.toMap(rowsExpression, SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId);
         Map<String,List<SnapCaseIndicatorExpressionItemEntity>> mapExpressionItem=ShareUtil.XCollection.groupBy(rowsExpressionItem, SnapCaseIndicatorExpressionItemEntity::getIndicatorExpressionId);

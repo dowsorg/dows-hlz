@@ -1,18 +1,31 @@
 package org.dows.hep.biz.base.indicator;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.edw.HepOperateTypeEnum;
+import org.dows.edw.domain.HepHealthExamination;
+import org.dows.edw.domain.HepHealthTherapy;
+import org.dows.edw.repository.HepOperateGetRepository;
+import org.dows.edw.repository.HepOperateSetRepository;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
+import org.dows.hep.api.edw.request.HepOperateGetRequest;
+import org.dows.hep.api.edw.request.HepOperateSetRequest;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumIndicatorExpressionField;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumOrgFeeType;
+import org.dows.hep.biz.edw.InterveneHandler;
 import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.eval.QueryPersonBiz;
 import org.dows.hep.biz.operate.CostRequest;
@@ -25,6 +38,7 @@ import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
+import org.dows.hep.properties.MongoProperties;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
@@ -59,6 +73,9 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
   private final QueryPersonBiz queryPersonBiz;
 
   private final EvalPersonBiz evalPersonBiz;
+  private final InterveneHandler interveneHandler;
+  private final MongoProperties mongoProperties;
+
   public static ExperimentSupportExamReportResponseRs experimentSupportExamReport2ResponseRs(ExperimentIndicatorViewSupportExamReportRsEntity experimentIndicatorViewSupportExamReportRsEntity) {
     if (Objects.isNull(experimentIndicatorViewSupportExamReportRsEntity)) {
       return null;
@@ -74,26 +91,66 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
   }
 
   public List<ExperimentSupportExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId, Integer periods) {
+
     String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     if(ShareUtil.XObject.isEmpty(operateFlowId)){
       return Collections.emptyList();
     }
-    return experimentIndicatorViewSupportExamReportRsService.lambdaQuery()
-        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getAppId, appId)
-        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getPeriod, periods)
-        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getIndicatorFuncId, indicatorFuncId)
-        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentPersonId, experimentPersonId)
-        .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getOperateFlowId, operateFlowId)
-        .orderByDesc(ExperimentIndicatorViewSupportExamReportRsEntity::getDt)
-        .list()
-        .stream()
-        .map(ExperimentIndicatorViewSupportExamReportRsBiz::experimentSupportExamReport2ResponseRs)
-        .collect(Collectors.toList());
+    //boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+    boolean useMongo=false;
+    if(useMongo){
+      HepOperateGetRequest hepOperateGetRequest = HepOperateGetRequest.builder()
+              .type(HepOperateTypeEnum.getNameByCode(HepHealthExamination.class))
+              .experimentInstanceId(Long.valueOf(experimentId))
+              //             .experimentGroupId(Long.valueOf(experimentGroupId))
+              //            .operatorId(Long.valueOf(reqOperateFunc.getOperateAccountId()))
+              .orgTreeId(Long.valueOf(experimentOrgId))
+              .flowId(operateFlowId)
+              .personId(Long.valueOf(experimentPersonId))
+              .period(periods)
+              .build();
+      return interveneHandler.read(hepOperateGetRequest,ExperimentSupportExamReportResponseRs.class, HepHealthTherapy.class);
+    }else{
+      return experimentIndicatorViewSupportExamReportRsService.lambdaQuery()
+              .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getAppId, appId)
+              .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentId, experimentId)
+              .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getPeriod, periods)
+              .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getIndicatorFuncId, indicatorFuncId)
+              .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentPersonId, experimentPersonId)
+              .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getOperateFlowId, operateFlowId)
+              .orderByDesc(ExperimentIndicatorViewSupportExamReportRsEntity::getDt)
+              .list()
+              .stream()
+              .map(ExperimentIndicatorViewSupportExamReportRsBiz::experimentSupportExamReport2ResponseRs)
+              .collect(Collectors.toList());
+    }
   }
 
   @Transactional(rollbackFor = Exception.class)
   public void supportExamCheck(ExperimentSupportExamCheckRequestRs experimentSupportExamCheckRequestRs, HttpServletRequest request) throws ExecutionException, InterruptedException {
+    LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+   /* boolean useMongo = mongoProperties != null && mongoProperties.getEnable() != null && mongoProperties.getEnable();
+    // 保存数据到mongodb
+    if(useMongo){
+      HepOperateSetRequest hepOperateSetRequest = HepOperateSetRequest.builder()
+              .type(HepOperateTypeEnum.getNameByCode(HepHealthExamination.class))
+              .experimentInstanceId(Long.valueOf(experimentSupportExamCheckRequestRs.getExperimentId()))
+              .experimentGroupId(Long.valueOf(experimentSupportExamCheckRequestRs.getExperimentGroupId()))
+              .operatorId(Long.valueOf(voLogin.getAccountId()))
+              .orgTreeId(Long.valueOf(experimentSupportExamCheckRequestRs.getExperimentOrgId()))
+              .flowId(experimentSupportExamCheckRequestRs.getOperateFlowId())
+              .personId(Long.valueOf(experimentSupportExamCheckRequestRs.getExperimentPersonId()))
+              .orgName(experimentSupportExamCheckRequestRs.getOrgName())
+              .functionName(experimentSupportExamCheckRequestRs.getFunctionName())
+              .functionCode(experimentSupportExamCheckRequestRs.getIndicatorFuncId())
+              .data(experimentSupportExamCheckRequestRs.getData())
+              .period(experimentSupportExamCheckRequestRs.getPeriods())
+              .onDate(null)
+              .onDay(null)
+              .build();
+      interveneHandler.write(hepOperateSetRequest,HepHealthTherapy.class);
+      return;
+    }*/
     if(ConfigExperimentFlow.SWITCH2SpelCache){
       evalPersonBiz.supportExamCheck(experimentSupportExamCheckRequestRs,request);
       return;
@@ -236,7 +293,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
               .operateFlowId(operateFlowId)
               .name(experimentIndicatorViewSupportExamRsEntity.getName())
               .fee(experimentIndicatorViewSupportExamRsEntity.getFee())
-              .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.HALF_UP))
+              .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.DOWN))
                       .orElse(currentVal))
               .unit(unit)
               .resultExplain(experimentIndicatorViewSupportExamRsEntity.getResultAnalysis())
@@ -253,8 +310,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
         .moneyChange(totalFeeAtomicReference.get())
         .assertEnough(true)
         .build());
-    // 保存消费记录
-    LoginContextVO voLogin= ShareBiz.getLoginUser(request);
+
     // 获取小组信息
     ExperimentPersonEntity personEntity = experimentPersonService.lambdaQuery()
             .eq(ExperimentPersonEntity::getExperimentPersonId,experimentSupportExamCheckRequestRs.getExperimentPersonId())

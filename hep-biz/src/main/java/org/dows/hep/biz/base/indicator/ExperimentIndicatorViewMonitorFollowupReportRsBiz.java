@@ -61,6 +61,8 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
 
     private final QueryPersonBiz queryPersonBiz;
 
+
+
     public static ExperimentIndicatorViewMonitorFollowupPlanRsResponse experimentIndicatorViewMonitorFollowupPlanRs2Response(ExperimentIndicatorViewMonitorFollowupPlanRsEntity experimentIndicatorViewMonitorFollowupPlanRsEntity) {
         if (Objects.isNull(experimentIndicatorViewMonitorFollowupPlanRsEntity)) {
             return null;
@@ -344,6 +346,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                 .orderByDesc(ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getPeriods,ExperimentIndicatorViewMonitorFollowupPlanRsEntity::getId)
                 .last("limit 1")
                 .one();
+
         experimentIndicatorViewMonitorFollowupPlanRsResponse = experimentIndicatorViewMonitorFollowupPlanRs2Response(experimentIndicatorViewMonitorFollowupPlanRsEntity);
         Map<String, ExperimentIndicatorInstanceRsEntity> kExperimentIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
         Map<String, String> kExperimentIndicatorInstanceIdVValMap = new HashMap<>();

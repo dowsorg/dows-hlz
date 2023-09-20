@@ -6,6 +6,7 @@ import org.dows.hep.biz.snapshot.BaseSnapshotTableWriter;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.spel.SnapshotRefValidator;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
@@ -15,9 +16,7 @@ import org.dows.hep.service.snapshot.SnapCaseIndicatorExpressionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author : wuzl
@@ -53,7 +52,7 @@ public class SnapCaseIndicatorExpressionWriter extends BaseSnapshotTableWriter<C
         final String refExperimentId4ExpressionRef=refValidator.checkExpressionRef().getExpressionRefId();
         if(ShareUtil.XObject.isEmpty(refExperimentId4ExpressionRef)){
             logError("SNAPTRACE--expression","missExpresionRefRef:%s",experimentId);
-            return null;
+            AssertUtil.justThrow("未找到公式关联快照");
         }
         List<IndicatorExpressionEntity> rowsExpression=indicatorExpressionDao.getBySource(List.of(EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL.getSource(),
                 EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL.getSource(),
@@ -65,7 +64,7 @@ public class SnapCaseIndicatorExpressionWriter extends BaseSnapshotTableWriter<C
                         .endFrom(i)
                         .setCaseIndicatorExpressionId(i.getIndicatorExpressionId())
                         .setCasePrincipalId(i.getPrincipalId())));
-        final Set<String> experssionIds=ShareUtil.XCollection.toSet(snapCaseIndicatorExpressionRefDao.getByExperiment(experimentId,
+        final Set<String> experssionIds=ShareUtil.XCollection.toSet(snapCaseIndicatorExpressionRefDao.getByExperiment(refExperimentId4ExpressionRef,
                 SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId),
                 SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId);
 
@@ -76,6 +75,7 @@ public class SnapCaseIndicatorExpressionWriter extends BaseSnapshotTableWriter<C
                 EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource()
                 )
         ));
+        rst.sort(Comparator.comparing(i-> Optional.ofNullable(i.getCaseIndicatorExpressionId()).orElse("")));
         return rst;
     }
 

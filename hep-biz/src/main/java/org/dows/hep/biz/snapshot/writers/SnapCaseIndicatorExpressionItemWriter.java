@@ -9,6 +9,7 @@ import org.dows.hep.biz.snapshot.BaseSnapshotTableWriter;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
 import org.dows.hep.biz.spel.SnapshotRefValidator;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.CaseIndicatorExpressionEntity;
@@ -22,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author : wuzl
@@ -57,9 +60,9 @@ public class SnapCaseIndicatorExpressionItemWriter extends BaseSnapshotTableWrit
         final String refExperimentId4Expression=refValidator.checkExpression().getExpressionId();
         if(ShareUtil.XObject.isEmpty(refExperimentId4Expression)){
             logError("SNAPTRACE--expressionItem","missExpressionRef:%s",experimentId);
-            return null;
+            AssertUtil.justThrow("未找到公式列表快照");
         }
-        List<SnapCaseIndicatorExpressionEntity> rowsSnapExpression=snapCaseIndicatorExpressionDao.getByExperimentId(experimentId,
+        List<SnapCaseIndicatorExpressionEntity> rowsSnapExpression=snapCaseIndicatorExpressionDao.getByExperimentId(refExperimentId4Expression,
                 List.of(EnumIndicatorExpressionSource.EMERGENCY_TRIGGER_CONDITION.getSource(),
                         EnumIndicatorExpressionSource.EMERGENCY_INFLUENCE_INDICATOR.getSource(),
                         EnumIndicatorExpressionSource.EMERGENCY_ACTION_INFLUENCE_INDICATOR.getSource(),
@@ -82,7 +85,7 @@ public class SnapCaseIndicatorExpressionItemWriter extends BaseSnapshotTableWrit
         expressionIds.clear();
         expressonItemIds.clear();
 
-        rowsSnapExpression=snapCaseIndicatorExpressionDao.getByExperimentId(experimentId,
+        rowsSnapExpression=snapCaseIndicatorExpressionDao.getByExperimentId(refExperimentId4Expression,
                 List.of(EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL.getSource(),
                         EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL.getSource(),
                         EnumIndicatorExpressionSource.CROWDS.getSource(),
@@ -107,6 +110,7 @@ public class SnapCaseIndicatorExpressionItemWriter extends BaseSnapshotTableWrit
                 CopyWrapper.create(CaseIndicatorExpressionItemEntity::new)
                         .endFrom(i)
                         .setCaseIndicatorExpressionItemId(i.getIndicatorExpressionItemId())));
+        rst.sort(Comparator.comparing(i-> Optional.ofNullable(i.getCaseIndicatorExpressionItemId()).orElse("")));
         return rst;
     }
 

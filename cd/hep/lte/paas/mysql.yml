@@ -1,0 +1,35 @@
+version: "3"
+services:
+  mysql-prd:
+    # 指定镜像和版本
+    image: mariadb
+    # 指定容器的名称
+    container_name: mysql-dev
+    restart: always
+    command:
+      --max_connections=1000
+      --character-set-server=utf8mb4
+      --default-authentication-plugin=mysql_native_password
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_ROOT_PASSWORD: "123456"
+    # 容器日志大小配置
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '5g'
+    volumes:
+      - /etc/localtime:/etc/localtime
+      # 数据库目录映射,挂载数据目录
+      - ./mysql/data:/var/lib/mysql
+      # 挂载配置文件目录
+      - ./mysql/conf.d:/etc/mysql/conf.d
+    ports:
+      - "43306:3306"
+    networks:
+      prd_net:
+        ipv4_address: 172.18.0.2
+
+networks:
+  prd_net:
+    external: true

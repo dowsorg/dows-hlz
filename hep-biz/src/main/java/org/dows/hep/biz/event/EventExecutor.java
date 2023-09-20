@@ -16,8 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 public class EventExecutor {
-    static final int DFTPOOLNum=4;
-    static final int DFTCorePoolSize=4;
+    static final int DFTPOOLNum=3;
+    static final int DFTCorePoolSize=5;
     static final int DFTMaxPoolSize=6;
 
     static final int DFTQUEUESize=500;
@@ -27,35 +27,67 @@ public class EventExecutor {
     }
 
 
-    private final ThreadPoolExecutor[] pools;
+    private final ThreadPoolExecutor[] roundPools;
+
+    private final ThreadPoolExecutor fixedPool;
+
 
     private final AtomicInteger pointer=new AtomicInteger();
     private EventExecutor(int poolNum,int corePoolSize,int maxPoolSize,int queueSize){
-        pools=new ThreadPoolExecutor[poolNum];
+        roundPools =new ThreadPoolExecutor[poolNum];
         for(int i=0;i<poolNum;i++) {
-           pools[i] = new ThreadPoolExecutor(corePoolSize, maxPoolSize, 60, TimeUnit.SECONDS,
+           roundPools[i] = new ThreadPoolExecutor(corePoolSize, maxPoolSize, 60, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<>(queueSize),
-                    new ThreadFactoryBuilder().setNameFormat("EventExecutor-%d").build(),
+                    new ThreadFactoryBuilder().setNameFormat("EventRoundPool-%d").build(),
                     new ThreadPoolAbortPolicy());
         }
+        fixedPool= new ThreadPoolExecutor(corePoolSize, maxPoolSize, 60, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(queueSize),
+                new ThreadFactoryBuilder().setNameFormat("EventFixedPool-%d").build(),
+                new ThreadPoolAbortPolicy());
     }
     public ExecutorService getThreadPool(){
-        return pools[pointer.getAndIncrement()%pools.length];
+        return roundPools[pointer.getAndIncrement()% roundPools.length];
+    }
+
+    public ExecutorService getFixedThreadPool(){
+        return fixedPool;
     }
 
     public void shutDown(){
-        for(ThreadPoolExecutor item: pools){
-            try {
-                log.info("EventScheduler closing. {}",item);
-                if(ShareUtil.XObject.notEmpty(item)) {
-                    item.shutdown();
-                }
-                log.info("EventExecutor closed. {}",item);
-            }catch (Exception ex){
-                log.error(String.format("EventExecutor failClose. %s",item) ,ex);
-            }
+        for(ThreadPoolExecutor item: roundPools){
+            shutDown(item);
         }
+        shutDown(fixedPool);
+    }
+    private void shutDown(ThreadPoolExecutor pool){
+        if(ShareUtil.XObject.isEmpty(pool)){
+            return;
+        }
+        StringBuilder sb=new StringBuilder();
+        long ts=logCostTime(sb,"EventExecutor--");
+        try {
+            sb.append(" closing. {").append(pool).append("}");
+            pool.shutdown();
+            ts=logCostTime(sb,"closed",ts);
 
+        }catch (Exception ex){
+            ts=logCostTime(sb,"failed",ts);
+            log.error(sb.toString() ,ex);
+        }finally {
+            log.info(sb.toString());
+        }
+    }
+
+    private long logCostTime(StringBuilder sb,String start){
+        sb.append(start);
+        return System.currentTimeMillis();
+    }
+
+    long logCostTime(StringBuilder sb,String func,long ts){
+        long newTs=System.currentTimeMillis();
+        sb.append(" ").append(func).append(":").append((newTs-ts));
+        return newTs;
     }
 
 

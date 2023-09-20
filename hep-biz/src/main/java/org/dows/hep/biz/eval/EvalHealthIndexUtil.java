@@ -92,7 +92,7 @@ public class EvalHealthIndexUtil {
             return src.setHealthIndex(BigDecimal.ZERO);
         }
         return src.setHealthIndex(BigDecimalOptional.valueOf(score.subtract(maxScore)).mul(MAXScore)
-                .div(minScore.subtract(maxScore), 2, ROUNDINGMode)
+                .div(minScore.subtract(maxScore), 4, ROUNDINGMode)
                 .getValue());
     }
 
