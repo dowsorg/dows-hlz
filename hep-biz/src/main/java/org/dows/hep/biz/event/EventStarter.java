@@ -52,7 +52,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
         try {
             List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment(
                     APPId , EnumExperimentState.UNBEGIN.getState(),  EnumExperimentState.SUSPEND.getState(),
-                    DateUtil.offsetDay(new Date(),-2).toJdkDate(),
+                    DateUtil.offsetDay(new Date(),-1).toJdkDate(),
                     ExperimentInstanceEntity::getAppId,
                     ExperimentInstanceEntity::getExperimentInstanceId,
                     ExperimentInstanceEntity::getModel,

@@ -14,6 +14,8 @@ public enum EnumWebSocketType {
     START_EXPERIMENT_COUNTDOWN,
     //突发事件触发
     EVENT_TRIGGERED,
+    //随访计划
+    FOLLOWUP_PLAN,
     // 实验暂停
     EXPT_SUSPEND,
 
