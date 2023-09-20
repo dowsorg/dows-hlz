@@ -303,7 +303,9 @@ public class ExperimentOrgBiz {
     }
     @SneakyThrows
     public OrgNoticeResponse coreSaveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request)  {
-        AssertUtil.trueThenThrow(saveNoticeAction.getActions().isEmpty()).throwMessage("请选择事件处理措施");
+        if (saveNoticeAction.getActions().isEmpty()){
+            throw new BizException("请选择事件处理措施");
+        }
         //校验登录
         LoginContextVO voLogin = ShareBiz.getLoginUser(request);
         ExperimentOrgNoticeEntity rowNotice = AssertUtil.getNotNull(experimentOrgNoticeDao.getById(saveNoticeAction.getExperimentOrgNoticeId(),
@@ -358,8 +360,9 @@ public class ExperimentOrgBiz {
                 actedIds.add(vAction.getCaseEventActionId());
             }
         }
-        AssertUtil.trueThenThrow(actedIds.isEmpty()).throwMessage("请选择事件处理措施");
-
+        if (actedIds.isEmpty()){
+            throw new BizException("请选择事件处理措施");
+        }
         noticeBox.toActionsJson(true);
         rowNotice.setActionState(EnumEventActionState.DONE.getCode())
                 .setReadState(1);
