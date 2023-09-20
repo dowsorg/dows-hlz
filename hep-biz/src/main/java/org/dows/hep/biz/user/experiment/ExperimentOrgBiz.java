@@ -303,7 +303,9 @@ public class ExperimentOrgBiz {
     }
     @SneakyThrows
     public OrgNoticeResponse coreSaveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request)  {
-        if (saveNoticeAction.getActions().isEmpty()){
+        try {
+            AssertUtil.trueThenThrow(saveNoticeAction.getActions().isEmpty()).throwMessage("请选择事件处理措施");
+        }catch(BizException ex){
             throw new BizException("请选择事件处理措施");
         }
         //校验登录
@@ -360,7 +362,9 @@ public class ExperimentOrgBiz {
                 actedIds.add(vAction.getCaseEventActionId());
             }
         }
-        if (actedIds.isEmpty()){
+        try {
+            AssertUtil.trueThenThrow(actedIds.isEmpty()).throwMessage("请选择事件处理措施");
+        }catch(BizException ex){
             throw new BizException("请选择事件处理措施");
         }
         noticeBox.toActionsJson(true);
