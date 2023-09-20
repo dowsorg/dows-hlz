@@ -3,6 +3,10 @@ package org.dows.hep.biz.user.experiment;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.uim.AccountInfo;
+import org.dows.hep.biz.dao.SnapCrowdsInstanceDao;
+import org.dows.hep.biz.dao.SnapRiskModelDao;
+import org.dows.hep.biz.eval.EvalHealthIndexBiz;
+import org.dows.hep.biz.eval.EvalPersonIndicatorBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.websocket.HepClientManager;
 import org.springframework.stereotype.Service;
@@ -19,10 +23,17 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class ToolBiz {
 
+    private final EvalHealthIndexBiz evalHealthIndexBiz;
+
+    private final EvalPersonIndicatorBiz evalPersonIndicatorBiz;
+    private final SnapCrowdsInstanceDao snapCrowdsInstanceDao;
+
+    private final SnapRiskModelDao snapRiskModelDao;
     public String ping(){
 
-        return "ok";
+        return "ok123";
     }
+
 
     public String getWebSocketState(String exptId){
         Map<Channel, AccountInfo> map=null;
