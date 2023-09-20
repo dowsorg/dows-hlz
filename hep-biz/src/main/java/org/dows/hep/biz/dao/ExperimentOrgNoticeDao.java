@@ -1,7 +1,6 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.dows.hep.api.enums.EnumExperimentOrgNoticeType;
@@ -49,7 +48,6 @@ public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,E
     @Override
     public IPage<ExperimentOrgNoticeEntity> pageByCondition(FindOrgNoticeRequest req, SFunction<ExperimentOrgNoticeEntity, ?>... cols) {
         Page<ExperimentOrgNoticeEntity> page = Page.of(req.getPageNo(), req.getPageSize());
-        page.addOrder(OrderItem.desc("id"));
         if (ShareUtil.XObject.isEmpty(req.getExperimentPersonIds())) {
             return page;
         }
@@ -64,6 +62,7 @@ public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,E
                         .or()
                         .in(ShareUtil.XObject.notEmpty(req.getFollowUpNoticeIds()), ExperimentOrgNoticeEntity::getExperimentOrgNoticeId, req.getFollowUpNoticeIds())
                 )
+                .orderByDesc(ExperimentOrgNoticeEntity::getNoticeTime)
                 .select(cols)
                 .page(page);
     }

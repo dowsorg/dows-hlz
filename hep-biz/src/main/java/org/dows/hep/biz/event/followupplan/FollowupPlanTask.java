@@ -11,6 +11,7 @@ import org.dows.hep.entity.ExperimentFollowupPlanEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -83,8 +84,7 @@ public class FollowupPlanTask extends BaseEventTask {
         runStat.curTimePoint.set(timePoint);
         runStat.nextTriggerIime.set(calcTriggeringTime(runStat, exptColl, planRows));
         final ExecutorService executor= EventExecutor.Instance().getThreadPool();
-        //CompletableFuture.runAsync(()->runPlans(runStat,exptColl,planRows), executor);
-        runPlans(runStat,exptColl,planRows);
+        CompletableFuture.runAsync(()->runPlans(runStat,exptColl,planRows), executor);
         return 1;
     }
 

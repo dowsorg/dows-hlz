@@ -8,6 +8,7 @@ import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.event.sysevent.data.*;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentSysEventEntity;
@@ -145,24 +146,24 @@ public class SysEventInvoker {
         ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
         if(ShareUtil.XObject.anyEmpty(exptColl,()->exptColl.getMode())){
             logError("manualDeal", "missSetting expt:%s",exptKey);
-            return false;
+            AssertUtil.justThrow("未找到实验设置");
         }
         LocalDateTime ldtNow=LocalDateTime.now();
         ExperimentTimePoint timePoint= ExperimentSettingCache.getTimePointByRealTimeSilence(exptColl, exptKey, ldtNow, true);
         if(ShareUtil.XObject.anyEmpty(timePoint,()->timePoint.getCntPauseSeconds())) {
             logError("manualDeal", "missTimePoint expt:%s",exptKey);
-            return false;
+            AssertUtil.justThrow("未找到实验时间设置");
         }
         SysEventCollection eventColl= SysEventCache.Instance().loadingCache().get(exptKey);
         if(ShareUtil.XObject.anyEmpty(eventColl,()->eventColl.getEventRows()) ){
             logError("manualDeal", "emptyEvents expt:%s",exptKey);
-            return false;
+            AssertUtil.justThrow("未找到实验事件列表");
         }
         List<SysEventRow> todoEvents= filterEvents(eventColl,dealType,period,exptGroupId,exptPersonId);
         if(ShareUtil.XObject.isEmpty(todoEvents)){
             logError("manualDeal", "missEvents expt:%s deal:%s period:%s group:%s person:%s",
                     exptKey,dealType,period,exptGroupId,exptPersonId);
-            return false;
+            AssertUtil.justThrow("未找到实验事件");
         }
         SysEventRunStat stat=new SysEventRunStat();
         stat.curTimePoint.set(timePoint);

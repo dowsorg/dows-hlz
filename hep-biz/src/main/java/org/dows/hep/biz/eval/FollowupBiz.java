@@ -3,16 +3,11 @@ package org.dows.hep.biz.eval;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.dows.edw.HepOperateTypeEnum;
-import org.dows.edw.domain.HepFollowUp;
-import org.dows.edw.domain.HepHealthExamination;
-import org.dows.edw.domain.HepHealthTherapy;
 import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.api.base.indicator.response.*;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.core.ExptOrgFuncRequest;
-import org.dows.hep.api.edw.request.HepOperateSetRequest;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.ExperimentIndicatorViewBaseInfoRsException;
 import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
@@ -324,7 +319,7 @@ public class FollowupBiz {
         if (!operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false, () -> {
             if(null!=saveNotice){
                 AssertUtil.falseThenThrow(experimentOrgNoticeDao.setTopFollowupNoticeAction(saveNotice.getExperimentOrgNoticeId(),
-                                EnumEventActionState.NONE.getCode()))
+                                EnumEventActionState.DONE.getCode()))
                         .throwMessage("随访通知更新失败");
             }
             AssertUtil.falseThenThrow(experimentFollowupPlanDao.saveOrUpdate(savePlan))

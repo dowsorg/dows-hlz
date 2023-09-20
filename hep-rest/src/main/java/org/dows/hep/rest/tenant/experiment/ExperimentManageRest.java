@@ -51,7 +51,7 @@ public class ExperimentManageRest {
     @GetMapping("v1/tenantExperiment/experimentTimer/countdown")
     public IntervalResponse countdown(@RequestParam String appId,@RequestParam String experimentInstanceId) {
 
-        IntervalResponse countdown = experimentTimerBiz.countdown(appId, experimentInstanceId);
+        IntervalResponse countdown = experimentTimerBiz.countdown(appId, experimentInstanceId,true);
 
         return countdown;
     }

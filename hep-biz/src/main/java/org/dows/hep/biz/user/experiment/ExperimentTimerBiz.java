@@ -60,9 +60,9 @@ public class ExperimentTimerBiz {
      * @开始时间:
      * @创建时间: 2023年4月23日 上午9:44:34
      */
-    public IntervalResponse countdown(String appId, String experimentInstanceId) {
+    public IntervalResponse countdown(String appId, String experimentInstanceId,boolean isAdmin) {
         if(ConfigExperimentFlow.SWITCH2SysEvent){
-            return experimentFlowRules.countdown(appId,experimentInstanceId);
+            return experimentFlowRules.countdown(appId,experimentInstanceId,isAdmin);
         }
 
         IntervalResponse intervalResponse = new IntervalResponse();

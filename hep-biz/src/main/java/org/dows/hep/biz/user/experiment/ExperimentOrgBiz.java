@@ -332,6 +332,8 @@ public class ExperimentOrgBiz {
 
         AssertUtil.trueThenThrow(EnumEventActionState.DONE.getCode().equals(rowNotice.getActionState()))
                 .throwMessage("该事件已处理");
+
+
         AssertUtil.trueThenThrow(!EnumExperimentOrgNoticeType.EVENTTriggered.getCode().equals(rowNotice.getNoticeSrcType())
                         || ShareUtil.XObject.isEmpty(rowNotice.getNoticeSrcId()))
                 .throwMessage("未找到突发事件id");

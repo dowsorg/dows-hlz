@@ -211,7 +211,7 @@ public abstract class BaseEventDealer implements ISysEventDealer {
                 return pushRst;
             }
             final String experimentInstanceId = exptKey.getExperimentInstanceId();
-            IntervalResponse pushData = experimentFlowRules.countdown(exptKey, exptColl);
+            IntervalResponse pushData = experimentFlowRules.countdown(exptKey, exptColl,false);
             PushWebScoketResult pushRst = PushWebSocketUtil.Instance().pushCommon(socketType, experimentInstanceId, clientIds, pushData);
             rst.getPushStat().add(pushRst);
             return pushRst;

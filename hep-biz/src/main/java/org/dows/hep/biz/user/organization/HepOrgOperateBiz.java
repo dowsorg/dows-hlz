@@ -17,6 +17,7 @@ import org.dows.hep.api.user.organization.response.AccountOrgGeoResponse;
 import org.dows.hep.api.user.organization.response.OrganizationFunsResponse;
 import org.dows.hep.api.user.organization.response.PersonInstanceResponse;
 import org.dows.hep.biz.eval.ExperimentPersonCache;
+import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.entity.ExperimentPersonEntity;
@@ -150,16 +151,18 @@ public class HepOrgOperateBiz {
             //5、更改实验账户所属机构
             LambdaUpdateWrapper<ExperimentPersonEntity> updateWrapper = new LambdaUpdateWrapper<ExperimentPersonEntity>()
                     .eq(ExperimentPersonEntity::getId, experimentPerson.getId())
-                    .eq(ExperimentPersonEntity::getExperimentPersonId,request.getAccountId())
-                    .eq(ExperimentPersonEntity::getExperimentInstanceId,request.getExperimentInstanceId())
-                    .eq(ExperimentPersonEntity::getExperimentGroupId,request.getExperimentGroupId())
+                    .eq(ExperimentPersonEntity::getExperimentPersonId, request.getAccountId())
+                    .eq(ExperimentPersonEntity::getExperimentInstanceId, request.getExperimentInstanceId())
+                    .eq(ExperimentPersonEntity::getExperimentGroupId, request.getExperimentGroupId())
                     .set(ExperimentPersonEntity::getExperimentOrgId, request.getExperimentOrgId())
-                    .set(ExperimentPersonEntity::getExperimentOrgName,orgResponse.getOrgName());
+                    .set(ExperimentPersonEntity::getExperimentOrgName, orgResponse.getOrgName());
             AssertUtil.falseThenThrow(experimentPersonService.update(updateWrapper))
                     .throwMessage("系统繁忙，请稍后重试");
+            final ExperimentCacheKey cacheKey = ExperimentCacheKey.create(experimentPerson.getAppId(), experimentPerson.getExperimentInstanceId());
             PersonIndicatorIdCache.Instance().loadingCache().invalidate(experimentPerson.getExperimentPersonId());
             ExperimentPersonCache.Instance().remove(request.getExperimentInstanceId());
-
+            PersonIndicatorIdCache.Instance().getSet(experimentPerson.getExperimentPersonId(), false);
+            ExperimentPersonCache.Instance().getSet(cacheKey, false);
         }
         return flag;
     }

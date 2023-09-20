@@ -69,7 +69,7 @@ public class EvalHealthIndexAdvBiz {
             Collection<SnapCrowdsInstanceEntity> crowds=evalCrowdCache.getCrowds(experimentId);
             ts=logCostTime(sb,"2-crowds", ts);
 
-            final int CONCURRENTNum = 1;
+            final int CONCURRENTNum = 2;
             if (CONCURRENTNum <= 1 || experimentPersonIdSet.size() < CONCURRENTNum) {
                 evalPersonHealthIndex(req, experimentPersonIdSet,crowds);
             } else {
@@ -82,7 +82,7 @@ public class EvalHealthIndexAdvBiz {
                 }
                 CompletableFuture.allOf(futures).join();
             }
-            ts=logCostTime(sb,"3-end", ts);
+            ts=logCostTime(sb,"3-eval", ts);
         }finally {
             log.info(sb.toString());
             log.error(sb.toString());
