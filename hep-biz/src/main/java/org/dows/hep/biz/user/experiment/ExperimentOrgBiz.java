@@ -358,8 +358,7 @@ public class ExperimentOrgBiz {
                 actedIds.add(vAction.getCaseEventActionId());
             }
         }
-        AssertUtil.trueThenThrow(actedIds.size() == 0)
-                .throwMessage("请选择事件处理措施");
+        AssertUtil.getNotNull(actedIds).orElseThrow("请选择事件处理措施");
 
         noticeBox.toActionsJson(true);
         rowNotice.setActionState(EnumEventActionState.DONE.getCode())
