@@ -128,6 +128,8 @@ public class EvalHealthIndexAdvBiz {
                 if (ShareUtil.XObject.isEmpty(inputs)) {
                     return;
                 }
+                final String experimentPersonRiskModelId = idGenerator.nextIdStr();
+
                 final List<RiskFactorScoreVO> vosFactorScore = new ArrayList<>();
                 inputs.forEach(input -> {
                     SpelEvalResult evalRst = spelEngine.loadWith(input).eval(context);
@@ -145,7 +147,7 @@ public class EvalHealthIndexAdvBiz {
                         rst.getExperimentPersonHealthRiskFactorRsEntityList().add(ExperimentPersonHealthRiskFactorRsEntity
                                 .builder()
                                 .experimentPersonHealthRiskFactorId(idGenerator.nextIdStr())
-                                .experimentPersonRiskModelId(input.getReasonId())
+                                .experimentPersonRiskModelId(experimentPersonRiskModelId)
                                 .experimentIndicatorInstanceId(input.getIndicatorId())
                                 .name(indicatorName)
                                 .val(Optional.ofNullable(evalHolder.getIndicator(input.getIndicatorId()))
@@ -172,7 +174,7 @@ public class EvalHealthIndexAdvBiz {
                 if (isNewPeriod) {
                     rst.getExperimentPersonRiskModelRsEntityList().add(ExperimentPersonRiskModelRsEntity
                             .builder()
-                            .experimentPersonRiskModelId(idGenerator.nextIdStr())
+                            .experimentPersonRiskModelId(experimentPersonRiskModelId)
                             .experimentId(experimentId)
                             .appId(req.getAppId())
                             .periods(req.getPeriods())
