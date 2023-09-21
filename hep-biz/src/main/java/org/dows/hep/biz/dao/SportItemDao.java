@@ -96,7 +96,9 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
     public IPage<SportItemEntity> pageByCondition(FindSportRequest req, SFunction<SportItemEntity,?>... cols) {
 
         Page<SportItemEntity> page=Page.of(req.getPageNo(),req.getPageSize());
-        page.addOrder(OrderItem.asc("categ_name_lv1"),OrderItem.asc("strength_met"));
+        page.addOrder(OrderItem.asc("categ_name_lv1"),
+                OrderItem.asc("strength_met"),
+                OrderItem.asc("id"));
         return service.lambdaQuery()
                 .eq(ShareUtil.XObject.notEmpty(req.getAppId()), SportItemEntity::getAppId,req.getAppId())
                 .in(ShareUtil.XCollection.notEmpty(req.getCategIdLv1()), SportItemEntity::getInterveneCategId, req.getCategIdLv1())
@@ -117,7 +119,7 @@ public class SportItemDao extends BaseSubDao<SportItemService,SportItemEntity,Sp
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
-                .orderByAsc(SportItemEntity::getCategNameLv1,SportItemEntity::getStrengthMet)
+                .orderByAsc(SportItemEntity::getCategNameLv1,SportItemEntity::getStrengthMet,SportItemEntity::getId)
                 .select(cols)
                 .list();
     }

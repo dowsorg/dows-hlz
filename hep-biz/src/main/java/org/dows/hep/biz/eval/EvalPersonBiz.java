@@ -449,7 +449,7 @@ public class EvalPersonBiz {
                     .build());
             ts=logCostTime(sb,"2-hp",ts);
 
-            PersonBasedEventTask.runPersonBasedEventAsync(appId, experimentId);
+            PersonBasedEventTask.runPersonBasedEventAsync(appId, experimentId,req.getExperimentPersonId());
         }finally {
             log.error(sb.toString());
         }

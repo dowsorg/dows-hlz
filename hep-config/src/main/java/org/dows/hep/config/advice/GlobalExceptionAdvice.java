@@ -7,6 +7,7 @@ import org.dows.framework.api.Response;
 import org.dows.framework.api.exceptions.BaseException;
 import org.dows.framework.api.i18n.UnifiedMessageSource;
 import org.dows.framework.api.status.CommonStatusCode;
+import org.dows.hep.biz.util.ShareUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
@@ -91,6 +92,10 @@ public class GlobalExceptionAdvice {
 
   @ExceptionHandler(value = Exception.class)
   public Response<?> handleException(HttpServletRequest request, HttpServletResponse response, Exception e) {
+    if(ShareUtil.XObject.notEmpty(e.getCause() )
+            &&e.getCause() instanceof BaseException){
+        return handleBaseException(request, response, (BaseException) e);
+    }
     log.error("抛出了Exception异常，调用={}服务出现自定义异常，请求的url是={}，请求的方法是={}，原因={}", serviceName, request.getRequestURL(),
         request.getMethod(), e.getMessage(), e);
     /*if (e.getStatusCode() != null) {
