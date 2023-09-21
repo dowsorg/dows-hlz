@@ -3,6 +3,7 @@ package org.dows.hep.biz.spel;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.biz.cache.BaseLoadingCache;
 import org.dows.hep.biz.dao.ExperimentIndicatorInstanceRsDao;
@@ -159,11 +160,20 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
             }
             ts=logCostTime(sb, "6-riskSpels-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
             final String refExptId4Treat = refValidator.checkTreatItem().getTreatItemId();
-            final List<String> treatItemIds = ShareUtil.XCollection.map(snapTreatItemDao.getByExperimentId(refExptId4Treat, SnapTreatItemEntity::getTreatItemId),
-                    SnapTreatItemEntity::getTreatItemId);
+            final List<SnapTreatItemEntity> treatItems = snapTreatItemDao.getByExperimentId(refExptId4Treat, SnapTreatItemEntity::getTreatItemId,SnapTreatItemEntity::getIndicatorCategoryId);
+            final List<String> lv2TreatItemIds=new ArrayList<>();
+            final List<String> lv4TreatItemIds=new ArrayList<>();
+            treatItems.forEach(i->{
+                if(EnumIndicatorCategory.OPERATE_MANAGEMENT_INTERVENE_TREATMENT.getCode().equals(i.getIndicatorCategoryId())){
+                    lv4TreatItemIds.add(i.getTreatItemId());
+                }else{
+                    lv2TreatItemIds.add(i.getTreatItemId());
+                }
+            });
             ts=logCostTime(sb, "7-treatIds",ts);
             for (String personId : personIds) {
-                fillInput(rst, experimentId, personId, treatItemIds, EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL);
+                fillInput(rst, experimentId, personId, lv2TreatItemIds, EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL);
+                fillInput(rst, experimentId, personId, lv4TreatItemIds, EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL);
             }
             ts=logCostTime(sb, "8-treatSpels-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
 
@@ -171,7 +181,6 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
             ts=logCostTime(sb, String.format("error:%s", ex.getMessage()));
             log.error(String.format("SPELTRACE--load--error exptKey[%s]",key), ex);
         }finally {
-            log.error(sb.toString());
             log.info(sb.toString());
             sb.setLength(0);
         }
