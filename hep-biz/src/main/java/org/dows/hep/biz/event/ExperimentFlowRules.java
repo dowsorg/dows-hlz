@@ -149,8 +149,8 @@ public class ExperimentFlowRules {
                 rst.setCountdown(item.getEndTime().getTime() + item.getPeriodInterval() - nowTs);
                 rst.setCountdownType(1);
                 if(isAdmin){
-                    rst.setSandDurationSecond((item.getPeriodDuration()-rst.getCountdown())/1000);
-                    rst.setSandRemnantSecond(rst.getCountdown()/1000);
+                    rst.setSandDurationSecond((item.getPeriodDuration())/1000);
+                    rst.setSandRemnantSecond(0L);
                 }
                 break;
             }
