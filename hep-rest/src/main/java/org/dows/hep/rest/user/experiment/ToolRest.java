@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateReportHealthScoreRequestRs;
+import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
 import org.dows.hep.api.base.indicator.request.RsCalculatePersonRequestRs;
+import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.biz.eval.EvalHealthIndexBiz;
 import org.dows.hep.biz.eval.EvalPersonIndicatorBiz;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
@@ -47,17 +49,35 @@ public class ToolRest {
         return toolBiz.ping();
     }
 
-    @Operation(summary = "功能点结算")
+    @Operation(summary = "指标计算")
     @PostMapping("v1/tool/evalPersonIndicator")
     public void evalPersonIndicator(@RequestBody RsCalculatePersonRequestRs req)  {
         evalPersonIndicatorBiz.evalPersonIndicator(req);
     }
 
-
     @Operation(summary = "健康指数计算")
     @PostMapping("v1/tool/evalHealthIndex")
     public void evalHealthIndex(@RequestBody ExperimentRsCalculateAndCreateReportHealthScoreRequestRs req)  {
         evalHealthIndexBiz.evalPersonHealthIndex(req);
+    }
+
+    @Operation(summary = "功能点结算")
+    @PostMapping("v1/tool/evalOrgFunc")
+
+    public void evalOrgFunc(@RequestBody RsExperimentCalculateFuncRequest req) {
+        toolBiz.evalOrgFunc(req);
+    }
+
+    @Operation(summary = "期末翻转")
+    @PostMapping("v1/tool/evalPeriodEnd")
+    public void evalPeriodEnd(@RequestBody RsCalculatePeriodsRequest req)  {
+        toolBiz.evalPeriodEnd(req);
+    }
+
+    @Operation(summary = "条件事件触发")
+    @PostMapping("v1/tool/raiseevent")
+    public void raiseevent(@RequestBody RsCalculatePersonRequestRs req)  {
+        toolBiz.raiseevent(req);
     }
 
     @Operation(summary = "实验数据复制")

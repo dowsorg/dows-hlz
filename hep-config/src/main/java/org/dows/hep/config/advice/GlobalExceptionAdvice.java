@@ -94,7 +94,7 @@ public class GlobalExceptionAdvice {
   public Response<?> handleException(HttpServletRequest request, HttpServletResponse response, Exception e) {
     if(ShareUtil.XObject.notEmpty(e.getCause() )
             &&e.getCause() instanceof BaseException){
-        return handleBaseException(request, response, (BaseException) e);
+        return handleBaseException(request, response, (BaseException) e.getCause());
     }
     log.error("抛出了Exception异常，调用={}服务出现自定义异常，请求的url是={}，请求的方法是={}，原因={}", serviceName, request.getRequestURL(),
         request.getMethod(), e.getMessage(), e);
