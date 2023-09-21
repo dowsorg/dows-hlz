@@ -303,7 +303,8 @@ public class ExperimentOrgBiz {
     }
     @SneakyThrows
     public OrgNoticeResponse coreSaveOrgNoticeAction(SaveNoticeActionRequest saveNoticeAction, HttpServletRequest request)  {
-        AssertUtil.getNotNull(saveNoticeAction.getActions()).orElseThrow("请选择事件处理措施");
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(saveNoticeAction.getActions()))
+                .throwMessage("请选择事件处理措施");
         //校验登录
         LoginContextVO voLogin = ShareBiz.getLoginUser(request);
         ExperimentOrgNoticeEntity rowNotice = AssertUtil.getNotNull(experimentOrgNoticeDao.getById(saveNoticeAction.getExperimentOrgNoticeId(),

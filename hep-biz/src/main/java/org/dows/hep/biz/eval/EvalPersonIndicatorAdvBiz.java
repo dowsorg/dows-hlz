@@ -58,7 +58,7 @@ public class EvalPersonIndicatorAdvBiz {
                     .setTimePoint(timePoint);
             ts=logCostTime(sb,"2-timepoint", ts);
 
-            final int CONCURRENTNum = 4;
+            final int CONCURRENTNum = 5;
             if (CONCURRENTNum<=1||experimentPersonIdSet.size() < CONCURRENTNum) {
                 evalPersonIndicator(experimentId, experimentPersonIdSet, evalReq);
             } else {

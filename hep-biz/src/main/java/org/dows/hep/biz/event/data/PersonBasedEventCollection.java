@@ -12,8 +12,10 @@ import org.dows.hep.entity.ExperimentEventEntity;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * @author : wuzl
@@ -34,13 +36,19 @@ public class PersonBasedEventCollection {
     @JsonIgnore
     private final ReentrantLock lock=new ReentrantLock();
 
-    public List<List<PersonBasedEventCollection.PersonBasedEventGroup>> splitGroups(int splitNum){
+    public List<List<PersonBasedEventCollection.PersonBasedEventGroup>> splitGroups(int splitNum, Set<String> personIds){
         if(ShareUtil.XObject.isEmpty(eventGroups)) {
             return Collections.emptyList();
         }
         lock.lock();
         try{
-            return ShareUtil.XCollection.split(eventGroups,splitNum);
+            if(ShareUtil.XObject.isEmpty(personIds)) {
+                return ShareUtil.XCollection.split(eventGroups, splitNum);
+            }else{
+                return ShareUtil.XCollection.split(eventGroups.stream()
+                        .filter(i->personIds.contains(i.getExperimentPersonId()))
+                        .collect(Collectors.toList()),splitNum);
+            }
         }finally {
             lock.unlock();
         }
@@ -71,6 +79,9 @@ public class PersonBasedEventCollection {
 
         @Schema(title = "重试次数")
         private final AtomicInteger retryTimes=new AtomicInteger();
+
+        @JsonIgnore
+        private final ReentrantLock lock=new ReentrantLock();
 
     }
 }

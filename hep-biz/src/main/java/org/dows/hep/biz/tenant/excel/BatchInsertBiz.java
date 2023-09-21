@@ -5,7 +5,6 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
-import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.doc.api.entity.excel.ExcelSelector;
 import org.dows.framework.doc.api.entity.excel.Point;
