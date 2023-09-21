@@ -501,11 +501,14 @@ public class ExperimentSchemeBiz {
 
         List<ExptSchemeScoreRankResponse> result = new ArrayList<>();
         // 方案设计根据评分排序
-        List<ExperimentSchemeEntity> schemeSortedList = schemeList.stream().sorted((v1, v2) -> {
-            Float v1Score = v1.getScore() == null ? 0.00f : v1.getScore();
-            Float v2Score = v2.getScore() == null ? 0.00f : v2.getScore();
-            return (int) (v2Score - v1Score);
-        }).toList();
+        List<ExperimentSchemeEntity> schemeSortedList = schemeList.stream()
+                .sorted(Comparator.comparing(ExperimentSchemeEntity::getScore, Comparator.reverseOrder())
+//                (v1, v2) -> {
+//            Float v1Score = v1.getScore() == null ? 0.00f : v1.getScore();
+//            Float v2Score = v2.getScore() == null ? 0.00f : v2.getScore();
+//            return (int) (v2Score - v1Score);
+//        }
+        ).toList();
         // 小组转为map
         Map<String, ExperimentGroupEntity> groupIdMapEntity = groupList.stream()
                 .collect(Collectors.toMap(ExperimentGroupEntity::getExperimentGroupId, item -> item));
@@ -523,6 +526,18 @@ public class ExperimentSchemeBiz {
         });
         return result;
     }
+
+//    public static void main(String[] args) {
+//        List<Integer> integers = List.of(24, 23, 14, 03, 84, 24, 16, 92);
+//        String sb = integers.stream()
+//                .sorted(Comparator.comparing(Integer::valueOf, Comparator.reverseOrder()))
+//                .sorted((v1,v2) -> v2 - v1)
+//                .toList()
+//                .stream()
+//                .map(String::valueOf)
+//                .collect(Collectors.joining(","));
+//        System.out.println(sb);
+//    }
 
     private boolean submitScheme(String exptInstanceId, String exptGroupId, String experimentSchemeId) {
         boolean updSchemeRes = experimentSchemeService.lambdaUpdate()

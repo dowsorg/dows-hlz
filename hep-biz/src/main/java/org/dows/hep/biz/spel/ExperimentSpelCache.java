@@ -3,11 +3,13 @@ package org.dows.hep.biz.spel;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.biz.cache.BaseLoadingCache;
 import org.dows.hep.biz.dao.ExperimentIndicatorInstanceRsDao;
 import org.dows.hep.biz.dao.SnapCrowdsInstanceDao;
 import org.dows.hep.biz.dao.SnapRiskModelDao;
+import org.dows.hep.biz.dao.SnapTreatItemDao;
 import org.dows.hep.biz.eval.ExperimentPersonCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.spel.loaders.FromSnapshotLoader;
@@ -17,6 +19,7 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.snapshot.SnapCrowdsInstanceEntity;
 import org.dows.hep.entity.snapshot.SnapRiskModelEntity;
+import org.dows.hep.entity.snapshot.SnapTreatItemEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -58,6 +61,9 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
 
     @Autowired
     private SnapRiskModelDao snapRiskModelDao;
+
+    @Autowired
+    private SnapTreatItemDao snapTreatItemDao;
 
     private final static String APPId="3";
 
@@ -123,42 +129,58 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
         try {
             final String experimentId = key.getExperimentInstanceId();
             final Set<String> personIds = ExperimentPersonCache.Instance().getPersondIdSet(experimentId, null);
-            ts=logCostTime(sb, "1-person",ts);
             List<ExperimentIndicatorInstanceRsEntity> rowsIndicators = experimentIndicatorInstanceRsDao.getByExperimentId(experimentId,
                     ExperimentIndicatorInstanceRsEntity::getExperimentPersonId,
                     ExperimentIndicatorInstanceRsEntity::getCaseIndicatorInstanceId);
             Map<String, List<String>> mapIndicatorIds = new HashMap<>();
             rowsIndicators.forEach(i -> mapIndicatorIds.computeIfAbsent(i.getExperimentPersonId(), k -> new ArrayList<>())
                     .add(i.getCaseIndicatorInstanceId()));
-            ts=logCostTime(sb, "2-indicatorIds",ts);
+            ts=logCostTime(sb, "1-indicatorIds",ts);
             mapIndicatorIds.forEach((personId, reasonIds) -> {
                 fillInput(rst, experimentId, personId, reasonIds, EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT);
             });
             mapIndicatorIds.clear();
-            ts=logCostTime(sb, "3-indicatorsSpel-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
+            ts=logCostTime(sb, "2-indicatorsSpel-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
+
             SnapshotRefValidator refValidator = new SnapshotRefValidator(experimentId);
             final String refExptId4Crowd = refValidator.checkCrowd().getCrowdId();
             final String refExptId4RiskModel = refValidator.checkRiskModel().getRiskModelId();
             final List<String> crowdIds = ShareUtil.XCollection.map(snapCrowdsInstanceDao.getByExperimentId(refExptId4Crowd, SnapCrowdsInstanceEntity::getCrowdsId),
                     SnapCrowdsInstanceEntity::getCrowdsId);
-            ts=logCostTime(sb, "4-crowdIds",ts);
-            final List<String> riskModelIds = ShareUtil.XCollection.map(snapRiskModelDao.getByExperimentId(refExptId4RiskModel, SnapRiskModelEntity::getRiskModelId),
-                    SnapRiskModelEntity::getRiskModelId);
-            ts=logCostTime(sb, "4-riskIds",ts);
+            ts=logCostTime(sb, "3-crowdIds",ts);
             for (String personId : personIds) {
                 fillInput(rst, experimentId, personId, crowdIds, EnumIndicatorExpressionSource.CROWDS);
             }
-            ts=logCostTime(sb, "5-crowdSpels-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
+            ts=logCostTime(sb, "4-crowdSpels-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
+            final List<String> riskModelIds = ShareUtil.XCollection.map(snapRiskModelDao.getByExperimentId(refExptId4RiskModel, SnapRiskModelEntity::getRiskModelId),
+                    SnapRiskModelEntity::getRiskModelId);
+            ts=logCostTime(sb, "5-riskIds",ts);
             for (String personId : personIds) {
                 fillInput(rst, experimentId, personId, riskModelIds, EnumIndicatorExpressionSource.RISK_MODEL);
             }
             ts=logCostTime(sb, "6-riskSpels-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
+            final String refExptId4Treat = refValidator.checkTreatItem().getTreatItemId();
+            final List<SnapTreatItemEntity> treatItems = snapTreatItemDao.getByExperimentId(refExptId4Treat, SnapTreatItemEntity::getTreatItemId,SnapTreatItemEntity::getIndicatorCategoryId);
+            final List<String> lv2TreatItemIds=new ArrayList<>();
+            final List<String> lv4TreatItemIds=new ArrayList<>();
+            treatItems.forEach(i->{
+                if(EnumIndicatorCategory.OPERATE_MANAGEMENT_INTERVENE_TREATMENT.getCode().equals(i.getIndicatorCategoryId())){
+                    lv4TreatItemIds.add(i.getTreatItemId());
+                }else{
+                    lv2TreatItemIds.add(i.getTreatItemId());
+                }
+            });
+            ts=logCostTime(sb, "7-treatIds",ts);
+            for (String personId : personIds) {
+                fillInput(rst, experimentId, personId, lv2TreatItemIds, EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL);
+                fillInput(rst, experimentId, personId, lv4TreatItemIds, EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL);
+            }
+            ts=logCostTime(sb, "8-treatSpels-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
 
         }catch (Exception ex){
             ts=logCostTime(sb, String.format("error:%s", ex.getMessage()));
             log.error(String.format("SPELTRACE--load--error exptKey[%s]",key), ex);
         }finally {
-            log.error(sb.toString());
             log.info(sb.toString());
             sb.setLength(0);
         }

@@ -686,6 +686,7 @@ public class ExperimentManageBiz {
                                 .accountId(vo.getAccountId())
                                 .accountName(vo.getAccountName())
                                 .userName(userInstanceResponse.getName())
+                                .avatar(userInstanceResponse.getAvatar())
                                 .casePersonId(personEntity.getCasePersonId())
                                 .build();
                         experimentPersonService.save(entity1);

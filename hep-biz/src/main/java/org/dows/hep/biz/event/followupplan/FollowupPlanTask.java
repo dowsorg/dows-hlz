@@ -163,30 +163,36 @@ public class FollowupPlanTask extends BaseEventTask {
         final LocalDateTime ldtNow=stat.curTimePoint.get().getRealTime();
         LocalDateTime nextTime = LocalDateTime.MAX;
         for (FollowupPlanRow item : planRows) {
-            if (item.isTriggering()) {
-                item.setTriggering(calcTriggeringTime(stat, exptColl, item));
-            }
-            item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item));
-            final LocalDateTime triggeringTime =item.getDoingTime();
-            if (null == triggeringTime) {
+            if(!item.isTriggering()){
                 continue;
             }
-            if (ldtNow.compareTo(triggeringTime) < 0 && triggeringTime.compareTo(nextTime) < 0) {
+            item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item));
+            item.setTriggering(calcTriggeringTime(stat, exptColl, item.getTodoDay()));
+            if (null == item.getDoingTime()) {
+                continue;
+            }
+            LocalDateTime triggeringTime =item.getDoingTime();
+            if(triggeringTime.compareTo(ldtNow)<0){
+                triggeringTime =calcTriggeringTime(stat, exptColl, item.getNextTodoDay());
+            }
+            if (triggeringTime.compareTo(nextTime) < 0) {
                 nextTime = triggeringTime;
             }
         }
         return nextTime.isEqual(LocalDateTime.MAX) ? null : nextTime;
     }
-    LocalDateTime calcTriggeringTime(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl,FollowupPlanRow row){
+    LocalDateTime calcTriggeringTime(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl,Integer todoDays){
         final ExperimentTimePoint timePoint=stat.curTimePoint.get();
-        final ExperimentFollowupPlanEntity entity=row.getEntity();
-        if(ShareUtil.XObject.anyEmpty(timePoint,entity.getTodoDay(),entity.getDueDays())){
+        if(ShareUtil.XObject.anyEmpty(timePoint,todoDays)){
             return null;
         }
-        if(exptColl.getTotalDays()< row.getTodoDay()){
+        if(exptColl.getTotalDays()< todoDays){
             return null;
         }
-        Integer rawSeconds=  exptColl.getRawSecondsByGameDay(row.getTodoDay());
+        if(todoDays<= timePoint.getGameDay()){
+            return timePoint.getRealTime();
+        }
+        Integer rawSeconds=  exptColl.getRawSecondsByGameDay(todoDays);
         return exptColl.getSandStartTime().plusSeconds(rawSeconds+timePoint.getCntPauseSeconds());
 
     }

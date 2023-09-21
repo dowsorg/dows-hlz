@@ -3,9 +3,9 @@ package org.dows.hep.biz.util;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -96,7 +96,7 @@ public class ShareUtil {
             if(isEmpty(str)){
                 return false;
             }
-            return NumberUtil.isNumber(str);
+            return NumberUtils.isCreatable(str.trim());
         }
         public static boolean notNumber(String str){
             return !isNumber(str);

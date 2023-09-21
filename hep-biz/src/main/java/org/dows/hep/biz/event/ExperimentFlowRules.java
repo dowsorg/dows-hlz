@@ -52,17 +52,17 @@ public class ExperimentFlowRules {
                 .setExperimentPeriods(periods);
     }
 
-    public IntervalResponse countdown(String appId, String experimentInstanceId){
+    public IntervalResponse countdown(String appId, String experimentInstanceId,boolean isAdmin){
 
         if(ShareUtil.XObject.isEmpty(appId)){
             appId="3";
         }
         ExperimentCacheKey exptKey=ExperimentCacheKey.create(appId,experimentInstanceId);
         ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
-        return countdown(exptKey, exptColl);
+        return countdown(exptKey, exptColl,isAdmin);
 
     }
-    public IntervalResponse countdown(ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl){
+    public IntervalResponse countdown(ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl,boolean isAdmin){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(exptColl))
                 .throwMessage("未找到实验设置");
         IntervalResponse rst=new IntervalResponse();
@@ -74,11 +74,11 @@ public class ExperimentFlowRules {
         rst.setMockRateMap(exptColl.getMockRateMap());
         rst.setSandTotalTime(exptColl.getTotalDays());
 
-        fillTimeState(rst,exptKey,exptColl);
+        fillTimeState(rst,exptKey,exptColl,isAdmin);
         return rst;
     }
 
-    public ExptTimePointVO fillTimeState(ExptTimePointVO rst,ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl) {
+    public ExptTimePointVO fillTimeState(ExptTimePointVO rst,ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl,boolean isAdmin) {
         if (null == rst) {
             return rst;
         }
@@ -125,10 +125,18 @@ public class ExperimentFlowRules {
                 rst.setPeriod(null);
                 rst.setCountdownType(0);
                 rst.setCountdown(item.getStartTime().getTime() - nowTs);
+                if(isAdmin){
+                    rst.setSandDurationSecond(0L);
+                    rst.setSandRemnantSecond(item.getPeriodDuration()/1000);
+                }
                 return rst;
             } else if (nowTs >= item.getStartTime().getTime() - item.getPeriodInterval() && nowTs < item.getStartTime().getTime()) { // 一期开始倒计时
                 rst.setCountdownType(0);
                 rst.setCountdown(item.getStartTime().getTime() - nowTs);
+                if(isAdmin){
+                    rst.setSandDurationSecond(0L);
+                    rst.setSandRemnantSecond(item.getPeriodDuration()/1000);
+                }
                 return rst;
             } else if (nowTs >= item.getStartTime().getTime() && nowTs <= item.getEndTime().getTime()) {// 期数中
                 // 本期剩余时间 = 暂停推迟后的结束时间 - 当前时间
@@ -140,6 +148,10 @@ public class ExperimentFlowRules {
             } else if (nowTs >= item.getEndTime().getTime() && nowTs <= item.getEndTime().getTime() + item.getPeriodInterval()) {// // 一期结束倒计时
                 rst.setCountdown(item.getEndTime().getTime() + item.getPeriodInterval() - nowTs);
                 rst.setCountdownType(1);
+                if(isAdmin){
+                    rst.setSandDurationSecond((item.getPeriodDuration())/1000);
+                    rst.setSandRemnantSecond(0L);
+                }
                 break;
             }
         }

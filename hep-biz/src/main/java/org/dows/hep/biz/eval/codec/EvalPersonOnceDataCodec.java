@@ -9,10 +9,7 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.redisson.api.RMap;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author : wuzl
@@ -157,7 +154,7 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
             }
             sb.append(toString(obj.getEvalNo())).append(SPLITChar)
                     .append(toString(obj.getSyncState().getCode())).append(SPLITChar)
-                    .append(toString(obj.getFuncType().getCode())).append(SPLITChar)
+                    .append(toString(Optional.ofNullable( obj.getFuncType()).map(EnumEvalFuncType::getCode).orElse(0))).append(SPLITChar)
                     .append(toString(obj.getPeriods())).append(SPLITChar)
                     .append(toString(obj.getEvalDay())).append(SPLITChar)
                     .append(toString(obj.getEvalingTime())).append(SPLITChar)

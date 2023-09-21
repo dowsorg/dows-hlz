@@ -79,6 +79,11 @@ public class ExperimentOrgNoticeBiz {
         return createNotice(src, new HashMap<>());
     }
     public ExperimentOrgNoticeEntity createNotice(ExperimentEventEntity src,Map<String,String> mapAvatar) throws JsonProcessingException {
+        ExperimentPersonEntity rowPerson= ExperimentPersonCache.Instance().getPerson(src.getExperimentInstanceId(), src.getExperimentPersonId());
+        if(ShareUtil.XObject.isEmpty(rowPerson)){
+            return null;
+        }
+
         ExperimentEventBox eventBox = ExperimentEventBox.create(src);
         ExperimentEventJson eventData = eventBox.fromEventJsonOrDefault(false);
 
@@ -101,11 +106,12 @@ public class ExperimentOrgNoticeBiz {
                 .setContent(eventData.getDescr())
                 .setTips(eventData.getTips())
                 .setReadState(0)
-                .setActionState(EnumEventActionState.TODO.getCode());
+                .setActionState(EnumEventActionState.TODO.getCode())
+                .setAvatar(rowPerson.getAvatar());
         ExperimentOrgNoticeBox.create(rst)
                 .setJsonData(createNoticeAction(eventBox))
                 .toActionsJson(true);
-        return fillAvatar(mapAvatar, rst);
+        return rst;
     }
 
     public List<ExptOrgNoticeActionVO> createNoticeAction(ExperimentEventBox src) throws JsonProcessingException {
@@ -123,7 +129,7 @@ public class ExperimentOrgNoticeBiz {
             return null;
         }
         String context=String.format("%s的预约随访时间到了", rowPerson.getUserName());
-        ExperimentOrgNoticeEntity rst = new ExperimentOrgNoticeEntity()
+        return new ExperimentOrgNoticeEntity()
                 .setAppId(src.getAppId())
                 .setExperimentInstanceId(src.getExperimentInstanceId())
                 .setExperimentGroupId(src.getExperimentGroupId())
@@ -140,9 +146,10 @@ public class ExperimentOrgNoticeBiz {
                 .setContent(context)
                 .setTips("监测随访")
                 .setReadState(0)
-                .setActionState(EnumEventActionState.TODO.getCode());
+                .setActionState(EnumEventActionState.TODO.getCode())
+                .setAvatar(rowPerson.getAvatar());
 
-        return fillAvatar(new HashMap<>(), rst);
+
     }
     //endregion
 
@@ -224,20 +231,20 @@ public class ExperimentOrgNoticeBiz {
         return rst;
     }
 
-    public List<PushWebScoketResult> pushNoticeSilence(String experimentId,List<ExperimentOrgNoticeEntity> rowsNotice,boolean retry) {
+    public List<PushWebScoketResult> pushNoticeSilence(String experimentId,EnumWebSocketType socketType,List<ExperimentOrgNoticeEntity> rowsNotice,boolean retry) {
         try{
-            return pushNotice(experimentId, rowsNotice, retry);
+            return pushNotice(experimentId,socketType, rowsNotice, retry);
         }catch (Exception ex){
             log.error("ExperimentOrgNoticeBiz.pushNoticeSilence",ex);
             return Collections.emptyList();
         }
 
     }
-    public List<PushWebScoketResult> pushNotice(String experimentId,List<ExperimentOrgNoticeEntity> rowsNotice,boolean retry) throws JsonProcessingException{
+    public List<PushWebScoketResult> pushNotice(String experimentId,EnumWebSocketType socketType,List<ExperimentOrgNoticeEntity> rowsNotice,boolean retry) throws JsonProcessingException{
         Map<String, List<OrgNoticeResponse>> mapNotice = this.getWebSocketNotice(experimentId, rowsNotice);
-        return pushNotice(experimentId, mapNotice, retry);
+        return pushNotice(experimentId,socketType, mapNotice, retry);
     }
-    public List<PushWebScoketResult> pushNotice(String experimentId, Map<String, List<OrgNoticeResponse>> mapNotice, boolean retry){
+    public List<PushWebScoketResult> pushNotice(String experimentId,EnumWebSocketType socketType, Map<String, List<OrgNoticeResponse>> mapNotice, boolean retry){
         if(ShareUtil.XObject.isEmpty(mapNotice)){
             return Collections.emptyList();
         }
@@ -247,7 +254,7 @@ public class ExperimentOrgNoticeBiz {
         final List<PushWebScoketResult> rst=new ArrayList<>();
         try {
             mapNotice.forEach((k, v) -> {
-                PushWebScoketResult rstPush = PushWebSocketUtil.Instance().pushCommon(EnumWebSocketType.EVENT_TRIGGERED, experimentId, Set.of(k), v, retry);
+                PushWebScoketResult rstPush = PushWebSocketUtil.Instance().pushCommon(socketType, experimentId, Set.of(k), v, retry);
                 if (ShareUtil.XObject.notEmpty(rstPush)) {
                     rst.add(rstPush);
                 }

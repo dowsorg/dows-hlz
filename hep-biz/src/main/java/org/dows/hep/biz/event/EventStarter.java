@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentMode;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.dao.ExperimentInstanceDao;
-import org.dows.hep.biz.spel.SpelCacheExecutor;
+import org.dows.hep.biz.eval.ExperimentCacheExecutor;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -52,7 +52,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
         try {
             List<ExperimentInstanceEntity> rowsExperiment = experimentInstanceDao.getRunningExperiment(
                     APPId , EnumExperimentState.UNBEGIN.getState(),  EnumExperimentState.SUSPEND.getState(),
-                    DateUtil.offsetDay(new Date(),-2).toJdkDate(),
+                    DateUtil.offsetDay(new Date(),-1).toJdkDate(),
                     ExperimentInstanceEntity::getAppId,
                     ExperimentInstanceEntity::getExperimentInstanceId,
                     ExperimentInstanceEntity::getModel,
@@ -68,7 +68,7 @@ public class EventStarter implements ApplicationListener<ApplicationStartedEvent
                     EventScheduler.Instance().scheduleFollowUpPlan(i.getAppId(), i.getExperimentInstanceId(), DELAYSeconds4UserEvent);
                 }
             });
-            SpelCacheExecutor.Instance().start(userIds.stream().toList());
+            ExperimentCacheExecutor.Instance().start(userIds.stream().toList());
 
             log.info(String.format("EventStarter.start succ. cntSys:%s cntUser:%s sysIds:%s userIds:%s",
                     sysIds.size(),userIds.size(),

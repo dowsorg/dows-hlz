@@ -6,13 +6,14 @@ import org.dows.hep.api.base.indicator.request.RsAgeRequest;
 import org.dows.hep.api.base.indicator.request.RsSexRequest;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
-import org.dows.hep.biz.base.risk.CrowdsInstanceBiz;
-import org.dows.hep.biz.base.risk.RiskModelBiz;
+import org.dows.hep.biz.util.BigDecimalUtil;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.hep.vo.report.PersonRiskFactor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -71,6 +72,7 @@ public class RiskBiz {
             .experimentPersonIdSet(experimentPersonIdSet)
             .build());
 
+        //获取参与实验人的风险模型
         Map<String, List<ExperimentPersonRiskModelRsEntity>> kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap = new HashMap<>();
         experimentPersonRiskModelRsService.lambdaQuery()
                 .eq(ExperimentPersonRiskModelRsEntity::getExperimentId, experimentInstanceId)
@@ -89,6 +91,7 @@ public class RiskBiz {
         if (kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.isEmpty()) {
             return personRiskFactorList;
         }
+        //解析人员风险指标模型id
         Set<String> experimentPersonRiskModelIdSet = new HashSet<>();
         kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.values().forEach(experimentPersonRiskModelRsEntityList -> {
             experimentPersonRiskModelIdSet.addAll(experimentPersonRiskModelRsEntityList.stream()
@@ -97,6 +100,7 @@ public class RiskBiz {
         if (experimentPersonRiskModelIdSet.isEmpty()) {
             return personRiskFactorList;
         }
+        //查询人员风险指标实例
         Map<String, List<ExperimentPersonHealthRiskFactorRsEntity>> kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap = new HashMap<>();
         experimentPersonHealthRiskFactorRsService.lambdaQuery()
                 .in(ExperimentPersonHealthRiskFactorRsEntity::getExperimentPersonRiskModelId, experimentPersonRiskModelIdSet)
@@ -136,8 +140,8 @@ public class RiskBiz {
                     List<PersonRiskFactor.RiskItem> riskItems = new ArrayList<>();
                     riskFactor.setRiskName(periodsExperimentPersonRiskModelRsEntity.getName());
                     riskFactor.setRiskDeathProbability(periodsExperimentPersonRiskModelRsEntity.getRiskDeathProbability());
-                    riskFactor.setRiskScore(periodsExperimentPersonRiskModelRsEntity.getComposeRiskScore().toString());
-                    riskFactor.setDeathRiskScore(periodsExperimentPersonRiskModelRsEntity.getExistDeathRiskScore().toString());
+                    riskFactor.setRiskScore(fixDeciamlString(periodsExperimentPersonRiskModelRsEntity.getComposeRiskScore().toString()));
+                    riskFactor.setDeathRiskScore(fixDeciamlString(periodsExperimentPersonRiskModelRsEntity.getExistDeathRiskScore().toString()));
                     String experimentPersonRiskModelId = periodsExperimentPersonRiskModelRsEntity.getExperimentPersonRiskModelId();
                     List<ExperimentPersonHealthRiskFactorRsEntity> experimentPersonHealthRiskFactorRsEntityList =
                             kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap.get(experimentPersonRiskModelId);
@@ -146,7 +150,7 @@ public class RiskBiz {
                             PersonRiskFactor.RiskItem riskItem = new PersonRiskFactor.RiskItem();
                             riskItem.setItemName(experimentPersonHealthRiskFactorRsEntity.getName());
                             riskItem.setItemValue(experimentPersonHealthRiskFactorRsEntity.getVal());
-                            riskItem.setRiskScore(experimentPersonHealthRiskFactorRsEntity.getRiskScore().toString());
+                            riskItem.setRiskScore(fixDeciamlString(experimentPersonHealthRiskFactorRsEntity.getRiskScore().toString()));
                             riskItems.add(riskItem);
                         });
                     }
@@ -158,6 +162,15 @@ public class RiskBiz {
             });
         });
         return personRiskFactorList;
+    }
+    String fixDeciamlString(String src){
+        if(!ShareUtil.XObject.isNumber(src)){
+            return src;
+        }
+        return BigDecimalUtil.formatRoundDecimal(BigDecimalUtil.tryParseDecimalElseZero(src),2);
+    }
+    String fixDeciamlString(BigDecimal val){
+        return BigDecimalUtil.formatRoundDecimal(val,2);
     }
 
 

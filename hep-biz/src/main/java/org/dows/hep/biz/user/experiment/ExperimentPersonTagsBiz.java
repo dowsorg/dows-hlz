@@ -36,7 +36,10 @@ public class ExperimentPersonTagsBiz {
      * @开始时间:
      * @创建时间: 2023/7/13 13:51
      */
-    public List<EchartsDataResonse> statDiseaseRate(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+    public List<EchartsDataResonse> statDiseaseRate(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest){
+        return new ArrayList<>();
+    }
+    public List<EchartsDataResonse> statDiseaseRateOld(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
         List<EchartsDataResonse> statList = new ArrayList<>();
         //1、查询人物在实验人物标签中的标签信息
         //1.1、先获取上述人物的标签列表

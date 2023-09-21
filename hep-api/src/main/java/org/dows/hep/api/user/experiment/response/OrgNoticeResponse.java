@@ -26,6 +26,9 @@ public class OrgNoticeResponse{
     @Schema(title = "实验人物id")
     private String experimentPersonId;
 
+    @Schema(title = "实验机构id")
+    private String experimentOrgId;
+
     @Schema(title = "人物名称")
     private String personName;
 

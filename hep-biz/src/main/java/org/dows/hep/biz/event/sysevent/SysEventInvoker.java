@@ -8,6 +8,7 @@ import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.event.sysevent.data.*;
+import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentSysEventEntity;
@@ -57,7 +58,7 @@ public class SysEventInvoker {
      * @return
      */
     public void dealExperimentReady(String appId,String exptId){
-        manualDealAysnc(EnumSysEventDealType.EXPERIMENTReady,appId,exptId,null, null, null);
+        manualDeal(EnumSysEventDealType.EXPERIMENTReady,appId,exptId,null, null, null);
     }
 
     /**
@@ -86,7 +87,7 @@ public class SysEventInvoker {
                 logError("manulTriggering", "missSetting expt:%s", exptKey);
                 return false;
             }
-            SysEventCollection eventColl = SysEventCache.Instance().caffineCache().getIfPresent(exptKey);
+            SysEventCollection eventColl = SysEventCache.Instance().loadingCache().get(exptKey);
             if (ShareUtil.XObject.anyEmpty(eventColl, () -> eventColl.getEventRows())) {
                 logError("manulTriggering", "emptyEvents expt:%s", exptKey);
                 return false;
@@ -113,7 +114,7 @@ public class SysEventInvoker {
                 logError("manulTriggering", "failSave time:%s expt:%s deal:%s period:%s group:%s person:%s",
                         triggeringTime.getTime(), exptKey, dealType, period, exptGroupId, exptPersonId);
             }
-            SysEventCache.Instance().caffineCache().invalidate(exptKey);
+            SysEventCache.Instance().loadingCache().invalidate(exptKey);
             EventScheduler.Instance().scheduleSysEvent(appId, exptId, 3);
             return true;
         }catch (Exception ex){
@@ -145,24 +146,24 @@ public class SysEventInvoker {
         ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
         if(ShareUtil.XObject.anyEmpty(exptColl,()->exptColl.getMode())){
             logError("manualDeal", "missSetting expt:%s",exptKey);
-            return false;
+            AssertUtil.justThrow("未找到实验设置");
         }
         LocalDateTime ldtNow=LocalDateTime.now();
         ExperimentTimePoint timePoint= ExperimentSettingCache.getTimePointByRealTimeSilence(exptColl, exptKey, ldtNow, true);
         if(ShareUtil.XObject.anyEmpty(timePoint,()->timePoint.getCntPauseSeconds())) {
             logError("manualDeal", "missTimePoint expt:%s",exptKey);
-            return false;
+            AssertUtil.justThrow("未找到实验时间设置");
         }
-        SysEventCollection eventColl= SysEventCache.Instance().caffineCache().getIfPresent(exptKey);
+        SysEventCollection eventColl= SysEventCache.Instance().loadingCache().get(exptKey);
         if(ShareUtil.XObject.anyEmpty(eventColl,()->eventColl.getEventRows()) ){
             logError("manualDeal", "emptyEvents expt:%s",exptKey);
-            return false;
+            AssertUtil.justThrow("未找到实验事件列表");
         }
         List<SysEventRow> todoEvents= filterEvents(eventColl,dealType,period,exptGroupId,exptPersonId);
         if(ShareUtil.XObject.isEmpty(todoEvents)){
             logError("manualDeal", "missEvents expt:%s deal:%s period:%s group:%s person:%s",
                     exptKey,dealType,period,exptGroupId,exptPersonId);
-            return false;
+            AssertUtil.justThrow("未找到实验事件");
         }
         SysEventRunStat stat=new SysEventRunStat();
         stat.curTimePoint.set(timePoint);
@@ -228,22 +229,7 @@ public class SysEventInvoker {
        return dealType.dealEvent(row,stat);
     }
 
-    public List<ExperimentSysEventEntity> buildEvents(ExperimentSettingCollection exptColl) {
-        List<ExperimentSysEventEntity> rst=new ArrayList<>();
-        Arrays.stream(EnumSysEventDealType.values()).forEach(item->{
-            if(item==EnumSysEventDealType.NONE){
-                return;
-            }
-            List<ExperimentSysEventEntity> events=item.buildEvents(exptColl);
-            if(ShareUtil.XObject.isEmpty(events)){
-                return;
-            }
-            rst.addAll(events);
-        });
-        rst.sort(Comparator.comparingInt(ExperimentSysEventEntity::getPeriods)
-                .thenComparingInt(ExperimentSysEventEntity::getDealSeq));
-        return rst;
-    }
+
 
     public ExperimentTimePoint getTriggerTime(ExperimentSysEventEntity entity,ExperimentSettingCollection exptColl,long cntPauseSeconds) {
         if (ShareUtil.XObject.isEmpty(entity)) {

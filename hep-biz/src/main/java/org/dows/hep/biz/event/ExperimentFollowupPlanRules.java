@@ -1,6 +1,8 @@
 package org.dows.hep.biz.event;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumWebSocketType;
+import org.dows.hep.biz.dao.ExperimentFollowupPlanDao;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.user.experiment.ExperimentOrgNoticeBiz;
 import org.dows.hep.biz.util.ShareUtil;
@@ -30,6 +32,9 @@ public class ExperimentFollowupPlanRules {
     @Autowired
     private ExperimentOrgNoticeBiz experimentOrgNoticeBiz;
 
+    @Autowired
+    private ExperimentFollowupPlanDao experimentFollowupPlanDao;
+
 
 
     public boolean saveTriggeredFollowupPlan(ExperimentFollowupPlanEntity src, ExperimentTimePoint timePoint){
@@ -40,10 +45,10 @@ public class ExperimentFollowupPlanRules {
         if(null==rowNotice){
             return true;
         }
-        if(!experimentOrgNoticeBiz.add(rowNotice)){
+        if(!experimentFollowupPlanDao.tranSave(src,false,()->experimentOrgNoticeBiz.add(rowNotice))) {
             return false;
         }
-        experimentOrgNoticeBiz.pushNoticeSilence(src.getExperimentInstanceId(),List.of(rowNotice),false);
+        experimentOrgNoticeBiz.pushNoticeSilence(src.getExperimentInstanceId(), EnumWebSocketType.FOLLOWUP_PLAN,List.of(rowNotice),false);
         return true;
     }
 }

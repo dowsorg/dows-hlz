@@ -2,6 +2,7 @@ package org.dows.hep.biz.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.spel.SpelInvoker;
 import org.dows.hep.biz.spel.meta.SpelEvalResult;
@@ -80,7 +81,7 @@ public class ExperimentEventRules {
             return false;
         }
         final String experimentId=rowsNotice.get(0).getExperimentInstanceId();
-        experimentOrgNoticeBiz.pushNoticeSilence(experimentId,rowsNotice,false);
+        experimentOrgNoticeBiz.pushNoticeSilence(experimentId, EnumWebSocketType.EVENT_TRIGGERED, rowsNotice,false);
         return true;
     }
 
