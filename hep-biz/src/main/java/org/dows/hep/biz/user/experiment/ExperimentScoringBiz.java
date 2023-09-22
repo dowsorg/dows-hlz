@@ -307,7 +307,13 @@ public class ExperimentScoringBiz {
             if (Objects.isNull(costTotal)) {
                 costTotal = BigDecimal.ZERO;
             }
-            BigDecimal groupMoneyScore = BigDecimal.valueOf(100).multiply(BigDecimal.ONE.subtract((costTotal.divide(initTotal, 2, RoundingMode.DOWN))));
+            BigDecimal groupMoneyScore;
+            if(initTotal.compareTo(BigDecimal.ZERO)<=0){
+                groupMoneyScore=BigDecimal.ZERO;
+            }else{
+                groupMoneyScore= BigDecimal.valueOf(100).multiply(BigDecimal.ONE.subtract((costTotal.divide(initTotal, 2, RoundingMode.DOWN))));
+            }
+
             groupMoneyScoreRsResponseList.add(GroupMoneyScoreRsResponse
                     .builder()
                     .experimentGroupId(experimentOrgGroupId)

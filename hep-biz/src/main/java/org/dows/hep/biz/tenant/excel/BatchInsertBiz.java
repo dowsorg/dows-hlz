@@ -10,8 +10,9 @@ import org.dows.framework.doc.api.entity.excel.ExcelSelector;
 import org.dows.framework.doc.api.entity.excel.Point;
 import org.dows.framework.doc.api.entity.excel.SheetRange;
 import org.springframework.stereotype.Service;
-import java.io.IOException;
-import java.io.InputStream;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -82,5 +83,33 @@ public class BatchInsertBiz {
                     .collect(Collectors.toList());
         }
         return rowList;
+    }
+    public InputStream parseImportExcelStream(File file) throws IOException {
+        return docBiz.parseImportExcelStream(file);
+    }
+    public File multipartFileToFile(MultipartFile multipartFile){
+        //文件上传前的名称
+        String fileName = multipartFile.getOriginalFilename();
+        File file = new File(fileName);
+        OutputStream out = null;
+        try{
+            //获取文件流，以文件流的方式输出到新文件
+            out = new FileOutputStream(file);
+            byte[] ss = multipartFile.getBytes();
+            for(int i = 0; i < ss.length; i++){
+                out.write(ss[i]);
+            }
+        }catch(IOException e){
+            throw new BizException("MultipartFile转File文件异常");
+        }finally {
+            if (out != null){
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    throw new BizException("文件输出流关闭异常");
+                }
+            }
+        }
+        return file;
     }
 }

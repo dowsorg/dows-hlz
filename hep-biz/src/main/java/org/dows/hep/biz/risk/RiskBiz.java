@@ -72,6 +72,7 @@ public class RiskBiz {
             .experimentPersonIdSet(experimentPersonIdSet)
             .build());
 
+        //获取参与实验人的风险模型
         Map<String, List<ExperimentPersonRiskModelRsEntity>> kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap = new HashMap<>();
         experimentPersonRiskModelRsService.lambdaQuery()
                 .eq(ExperimentPersonRiskModelRsEntity::getExperimentId, experimentInstanceId)
@@ -90,6 +91,7 @@ public class RiskBiz {
         if (kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.isEmpty()) {
             return personRiskFactorList;
         }
+        //解析人员风险指标模型id
         Set<String> experimentPersonRiskModelIdSet = new HashSet<>();
         kExperimentPersonIdVExperimentPersonRiskModelRsEntityListMap.values().forEach(experimentPersonRiskModelRsEntityList -> {
             experimentPersonRiskModelIdSet.addAll(experimentPersonRiskModelRsEntityList.stream()
@@ -98,6 +100,7 @@ public class RiskBiz {
         if (experimentPersonRiskModelIdSet.isEmpty()) {
             return personRiskFactorList;
         }
+        //查询人员风险指标实例
         Map<String, List<ExperimentPersonHealthRiskFactorRsEntity>> kExperimentPersonRiskModelIdVExperimentPersonHealthRiskFactorRsEntityListMap = new HashMap<>();
         experimentPersonHealthRiskFactorRsService.lambdaQuery()
                 .in(ExperimentPersonHealthRiskFactorRsEntity::getExperimentPersonRiskModelId, experimentPersonRiskModelIdSet)

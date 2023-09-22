@@ -17,5 +17,8 @@ public class BatchMemberInsertRequest {
     @ExcelProperty(headName = "用户姓名", index = 1)
     private String userName;
 
+    @ExcelProperty(headName = "登录密码", index = 2)
+    private String password;
+
     private String tips;
 }
