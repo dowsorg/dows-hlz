@@ -6,7 +6,7 @@ services:
     container_name: api-hep-admin-dev
     environment:
       - TZ=$TZ
-      - JVM_OPTS=-server -Xms2048m -Xmx2048m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:15010
+      - JVM_OPTS=-server -Xms2048m -Xmx2048m
       - JAVA_OPTS=-Djasypt.encryptor.password=02700083-9fd9-4b82-a4b4-9177e0560e92 -Dspring.config.location=/dows/saas/hep-admin/configs/ -Dspring.profiles.active=dev
       #- APM=-javaagent:/dows/paas/apm/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=hep-admin-dev -Dskywalking.collector.backend_service=192.168.1.60:11800
     ports:
