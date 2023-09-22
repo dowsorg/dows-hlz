@@ -25,12 +25,15 @@ import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.dows.hep.entity.ExperimentParticipatorEntity;
+import org.dows.hep.entity.ExperimentPersonInsuranceEntity;
 import org.dows.hep.entity.OperateFlowEntity;
+import org.dows.hep.service.ExperimentPersonInsuranceService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -41,9 +44,12 @@ import java.util.function.Function;
  * @author : wuzl
  * @date : 2023/5/4 15:37
  */
+
 public class ShareBiz {
 
+
     private static final int NUMBERScale2=2;
+    private static final String APPId="3";
     public static BigDecimal fixDecimalWithScale(String src){
         return BigDecimalUtil.roundDecimal(BigDecimalUtil.tryParseDecimalElseZero(src),NUMBERScale2);
     }
@@ -264,5 +270,60 @@ public class ShareBiz {
         applicationEventPublisher.publishEvent(CommonExperimentEvent.create(eventName, eventSource));
     }
     //endregion
+
+    /**
+     * 获取报销金额
+     * @param experimentPersonId
+     * @param experimentId
+     * @param ldtNow
+     * @param fee
+     * @return
+     */
+    public static BigDecimal getRefundFee(String experimentPersonId,String experimentId, LocalDateTime ldtNow,BigDecimal fee){
+        ExperimentTimePoint timePoint=ExperimentSettingCache.Instance().getTimePointByRealTime(ExperimentCacheKey.create(APPId,experimentId), ldtNow, true);
+
+        return getRefundFee(experimentPersonId,timePoint.getGameDay(),fee);
+    }
+    /**
+     * 获取报销金额
+     * @param experimentPersonId
+     * @param nowGameDay
+     * @param fee
+     * @return
+     */
+    public static BigDecimal getRefundFee(String experimentPersonId,int nowGameDay,BigDecimal fee){
+        if(ShareUtil.XObject.isEmpty(fee)||fee.compareTo(BigDecimal.ZERO)==0){
+            return BigDecimal.ZERO;
+        }
+        BigDecimal refundRate=getRefundRate(experimentPersonId, nowGameDay);
+        return BigDecimalOptional.valueOf(fee).mul(refundRate).div(BigDecimalUtil.ONEHundred,2).getValue();
+
+    }
+
+    /**
+     * 获取报销比例
+     * @param experimentPersonId
+     * @param nowGameDay
+     * @return
+     */
+
+    public static BigDecimal getRefundRate(String experimentPersonId,int nowGameDay){
+        if(nowGameDay<=0){
+            return BigDecimal.ZERO;
+        }
+        List<ExperimentPersonInsuranceEntity> refunds= CrudContextHolder.getBean(ExperimentPersonInsuranceService.class)
+                .lambdaQuery()
+                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId, experimentPersonId)
+                .ge(ExperimentPersonInsuranceEntity::getBuyGameDay,Math.max(0,nowGameDay-365))
+                .select(ExperimentPersonInsuranceEntity::getReimburseRatio)
+                .list();
+        if(ShareUtil.XObject.isEmpty(refunds)){
+            return BigDecimal.ZERO;
+        }
+        BigDecimalOptional totalRate=BigDecimalOptional.create();
+        refunds.forEach(i->totalRate.add(BigDecimalUtil.valueOf(i.getReimburseRatio())));
+        return totalRate.getValue(2, RoundingMode.HALF_UP);
+    }
+
 
 }

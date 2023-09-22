@@ -153,7 +153,8 @@ public class ExperimentOrgBiz {
                 .setOperateTime(dateNow)
                 .setOperateGameDay(timePoint.getGameDay());
         //计算每次操作应该返回的报销金额
-        BigDecimal reimburse = getExperimentPersonRestitution(BigDecimalUtil.valueOf(ghf), startOrgFlow.getExperimentPersonId());
+        //BigDecimal reimburse = getExperimentPersonRestitution(BigDecimalUtil.valueOf(ghf), startOrgFlow.getExperimentPersonId());
+        BigDecimal reimburse =ShareBiz.getRefundFee(startOrgFlow.getExperimentPersonId(),timePoint.getGameDay(), BigDecimalUtil.valueOf(ghf));
         //保存消费记录
         CostRequest costRequest = CostRequest.builder()
                 .operateCostId(idGenerator.nextIdStr())
