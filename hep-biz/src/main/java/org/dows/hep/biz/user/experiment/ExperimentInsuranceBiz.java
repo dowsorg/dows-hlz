@@ -126,7 +126,8 @@ public class ExperimentInsuranceBiz {
         Double reimburseRatio = 0.0d;
         if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
             CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
-                    .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                    //.eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                    .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getOrgId())
                     .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
                     .eq(CaseOrgFeeEntity::getDeleted, false)
                     .one();

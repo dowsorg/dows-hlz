@@ -402,7 +402,8 @@ public class ExperimentOrgInterveneBiz{
 
 
             //计算每次操作应该返回的报销金额
-            BigDecimal reimburse = getExperimentPersonRestitution(cost.getValue(), saveTreat.getExperimentPersonId());
+            //BigDecimal reimburse = getExperimentPersonRestitution(cost.getValue(), saveTreat.getExperimentPersonId());
+            BigDecimal reimburse =ShareBiz.getRefundFee(saveTreat.getExperimentPersonId(),timePoint.getGameDay(), cost.getValue());
             final CostRequest costRecord = !costFlag ? null : CostRequest.builder()
                     .operateCostId(idGenerator.nextIdStr())
                     .experimentInstanceId(saveTreat.getExperimentInstanceId())

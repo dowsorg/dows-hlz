@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -122,9 +123,9 @@ public class OrgManageBiz{
         InputStream fin = null;
         try {
 //            fin = file.getInputStream();
-            File newFile = batchInsertBiz.multipartFileToFile(file);
-            fin =  batchInsertBiz.parseImportExcelStream(newFile);
-            newFile.delete();
+            //重新编译后读取文件
+            File newFile=  batchInsertBiz.parseImportExcelStream(file);
+            fin = new FileInputStream(newFile.getPath());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
