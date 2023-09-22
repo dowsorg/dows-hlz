@@ -22,8 +22,6 @@ import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.biz.event.ExperimentTimerCache;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.util.ShareBiz;
-import org.dows.hep.biz.util.TimeUtil;
-import org.dows.hep.entity.ExperimentPersonInsuranceEntity;
 import org.dows.hep.entity.ExperimentTaskScheduleEntity;
 import org.dows.hep.entity.ExperimentTimerEntity;
 import org.dows.hep.service.ExperimentPersonInsuranceService;
@@ -173,7 +171,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 }
             }
 
-            // 所有保险也会暂停，需要重新延长开始时间
+            /*// 所有保险也会暂停，需要重新延长开始时间
             List<ExperimentPersonInsuranceEntity> insuranceEntityList = experimentPersonInsuranceService.lambdaQuery()
                     .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId, experimentRestartRequest.getExperimentInstanceId())
                     .eq(ExperimentPersonInsuranceEntity::getDeleted, false)
@@ -183,7 +181,7 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     insurance.setExpdate(TimeUtil.addTimeByLong(insurance.getExpdate(), supendDuration));
                 });
                 experimentPersonInsuranceService.updateBatchById(insuranceEntityList);
-            }
+            }*/
         }
 
         List<ExperimentGroupResponse> experimentGroupResponses = experimentGroupBiz
