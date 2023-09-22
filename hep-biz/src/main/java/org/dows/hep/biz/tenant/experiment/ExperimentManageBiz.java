@@ -718,6 +718,7 @@ public class ExperimentManageBiz {
      *
      * @param experimentRestartRequest
      */
+    @DSTransactional
     public void restart(ExperimentRestartRequest experimentRestartRequest) {
         ExperimentEvent experimentEvent;
         // 以服务端时间为准

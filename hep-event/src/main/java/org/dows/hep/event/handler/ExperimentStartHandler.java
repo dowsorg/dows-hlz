@@ -65,11 +65,11 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
       /*  List<ExperimentTimerEntity> experimentTimerEntityList = experimentTimerBiz
                 .getPeriodsTimerList(experimentRestartRequest.getExperimentInstanceId());*/
 
-        final String experimentInstanceId=experimentRestartRequest.getExperimentInstanceId();
+        final String experimentInstanceId = experimentRestartRequest.getExperimentInstanceId();
         final String appId = ShareBiz.checkAppId(null, experimentInstanceId);
         ExperimentTimerCache.Instance().remove(appId, experimentInstanceId);
         Map<Integer, ExperimentTimerEntity> mapTimer = experimentTimerDao.getMapByExperimentId(appId, experimentInstanceId, null);
-        List<ExperimentTimerEntity>  experimentTimerEntityList=mapTimer.values().stream().toList();
+        List<ExperimentTimerEntity> experimentTimerEntityList = mapTimer.values().stream().toList();
 
         // 方案设计模式不需要设计时器，只有标准模式或沙盘模式才需要设计时器//null == experimentRestartRequest.getPeriods() && 或者实验是准备中时
         if (null == experimentRestartRequest.getPeriods()) {
@@ -102,13 +102,14 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
             });
             experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentRestartRequest.getExperimentInstanceId(),
                     updateExperimentTimerEntities, EnumExperimentState.ONGOING);
+            return;
             /**
              * todo 可优化缓存
              * HepContext hepContext = HepContext.getExperimentContext(experimentRestartRequest.getExperimentInstanceId());
              * hepContext.setState(ExperimentStateEnum.ONGOING);
              */
-        } else/* if(experimentRestartRequest.getModel() == ExperimentModeEnum.SAND.getCode())*/ {
-            // 获取当前时间
+        }
+        // 获取当前时间
       /*      long ct = experimentRestartRequest.getCurrentTime().getTime();
             //todo 计时器
             log.info("执行开始操作....");
@@ -118,9 +119,11 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                     .max(Comparator.comparingInt(ExperimentTimerEntity::getPauseCount))
                     .orElse(null);*/
 
-            long ct=System.currentTimeMillis();
-            LocalDateTime ldtNow=LocalDateTime.now();
-            final ExperimentTimerEntity updateExperimentTimer=ExperimentTimerCache.getCurTimer(ldtNow, mapTimer);
+        try {
+
+            long ct = System.currentTimeMillis();
+            LocalDateTime ldtNow = LocalDateTime.now();
+            final ExperimentTimerEntity updateExperimentTimer = ExperimentTimerCache.getCurTimer(ldtNow, mapTimer);
             if (updateExperimentTimer == null) {
                 throw new ExperimentException("实验计时器不存在！");
             }
@@ -182,18 +185,18 @@ public class ExperimentStartHandler extends AbstractEventHandler implements Even
                 });
                 experimentPersonInsuranceService.updateBatchById(insuranceEntityList);
             }*/
-        }
-
-        List<ExperimentGroupResponse> experimentGroupResponses = experimentGroupBiz
-                .listGroup(experimentRestartRequest.getExperimentInstanceId());
-        // 重置定时任务
-        resetTimeTask(experimentRestartRequest, updateExperimentTimerEntities, experimentGroupResponses);
-        // 突发事件检测
-        EventScheduler.Instance().scheduleTimeBasedEvent(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
-        //随访计划
-        EventScheduler.Instance().scheduleFollowUpPlan(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
-        if (ConfigExperimentFlow.SWITCH2SysEvent) {
-            EventScheduler.Instance().scheduleSysEvent(appId, experimentRestartRequest.getExperimentInstanceId(), 3);
+        } finally {
+            List<ExperimentGroupResponse> experimentGroupResponses = experimentGroupBiz
+                    .listGroup(experimentRestartRequest.getExperimentInstanceId());
+            // 重置定时任务
+            resetTimeTask(experimentRestartRequest, updateExperimentTimerEntities, experimentGroupResponses);
+            // 突发事件检测
+            EventScheduler.Instance().scheduleTimeBasedEvent(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
+            //随访计划
+            EventScheduler.Instance().scheduleFollowUpPlan(appId, experimentRestartRequest.getExperimentInstanceId(), 5);
+            if (ConfigExperimentFlow.SWITCH2SysEvent) {
+                EventScheduler.Instance().scheduleSysEvent(appId, experimentRestartRequest.getExperimentInstanceId(), 3);
+            }
         }
     }
 
