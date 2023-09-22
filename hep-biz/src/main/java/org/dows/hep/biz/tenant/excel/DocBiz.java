@@ -92,8 +92,8 @@ public class DocBiz {
         //是否存在
         FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
         resultBook.write(fileOutputStream);
-        resultBook.close();
         fileOutputStream.close();
+        resultBook.close();
         MultipartFile multipartFile = getMultipartFile(tempFile);
         tempFile.delete();
         return multipartFile.getInputStream();
@@ -127,11 +127,9 @@ public class DocBiz {
             fileInputStream = new FileInputStream(file);
             multipartFile = new MockMultipartFile(file.getName(), file.getName(),
                     ContentType.APPLICATION_OCTET_STREAM.toString(), fileInputStream);
-            fileInputStream.close();
         } catch (Exception e) {
             throw new BizException("File 转 MultipartFile文件异常");
         }
-
 
         return multipartFile;
     }
