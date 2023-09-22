@@ -40,6 +40,8 @@ public class SpelEngine {
 
     @Autowired
     private ExperimentSpelCache experimentSpelCache;
+
+    private static final int SCALE=2;
     //endregion
 
     //region facade
@@ -218,6 +220,7 @@ public class SpelEngine {
                 coreEvalSum(mapSum, rst.setVal(val).setValNumber(null));
                 return rst;
             }
+            val= BigDecimalUtil.formatRoundDecimal(BigDecimalUtil.valueOf(val),SCALE);
             BigDecimal valNumber = BigDecimalUtil.valueOf(val);
             if (!deltaFlag) {
                 return rst.setVal(val).setValNumber(valNumber);

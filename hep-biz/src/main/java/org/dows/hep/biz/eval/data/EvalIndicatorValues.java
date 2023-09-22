@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.dows.hep.api.enums.EnumEvalFuncType;
+import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
 
 import java.math.BigDecimal;
@@ -43,7 +44,7 @@ public class EvalIndicatorValues {
     }
 
     public EvalIndicatorValues setSynced(){
-        changedVal=changingVal;
+        changedVal= BigDecimalUtil.add(changedVal, changingVal);
         changingVal=null;
         return this;
     }
