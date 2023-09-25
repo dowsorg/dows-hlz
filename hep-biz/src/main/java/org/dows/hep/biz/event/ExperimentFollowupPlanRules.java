@@ -71,8 +71,8 @@ public class ExperimentFollowupPlanRules {
                 .setNoticeSrcType(EnumExperimentOrgNoticeType.FOLLOWUP.getCode())
                 .setNoticeSrcId(src.getExperimentFollowupPlanId())
                 .setEventActions(new StringBuilder(Optional.ofNullable(rowNotice.getEventActions()).orElse(""))
-                        .append(" {day:").append(rowNotice.getGameDay())
-                        .append(" time:").append(ShareUtil.XDate.localDT4Date(rowNotice.getNoticeTime()))
+                        .append(" {day:").append(timePoint.getGameDay())
+                        .append(" time:").append(timePoint.getRealTime())
                         .append(" },")
                         .toString());
         if(pushNoticeFlag){
