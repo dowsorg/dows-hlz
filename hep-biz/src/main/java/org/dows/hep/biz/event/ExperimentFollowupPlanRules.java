@@ -57,10 +57,11 @@ public class ExperimentFollowupPlanRules {
             return false;
         }
         Set<String> monitorOrgIds = ExperimentPersonCache.Instance().getMonitorOrgIds(src.getExperimentInstanceId());
-        final boolean pushNoticeFlag = monitorOrgIds.contains(monitorOrgIds);
+        final boolean pushNoticeFlag = monitorOrgIds.contains(src.getExperimentOrgId());
         ExperimentOrgNoticeEntity rowNotice = experimentOrgNoticeDao.getTopFollowupNotice(src.getExperimentPersonId(),
                 ExperimentOrgNoticeEntity::getId,
-                ExperimentOrgNoticeEntity::getExperimentOrgNoticeId
+                ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
+                ExperimentOrgNoticeEntity::getEventActions
         );
         if (null == rowNotice) {
             rowNotice = experimentOrgNoticeBiz.createNotice(src, rowPerson, timePoint);
