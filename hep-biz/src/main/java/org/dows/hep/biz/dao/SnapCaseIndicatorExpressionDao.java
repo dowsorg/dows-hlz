@@ -74,7 +74,7 @@ public class SnapCaseIndicatorExpressionDao extends BaseDao<SnapCaseIndicatorExp
 
         return service.lambdaQuery()
                 .eq(SnapCaseIndicatorExpressionEntity::getExperimentInstanceId, experimentId)
-                .eq(null != sources && sources.size() == 1, SnapCaseIndicatorExpressionEntity::getSource, sources.iterator().next())
+                .eq(null != sources && sources.size() == 1, SnapCaseIndicatorExpressionEntity::getSource, null==sources?null:sources.iterator().next())
                 .in(null != sources && sources.size() > 1, SnapCaseIndicatorExpressionEntity::getSource, sources)
                 .select(cols)
                 .list();

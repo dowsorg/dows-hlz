@@ -10,7 +10,6 @@ import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.enums.EnumOrgFeeType;
-import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentIndicatorInstanceBiz;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
@@ -23,10 +22,7 @@ import org.dows.hep.biz.spel.SpelPersonContext;
 import org.dows.hep.biz.spel.meta.SpelEvalResult;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.person.PersonStatiscBiz;
-import org.dows.hep.biz.util.BigDecimalOptional;
-import org.dows.hep.biz.util.JacksonUtil;
-import org.dows.hep.biz.util.ShareBiz;
-import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -36,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -79,6 +76,8 @@ public class EvalPersonBiz {
     private final ExperimentIndicatorViewSupportExamReportRsService experimentIndicatorViewSupportExamReportRsService;
 
     private final SpelEngine spelEngine;
+
+    private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
     public boolean initEvalPersonLog(List<ExperimentIndicatorValRsEntity> src){
         String experimentId="";
@@ -244,8 +243,14 @@ public class EvalPersonBiz {
                 .eq(ExperimentPersonEntity::getExperimentPersonId,experimentPhysicalExamCheckRequestRs.getExperimentPersonId())
                 .eq(ExperimentPersonEntity::getDeleted,false)
                 .one();
+
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(personEntity))
+                .throwMessage("未找到实验人物");
         //计算每次操作应该返回的报销金额
-        BigDecimal reimburse = getExperimentPersonRestitution(totalFeeAtomicReference.get().negate(),experimentPhysicalExamCheckRequestRs.getExperimentPersonId());
+        BigDecimal reimburse =ShareBiz.getRefundFee(personEntity.getExperimentPersonId(),personEntity.getExperimentInstanceId(),
+                LocalDateTime.now(), totalFeeAtomicReference.get().negate());
+
+        //BigDecimal reimburse = getExperimentPersonRestitution(totalFeeAtomicReference.get().negate(),experimentPhysicalExamCheckRequestRs.getExperimentPersonId());
         CostRequest costRequest = CostRequest.builder()
                 .operateCostId(idGenerator.nextIdStr())
                 .experimentInstanceId(experimentPhysicalExamCheckRequestRs.getExperimentId())
@@ -366,8 +371,12 @@ public class EvalPersonBiz {
                 .eq(ExperimentPersonEntity::getExperimentPersonId,experimentSupportExamCheckRequestRs.getExperimentPersonId())
                 .eq(ExperimentPersonEntity::getDeleted,false)
                 .one();
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(personEntity))
+                .throwMessage("未找到实验人物");
         //计算每次操作应该返回的报销金额
-        BigDecimal reimburse = getExperimentPersonRestitution(totalFeeAtomicReference.get().negate(),experimentSupportExamCheckRequestRs.getExperimentPersonId());
+        //BigDecimal reimburse = getExperimentPersonRestitution(totalFeeAtomicReference.get().negate(),experimentSupportExamCheckRequestRs.getExperimentPersonId());
+        BigDecimal reimburse =ShareBiz.getRefundFee(personEntity.getExperimentPersonId(),personEntity.getExperimentInstanceId(),
+                LocalDateTime.now(), totalFeeAtomicReference.get().negate());
         CostRequest costRequest = CostRequest.builder()
                 .operateCostId(idGenerator.nextIdStr())
                 .experimentInstanceId(experimentSupportExamCheckRequestRs.getExperimentId())
@@ -437,6 +446,7 @@ public class EvalPersonBiz {
                     .periods(periods)
                     .personIdSet(personIds)
                     .funcType(req.getFuncType())
+                    .silence(false)
                     .build());
             ts=logCostTime(sb,"1-indicator",ts);
             evalHealthIndexBiz.evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
@@ -465,11 +475,14 @@ public class EvalPersonBiz {
         final String experimentId = req.getExperimentId();
         final Integer periods = req.getPeriods();
 
-        personStatiscBiz.refundFunds(ExperimentPersonRequest.builder()
+        /*personStatiscBiz.refundFunds(ExperimentPersonRequest.builder()
                 .experimentInstanceId(experimentId)
                 .appId(appId)
                 .periods(periods)
-                .build());
+                .build());*/
+
+        evalPersonMoneyBiz.saveRefunds(experimentId, periods, null);
+
         evalPersonIndicatorBiz.evalPersonIndicator(RsCalculatePersonRequestRs
                 .builder()
                 .appId(appId)
@@ -477,6 +490,7 @@ public class EvalPersonBiz {
                 .periods(periods)
                 .personIdSet(null)
                 .funcType(EnumEvalFuncType.PERIODEnd)
+                .silence(true)
                 .build());
         evalHealthIndexBiz.evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
                 .builder()

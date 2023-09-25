@@ -153,7 +153,8 @@ public class ExperimentOrgBiz {
                 .setOperateTime(dateNow)
                 .setOperateGameDay(timePoint.getGameDay());
         //计算每次操作应该返回的报销金额
-        BigDecimal reimburse = getExperimentPersonRestitution(BigDecimalUtil.valueOf(ghf), startOrgFlow.getExperimentPersonId());
+        //BigDecimal reimburse = getExperimentPersonRestitution(BigDecimalUtil.valueOf(ghf), startOrgFlow.getExperimentPersonId());
+        BigDecimal reimburse =ShareBiz.getRefundFee(startOrgFlow.getExperimentPersonId(),timePoint.getGameDay(), BigDecimalUtil.valueOf(ghf));
         //保存消费记录
         CostRequest costRequest = CostRequest.builder()
                 .operateCostId(idGenerator.nextIdStr())
@@ -238,9 +239,12 @@ public class ExperimentOrgBiz {
             findOrgNotice.setExperimentPersonIds(ShareUtil.XCollection.map(experimentPersonDao.getByOrgId(findOrgNotice.getExperimentOrgId(),
                     ExperimentPersonEntity::getExperimentPersonId), ExperimentPersonEntity::getExperimentPersonId));
         }
-        List<String> followupNoticeIds = ShareUtil.XCollection.map(experimentOrgNoticeDao.getTopFollowUpNoticeIds(findOrgNotice.getExperimentPersonIds()),
+        Set<String> monitorOrgIds=ExperimentPersonCache.Instance().getMonitorOrgIds(findOrgNotice.getExperimentInstanceId());
+
+        findOrgNotice.setContainsFollowUp(monitorOrgIds.contains(findOrgNotice.getExperimentOrgId()));
+        /* List<String> followupNoticeIds = ShareUtil.XCollection.map(experimentOrgNoticeDao.getTopFollowUpNoticeIds(findOrgNotice.getExperimentPersonIds()),
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId);
-        findOrgNotice.setFollowUpNoticeIds(followupNoticeIds);
+        findOrgNotice.setFollowUpNoticeIds(followupNoticeIds);*/
 
         return ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
                 ExperimentOrgNoticeEntity::getId,

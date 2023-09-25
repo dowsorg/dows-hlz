@@ -34,4 +34,7 @@ public class RsCalculatePersonRequestRs implements Serializable {
   @JsonIgnore
   @Schema(title = "功能点类型")
   private EnumEvalFuncType funcType;
+
+  @JsonIgnore
+  private boolean silence;
 }

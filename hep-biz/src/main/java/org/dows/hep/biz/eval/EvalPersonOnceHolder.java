@@ -371,7 +371,7 @@ public class EvalPersonOnceHolder {
         }
         ExperimentEvalLogEntity logEval = CopyWrapper.create(ExperimentEvalLogEntity::new)
                 .endFrom(data.getHeader())
-                .setFuncType(data.getHeader().getFuncType().getCode())
+                .setFuncType(Optional.ofNullable( data.getHeader().getFuncType()).map(EnumEvalFuncType::getCode).orElse(EnumEvalFuncType.FUNCCommon.getCode()))
                 .setExperimentInstanceId(cacheKey.getExperimentInstanceId())
                 .setExperimentPersonId(cacheKey.getExperimentPersonId());
         logEval.setRisks(JacksonUtil.toJsonSilence(data.getRisks(), true));
