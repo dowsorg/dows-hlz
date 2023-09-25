@@ -239,9 +239,12 @@ public class ExperimentOrgBiz {
             findOrgNotice.setExperimentPersonIds(ShareUtil.XCollection.map(experimentPersonDao.getByOrgId(findOrgNotice.getExperimentOrgId(),
                     ExperimentPersonEntity::getExperimentPersonId), ExperimentPersonEntity::getExperimentPersonId));
         }
-        List<String> followupNoticeIds = ShareUtil.XCollection.map(experimentOrgNoticeDao.getTopFollowUpNoticeIds(findOrgNotice.getExperimentPersonIds()),
+        Set<String> monitorOrgIds=ExperimentPersonCache.Instance().getMonitorOrgIds(findOrgNotice.getExperimentOrgId());
+
+        findOrgNotice.setContainsFollowUp(monitorOrgIds.contains(findOrgNotice.getExperimentOrgId()));
+        /* List<String> followupNoticeIds = ShareUtil.XCollection.map(experimentOrgNoticeDao.getTopFollowUpNoticeIds(findOrgNotice.getExperimentPersonIds()),
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId);
-        findOrgNotice.setFollowUpNoticeIds(followupNoticeIds);
+        findOrgNotice.setFollowUpNoticeIds(followupNoticeIds);*/
 
         return ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
                 ExperimentOrgNoticeEntity::getId,

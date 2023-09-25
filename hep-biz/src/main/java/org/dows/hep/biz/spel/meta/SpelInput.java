@@ -66,16 +66,22 @@ public class SpelInput {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SpelInput{");
-        sb.append("reasonId='").append(reasonId).append('\'');
-        sb.append(", expressionId='").append(expressionId).append('\'');
-        sb.append(", indicatorId='").append(indicatorId).append('\'');
-        sb.append(", random=").append(random);
-        sb.append(", min=").append(min);
-        sb.append(", max=").append(max);
-        sb.append(", factor=").append(factor);
-        sb.append('}');
-        return sb.toString();
+        return buildString(new StringBuilder("SpelInput"))
+                .toString();
+    }
+
+    public StringBuilder buildString(StringBuilder sb) {
+        sb.append("{")
+                .append("reasonId=").append(reasonId)
+                .append(", source=").append(source)
+                .append(", expressionId='").append(expressionId)
+                .append(", indicatorId='").append(indicatorId)
+                .append(", random=").append(random)
+                .append(", min=").append(min)
+                .append(", max=").append(max)
+                .append(", factor=").append(factor)
+                .append('}');
+        return sb;
     }
 
     @Data

@@ -58,10 +58,11 @@ public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,E
                 //.eq(ExperimentOrgNoticeEntity::getExperimentGroupId, req.getExperimentGroupId())
                 .eq(oneFlag, ExperimentOrgNoticeEntity::getExperimentPersonId, req.getExperimentPersonIds().get(0))
                 .in(!oneFlag, ExperimentOrgNoticeEntity::getExperimentPersonId, req.getExperimentPersonIds())
-                .and(i -> i.eq(ExperimentOrgNoticeEntity::getNoticeSrcType, EnumExperimentOrgNoticeType.EVENTTriggered.getCode())
+                .eq(!req.isContainsFollowUp(),ExperimentOrgNoticeEntity::getNoticeSrcType, EnumExperimentOrgNoticeType.EVENTTriggered.getCode())
+               /* .and(i -> i.eq(ExperimentOrgNoticeEntity::getNoticeSrcType, EnumExperimentOrgNoticeType.EVENTTriggered.getCode())
                         .or()
                         .in(ShareUtil.XObject.notEmpty(req.getFollowUpNoticeIds()), ExperimentOrgNoticeEntity::getExperimentOrgNoticeId, req.getFollowUpNoticeIds())
-                )
+                )*/
                 .orderByDesc(ExperimentOrgNoticeEntity::getNoticeTime)
                 .select(cols)
                 .page(page);

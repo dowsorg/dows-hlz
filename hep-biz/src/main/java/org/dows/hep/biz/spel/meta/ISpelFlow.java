@@ -11,6 +11,10 @@ public interface ISpelFlow {
 
     ISpelExecuteBatch withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source);
 
+    ISpelExecute withReasonIdSilence(String experimentId, String experimentPersonId, String reasonId, Integer source);
+
+    ISpelExecuteBatch withReasonIdSilence(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source);
+
     ISpelExecute withExpressionId(String experimentId, String experimentPersonId, String expressionId, Integer source);
 
     ISpelExecuteBatch withExpressionId(String experimentId, String experimentPersonId, Collection<String> expressionIds, Integer source);

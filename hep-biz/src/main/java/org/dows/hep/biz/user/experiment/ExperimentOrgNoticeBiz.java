@@ -62,6 +62,14 @@ public class ExperimentOrgNoticeBiz {
         }
     }
 
+    public boolean upsert(ExperimentOrgNoticeEntity row) {
+        if(ShareUtil.XObject.isEmpty(row)){
+            return false;
+        }
+        return ShareUtil.XObject.isEmpty(row.getId())?
+                add(row):update(row);
+    }
+
     public boolean add(List<ExperimentOrgNoticeEntity> rows) {
         rows.forEach(i->{
             if(ShareUtil.XObject.isEmpty(i.getExperimentOrgNoticeId())){
@@ -123,20 +131,16 @@ public class ExperimentOrgNoticeBiz {
 
     //region 随访计划通知
 
-    public ExperimentOrgNoticeEntity createNotice(ExperimentFollowupPlanEntity src, ExperimentTimePoint timepoint)  {
-        ExperimentPersonEntity rowPerson= ExperimentPersonCache.Instance().getPerson(src.getExperimentInstanceId(), src.getExperimentPersonId());
-        if(ShareUtil.XObject.isEmpty(rowPerson)){
-            return null;
-        }
-        String context=String.format("%s的预约随访时间到了", rowPerson.getUserName());
+    public ExperimentOrgNoticeEntity createNotice(ExperimentFollowupPlanEntity src,ExperimentPersonEntity person, ExperimentTimePoint timepoint)  {
+        String context=String.format("%s的预约随访时间到了", person.getUserName());
         return new ExperimentOrgNoticeEntity()
                 .setAppId(src.getAppId())
                 .setExperimentInstanceId(src.getExperimentInstanceId())
                 .setExperimentGroupId(src.getExperimentGroupId())
-                .setExperimentOrgId(rowPerson.getExperimentOrgId())
+                .setExperimentOrgId(person.getExperimentOrgId())
                 .setExperimentPersonId(src.getExperimentPersonId())
-                .setAccountId(rowPerson.getAccountId())
-                .setPersonName(rowPerson.getUserName())
+                .setAccountId(person.getAccountId())
+                .setPersonName(person.getUserName())
                 .setPeriods(timepoint.getPeriod())
                 .setGameDay(timepoint.getGameDay())
                 .setNoticeTime(new Date())
@@ -147,7 +151,7 @@ public class ExperimentOrgNoticeBiz {
                 .setTips("监测随访")
                 .setReadState(0)
                 .setActionState(EnumEventActionState.TODO.getCode())
-                .setAvatar(rowPerson.getAvatar());
+                .setAvatar(person.getAvatar());
 
 
     }

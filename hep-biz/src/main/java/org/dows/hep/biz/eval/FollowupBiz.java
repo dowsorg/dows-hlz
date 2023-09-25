@@ -124,19 +124,14 @@ public class FollowupBiz {
                     .operateFlowId(operateFlowId)
                     .build();
         }
-        boolean planChanged=false;
-        if (ShareUtil.XObject.nullSafeNotEquals(rowPlan.getDueDays(), intervalDay)
-                || ShareUtil.XObject.nullSafeNotEquals(rowPlan.getIndicatorFollowupId(), indicatorViewMonitorFollowupId)) {
-            planChanged=true;
-            rowPlan.setIndicatorFollowupId(indicatorViewMonitorFollowupId)
-                    .setIndicatorFollowupName(experimentIndicatorViewMonitorFollowupRsEntity.getName())
-                    .setDueDays(intervalDay)
-                    .setSetAtDay(timePoint.getGameDay())
-                    .setSetAtTime(dateNow)
-                    .setTodoDay(timePoint.getGameDay() + intervalDay)
-                    .setFollowupTime(dateNow)
-                    .setFollowupTimes(Optional.ofNullable(rowPlan.getFollowupTimes()).orElse(0) + 1);
-        }
+        rowPlan.setIndicatorFollowupId(indicatorViewMonitorFollowupId)
+                .setIndicatorFollowupName(experimentIndicatorViewMonitorFollowupRsEntity.getName())
+                .setDueDays(intervalDay)
+                .setSetAtDay(timePoint.getGameDay())
+                .setSetAtTime(dateNow)
+                .setTodoDay(timePoint.getGameDay() + intervalDay)
+                .setFollowupTime(dateNow)
+                .setFollowupTimes(Optional.ofNullable(rowPlan.getFollowupTimes()).orElse(0) + 1);
 
 
         /* runsix:监测随访是一个触发计算时间点 */
@@ -330,9 +325,7 @@ public class FollowupBiz {
         })){
             AssertUtil.justThrow("数据保存失败");
         }
-        if(planChanged) {
-            FollowupPlanCache.Instance().putPlan(ExperimentCacheKey.create(appId, experimentId), rowPlan);
-        }
+        FollowupPlanCache.Instance().putPlan(ExperimentCacheKey.create(appId, experimentId), rowPlan);
     }
     private ExperimentIndicatorFuncRsResponse getIndicatorFunc(String experimentOrgId, String indicatorFuncId){
         ExperimentIndicatorFuncRsResponse rst=new ExperimentIndicatorFuncRsResponse();
@@ -439,7 +432,8 @@ public class FollowupBiz {
                 .operateFlowId(rowPlan.getOperateFlowId())
                 .intervalDay(rowPlan.getDueDays())
                 .experimentIndicatorViewMonitorFollowupId(rowPlan.getIndicatorFollowupId())
-                .canFollowUp(ShareUtil.XObject.nullSafeNotEquals(operateFlowId, rowPlan.getOperateFlowId()))
+                .canFollowUp(Optional.ofNullable(rowPlan.getFollowupTime()).map(Date::getTime).orElse(0L)<
+                        Optional.ofNullable(rowPlan.getDoneTime()).map(Date::getTime).orElse(0L))
                 .build();
         List<ExperimentIndicatorViewMonitorFollowupRsResponse> experimentIndicatorViewMonitorFollowupRsResponseList = new ArrayList<>();
         ExperimentIndicatorViewMonitorFollowupReportRsResponse experimentIndicatorViewMonitorFollowupReportRsResponse = null;
