@@ -107,6 +107,12 @@ public class ExperimentGroupBiz {
                             .groupName(createGroup.getGroupName())
                             .build());
         } else if (experimentParticipatorEntity.getModel() == EnumExperimentMode.SAND.getCode()) {
+            ExperimentGroupEntity experimentGroupEntity = experimentGroupService.lambdaQuery()
+                    .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
+                    .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
+                    .eq(ExperimentGroupEntity::getGroupName, createGroup.getGroupName())
+                    .one();
+            AssertUtil.falseThenThrow(experimentGroupEntity==null).throwMessage("当前团队名称已经存在，请重新命名");
             return experimentGroupService.lambdaUpdate()
                     .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                     .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
