@@ -108,7 +108,6 @@ public class ExperimentGroupBiz {
                             .build());
         } else if (experimentParticipatorEntity.getModel() == EnumExperimentMode.SAND.getCode()) {
             ExperimentGroupEntity experimentGroupEntity = experimentGroupService.lambdaQuery()
-                    .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                     .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                     .eq(ExperimentGroupEntity::getGroupName, createGroup.getGroupName())
                     .one();
