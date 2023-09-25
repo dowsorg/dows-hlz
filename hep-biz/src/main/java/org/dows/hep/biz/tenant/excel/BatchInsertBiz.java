@@ -158,7 +158,7 @@ public class BatchInsertBiz {
                     String value = null;
                     CellType cellType = cell.getCellType();
                     if (CellType.NUMERIC.equals(cellType)){
-                        value = String.valueOf(cell.getNumericCellValue());
+                        value = String.valueOf((int)cell.getNumericCellValue());
                     }else{
                         value = cell.getStringCellValue();
                     }
