@@ -411,7 +411,8 @@ public class FollowupBiz {
                 .operateFlowId(rowPlan.getOperateFlowId())
                 .intervalDay(rowPlan.getDueDays())
                 .experimentIndicatorViewMonitorFollowupId(rowPlan.getIndicatorFollowupId())
-                .canFollowUp(Optional.ofNullable(rowPlan.getFollowupTime()).map(Date::getTime).orElse(0L)<
+                .canFollowUp(ShareUtil.XObject.nullSafeNotEquals(operateFlowId, rowPlan.getOperateFlowId())
+                        || Optional.ofNullable(rowPlan.getFollowupTime()).map(Date::getTime).orElse(0L)<
                         Optional.ofNullable(rowPlan.getDoneTime()).map(Date::getTime).orElse(0L))
                 .build();
         List<ExperimentIndicatorViewMonitorFollowupRsResponse> experimentIndicatorViewMonitorFollowupRsResponseList = new ArrayList<>();
