@@ -6,11 +6,13 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
@@ -127,6 +129,9 @@ public class ExptReportFacadeBiz {
 //                .orderByDesc(sortByAllotUserNameAsc != null && sortByAllotUserNameAsc == 0, ExperimentInstanceEntity::getAppointorName)
 //                .orderByDesc(sortByExptModeAsc != null && sortByExptModeAsc == 0, ExperimentInstanceEntity::getModel)
                 .page(pageRequest.getPage());
+        HashMap<@Nullable Object, @Nullable Object> objectHashMap = Maps.newHashMap();
+
+
         return convertPageResult(pageResult);
     }
 
@@ -532,15 +537,16 @@ public class ExptReportFacadeBiz {
 
         ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
         switch (exptSettingMode) {
+            //方案模式
             case SCHEME -> {
                 ExptReportVO schemeReportVO = schemeReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 exptGroupReportVOS.addAll(schemeReportVO.getGroupReportList());
             }
-            case SAND -> {
+            case SAND -> {//沙盘模式
                 ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
             }
-            case SAND_SCHEME -> {
+            case SAND_SCHEME -> {//标准模式
                 ExptReportVO schemeReportVO = schemeReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 exptGroupReportVOS.addAll(schemeReportVO.getGroupReportList());

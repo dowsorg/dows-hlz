@@ -11,6 +11,7 @@ import org.dows.hep.api.tenant.organization.request.OrgFeeSettingRequest;
 import org.dows.hep.api.tenant.organization.request.OrgFuncRequest;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.tenant.excel.BatchInsertBiz;
+import org.dows.hep.biz.util.AssertUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -123,9 +124,11 @@ public class OrgManageBiz{
         InputStream fin = null;
         try {
 //            fin = file.getInputStream();
+            AssertUtil.trueThenThrow(file.isEmpty()).throwMessage("导入文件为空");
             //重新编译后读取文件
             File newFile=  batchInsertBiz.parseImportExcelStream(file);
             fin = new FileInputStream(newFile.getPath());
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
