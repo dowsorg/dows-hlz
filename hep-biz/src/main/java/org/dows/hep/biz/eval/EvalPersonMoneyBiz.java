@@ -11,6 +11,7 @@ import org.dows.hep.entity.OperateCostEntity;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -66,7 +67,7 @@ public class EvalPersonMoneyBiz {
         });
         Map<String,OperateCostEntity> mapCost=new HashMap<>();
         rowsCost.forEach(i->{
-            if(mapRefund.containsKey(i.getPatientId())){
+            if(mapRefund.containsKey(i.getPatientId())||FEECodeBaoxiao.equals(i.getFeeCode())) {
                 return;
             }
             OperateCostEntity rowCost=mapCost.computeIfAbsent(i.getPatientId(), k->new OperateCostEntity()
@@ -79,10 +80,13 @@ public class EvalPersonMoneyBiz {
                     .setFeeCode(FEECodeBaoxiao)
                     .setFeeName("报销返还")
             );
-            rowCost.setCost(BigDecimalUtil.add(rowCost.getCost(), i.getRestitution().negate()));
+            rowCost.setCost(BigDecimalUtil.add(rowCost.getCost(), Optional.ofNullable( i.getRestitution()).orElse(BigDecimal.ZERO).negate()));
         });
+        List<OperateCostEntity> rst=mapCost.values().stream().toList();
         mapRefund.clear();
-        return mapCost.values().stream().toList();
+        mapCost.clear();
+        rst.forEach(i->i.setRestitution(i.getCost()));
+        return rst;
 
     }
 }

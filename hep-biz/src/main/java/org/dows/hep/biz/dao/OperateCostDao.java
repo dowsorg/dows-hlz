@@ -47,7 +47,7 @@ public class OperateCostDao extends BaseDao<OperateCostService, OperateCostEntit
                 .eq(OperateCostEntity::getPeriod, period)
                 .eq(null!=personIds&&personIds.size()==1, OperateCostEntity::getPatientId,null==personIds?null:personIds.iterator().next())
                 .in(null!=personIds&&personIds.size()>1, OperateCostEntity::getPatientId,personIds)
-                //.isNotNull(OperateCostEntity::getRestitution)
+                .isNotNull(OperateCostEntity::getRestitution)
                 .select(cols)
                 .list();
     }

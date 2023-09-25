@@ -43,6 +43,7 @@ public class ExperimentFollowupPlanRules {
     @Autowired
     private ExperimentFollowupPlanDao experimentFollowupPlanDao;
 
+    @Autowired
     private ExperimentOrgNoticeDao experimentOrgNoticeDao;
 
 
