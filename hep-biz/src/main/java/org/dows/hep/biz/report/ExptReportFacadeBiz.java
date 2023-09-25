@@ -145,7 +145,7 @@ public class ExptReportFacadeBiz {
     public Page<ExptGroupReportPageResponse> pageGroupReport(ExptGroupReportPageRequest pageRequest) {
         Page<ExperimentGroupEntity> pageResult = experimentGroupService.lambdaQuery()
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, pageRequest.getExptInstanceId())
-                .orderByAsc(ExperimentGroupEntity::getGroupNo)
+                .orderByAsc(ExperimentGroupEntity::getId)
                 .page(pageRequest.getPage());
         return convertGroupPageResult(pageResult, pageRequest.getExptInstanceId());
     }
