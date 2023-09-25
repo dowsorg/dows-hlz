@@ -57,7 +57,7 @@ public class ExperimentFollowupPlanRules {
             return false;
         }
         Set<String> monitorOrgIds = ExperimentPersonCache.Instance().getMonitorOrgIds(src.getExperimentInstanceId());
-        final boolean pushNoticeFlag = monitorOrgIds.contains(src.getExperimentOrgId());
+        final boolean pushNoticeFlag = monitorOrgIds.contains(rowPerson.getExperimentOrgId());
         ExperimentOrgNoticeEntity rowNotice = experimentOrgNoticeDao.getTopFollowupNotice(src.getExperimentPersonId(),
                 ExperimentOrgNoticeEntity::getId,
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
@@ -66,13 +66,16 @@ public class ExperimentFollowupPlanRules {
         if (null == rowNotice) {
             rowNotice = experimentOrgNoticeBiz.createNotice(src, rowPerson, timePoint);
         }
-        rowNotice.setPeriods(timePoint.getPeriod())
+        rowNotice.setExperimentOrgId(rowPerson.getExperimentOrgId())
+                .setPeriods(timePoint.getPeriod())
                 .setGameDay(timePoint.getGameDay())
                 .setNoticeSrcType(EnumExperimentOrgNoticeType.FOLLOWUP.getCode())
                 .setNoticeSrcId(src.getExperimentFollowupPlanId())
                 .setEventActions(new StringBuilder(Optional.ofNullable(rowNotice.getEventActions()).orElse(""))
                         .append(" {day:").append(timePoint.getGameDay())
                         .append(" time:").append(timePoint.getRealTime())
+                        .append(" org:").append(rowNotice.getExperimentOrgId())
+                        .append(" push:").append(pushNoticeFlag)
                         .append(" },")
                         .toString());
         if(pushNoticeFlag){
