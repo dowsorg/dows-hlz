@@ -124,7 +124,8 @@ public class FollowupBiz {
                     .operateFlowId(operateFlowId)
                     .build();
         }
-        rowPlan.setIndicatorFollowupId(indicatorViewMonitorFollowupId)
+        rowPlan.setOperateFlowId(operateFlowId)
+                .setIndicatorFollowupId(indicatorViewMonitorFollowupId)
                 .setIndicatorFollowupName(experimentIndicatorViewMonitorFollowupRsEntity.getName())
                 .setDueDays(intervalDay)
                 .setSetAtDay(timePoint.getGameDay())
