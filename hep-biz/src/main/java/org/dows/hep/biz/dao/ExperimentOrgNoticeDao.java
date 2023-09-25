@@ -83,6 +83,7 @@ public class ExperimentOrgNoticeDao extends BaseDao<ExperimentOrgNoticeService,E
             ,SFunction<ExperimentOrgNoticeEntity,?>...cols){
         return service.lambdaQuery()
                 .eq(ExperimentOrgNoticeEntity::getExperimentPersonId,experimentPersonId)
+                .eq(ExperimentOrgNoticeEntity::getNoticeSrcType,EnumExperimentOrgNoticeType.FOLLOWUP.getCode())
                 .orderByDesc(ExperimentOrgNoticeEntity::getId)
                 .select(cols)
                 .last("limit 1")
