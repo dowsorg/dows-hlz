@@ -221,7 +221,7 @@ public class ShareBiz {
     }
     public static List<AccountInstanceResponse> getAccountsByAccountIds(Set<String> accountIds) {
         if (ShareUtil.XObject.isEmpty(accountIds)) {
-            return null;
+            return Collections.emptyList();
         }
         AccountInstanceApi accountInstanceApi = CrudContextHolder.getBean(AccountInstanceApi.class);
         AccountInstanceRequest req = AccountInstanceRequest.builder()

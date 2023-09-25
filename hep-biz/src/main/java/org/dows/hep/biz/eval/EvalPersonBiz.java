@@ -10,7 +10,6 @@ import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.api.enums.EnumOrgFeeType;
-import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentIndicatorInstanceBiz;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
@@ -77,6 +76,8 @@ public class EvalPersonBiz {
     private final ExperimentIndicatorViewSupportExamReportRsService experimentIndicatorViewSupportExamReportRsService;
 
     private final SpelEngine spelEngine;
+
+    private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
     public boolean initEvalPersonLog(List<ExperimentIndicatorValRsEntity> src){
         String experimentId="";
@@ -445,6 +446,7 @@ public class EvalPersonBiz {
                     .periods(periods)
                     .personIdSet(personIds)
                     .funcType(req.getFuncType())
+                    .silence(false)
                     .build());
             ts=logCostTime(sb,"1-indicator",ts);
             evalHealthIndexBiz.evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
@@ -473,11 +475,14 @@ public class EvalPersonBiz {
         final String experimentId = req.getExperimentId();
         final Integer periods = req.getPeriods();
 
-        personStatiscBiz.refundFunds(ExperimentPersonRequest.builder()
+        /*personStatiscBiz.refundFunds(ExperimentPersonRequest.builder()
                 .experimentInstanceId(experimentId)
                 .appId(appId)
                 .periods(periods)
-                .build());
+                .build());*/
+
+        evalPersonMoneyBiz.saveRefunds(experimentId, periods, null);
+
         evalPersonIndicatorBiz.evalPersonIndicator(RsCalculatePersonRequestRs
                 .builder()
                 .appId(appId)
@@ -485,6 +490,7 @@ public class EvalPersonBiz {
                 .periods(periods)
                 .personIdSet(null)
                 .funcType(EnumEvalFuncType.PERIODEnd)
+                .silence(true)
                 .build());
         evalHealthIndexBiz.evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
                 .builder()

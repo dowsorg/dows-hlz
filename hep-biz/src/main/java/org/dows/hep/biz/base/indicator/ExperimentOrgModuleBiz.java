@@ -2,18 +2,16 @@ package org.dows.hep.biz.base.indicator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.response.ExperimentIndicatorFuncRsResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentOrgModuleRsResponse;
+import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumString;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentOrgModuleRsEntity;
 import org.dows.hep.service.ExperimentOrgModuleRsService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +22,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ExperimentOrgModuleBiz {
   private final ExperimentOrgModuleRsService experimentOrgModuleRsService;
+
+  public List<String> getMonitorOrgIds(Collection<String> exprimentOrgIds){
+      if(ShareUtil.XObject.isEmpty(exprimentOrgIds)){
+          return Collections.emptyList();
+      }
+      return ShareUtil.XCollection.map(experimentOrgModuleRsService.lambdaQuery()
+              .eq(exprimentOrgIds.size()==1,ExperimentOrgModuleRsEntity::getOrgId,exprimentOrgIds.iterator().next() )
+              .in(exprimentOrgIds.size()>1,ExperimentOrgModuleRsEntity::getOrgId,exprimentOrgIds)
+              .like(ExperimentOrgModuleRsEntity::getIndicatorCategoryIdArray, EnumIndicatorCategory.VIEW_MANAGEMENT_MONITOR_FOLLOWUP.getCode())
+              .select(ExperimentOrgModuleRsEntity::getOrgId)
+              .list(),ExperimentOrgModuleRsEntity::getOrgId);
+  }
   public List<ExperimentOrgModuleRsResponse> getByExperimentOrgIdAndExperimentPersonId(String experimentOrgId) {
     return experimentOrgModuleRsService.lambdaQuery()
         .eq(ExperimentOrgModuleRsEntity::getOrgId, experimentOrgId)
