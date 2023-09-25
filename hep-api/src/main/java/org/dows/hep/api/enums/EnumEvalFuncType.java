@@ -19,6 +19,7 @@ public enum EnumEvalFuncType {
     FUNCHealthGuide(12,"健康指导"),
     FUNCFollowup(13,"监测随访"),
 
+    FUNCCommon(21,"通用")
 
     ;
     private final Integer code;
@@ -32,6 +33,6 @@ public enum EnumEvalFuncType {
         return Arrays.stream( EnumEvalFuncType.values())
                 .filter(i->i.getCode().equals(code))
                 .findFirst()
-                .orElse(INIT);
+                .orElse(FUNCCommon);
     }
 }
