@@ -61,6 +61,8 @@ public class SpelEngine {
         return new SpelExecuteBatchProxy(input);
     }
 
+
+
     //endregeion
 
     private void logError(String func, String msg,Object... args){
@@ -316,6 +318,16 @@ public class SpelEngine {
         }
 
         @Override
+        public ISpelExecute withReasonIdSilence(String experimentId,String experimentPersonId,  String reasonId, Integer source) {
+            return new SpelExecuteSilenceProxy(target.withReasonId(experimentId, experimentPersonId, reasonId, source));
+        }
+
+        @Override
+        public ISpelExecuteBatch withReasonIdSilence(String experimentId,String experimentPersonId,  Collection<String> reasonIds, Integer source) {
+            return new SpelExecuteBatchSilenceProxy(target.withReasonId(experimentId,  experimentPersonId,reasonIds, source));
+        }
+
+        @Override
         public ISpelExecute withExpressionId(String experimentId,String experimentPersonId,  String expressionId, Integer source) {
             return new SpelExecuteProxy( target.withExpressionId(experimentId, experimentPersonId, expressionId, source));
         }
@@ -382,6 +394,106 @@ public class SpelEngine {
         @Override
         public List<SpelInput> getInput() {
             return target;
+        }
+    }
+
+    private class SpelExecuteSilenceProxy implements ISpelExecute {
+        private SpelExecuteSilenceProxy(SpelInput target) {
+            this.target = target;
+        }
+
+        private final SpelInput target;
+
+
+        @Override
+        public boolean check(StandardEvaluationContext context) {
+            try {
+                return SpelEngine.Instance().check(this.target, context);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", target), ex);
+                return false;
+            }
+
+        }
+
+        @Override
+        public SpelEvalResult evalDeltaSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
+            try {
+                return SpelEngine.Instance().evalDeltaSum(this.target, context, mapSum);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", target), ex);
+                return null;
+            }
+        }
+
+        @Override
+        public SpelEvalResult evalSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
+            try {
+                return SpelEngine.Instance().evalSum(this.target, context, mapSum);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", target), ex);
+                return null;
+            }
+        }
+
+
+        @Override
+        public SpelInput getInput() {
+            return target;
+        }
+    }
+
+    private class SpelExecuteBatchSilenceProxy implements ISpelExecuteBatch {
+        private SpelExecuteBatchSilenceProxy(List<SpelInput> input) {
+            target = input;
+        }
+
+        private final List<SpelInput> target;
+
+
+        @Override
+        public List<SpelCheckResult> check(StandardEvaluationContext context) {
+            try {
+                return SpelEngine.Instance().check(this.target, context);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", getInputsString(target)), ex);
+                return null;
+            }
+        }
+
+        @Override
+        public List<SpelEvalResult> evalSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
+            try {
+                return SpelEngine.Instance().evalSum(this.target, context, mapSum);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", getInputsString(target)), ex);
+                return null;
+            }
+        }
+
+        @Override
+        public List<SpelEvalResult> evalDeltaSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
+            try {
+                return SpelEngine.Instance().evalDeltaSum(this.target, context, mapSum);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", getInputsString(target)), ex);
+                return null;
+            }
+        }
+
+        @Override
+        public List<SpelInput> getInput() {
+            return target;
+        }
+
+        private String getInputsString(List<SpelInput> inputs){
+            if(ShareUtil.XObject.isEmpty(inputs)){
+                return "NA";
+            }
+            StringBuilder sb=new StringBuilder("SpelInputs");
+            inputs.forEach(i-> i.buildString(sb).append(","));
+            return sb.toString();
+
         }
     }
     //endregion

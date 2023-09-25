@@ -117,7 +117,8 @@ public class FollowupPlanTask extends BaseEventTask {
                     if(item.getRetryTimes().incrementAndGet()>=MAXRetry4Item){
                         experimentKey.getRetryTimes().incrementAndGet();
                     }
-                    stat.append("runItemError:%s[id:%s]", ex.getMessage(),item.getEntity().getExperimentFollowupPlanId());
+                    stat.append("runPlanItemError:%s[id:%s]", ex.getMessage(),item.getEntity().getExperimentFollowupPlanId());
+                    logError(ex, "runPlanItemError", "error. stat:%s", stat);
                 }
                 stat.todoCounter.decrementAndGet();
             }

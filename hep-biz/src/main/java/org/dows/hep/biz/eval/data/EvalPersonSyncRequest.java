@@ -17,6 +17,8 @@ public class EvalPersonSyncRequest {
 
     private EnumEvalFuncType funcType;
 
+    private boolean silence;
+
     public boolean isPeriodInit(){
         return funcType==EnumEvalFuncType.PERIODEnd;
     }
