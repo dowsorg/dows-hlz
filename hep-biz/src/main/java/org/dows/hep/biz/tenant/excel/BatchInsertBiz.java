@@ -10,10 +10,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.poifs.filesystem.NotOLE2FileException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.framework.doc.api.entity.excel.ExcelSelector;
@@ -158,7 +155,13 @@ public class BatchInsertBiz {
                 Cell cell = row.getCell(k);
                 Cell resultCell = resultRow.createCell(k);
                 if (cell != null) {
-                    String value = cell.getStringCellValue();
+                    String value = null;
+                    CellType cellType = cell.getCellType();
+                    if (CellType.NUMERIC.equals(cellType)){
+                        value = String.valueOf((int)cell.getNumericCellValue());
+                    }else{
+                        value = cell.getStringCellValue();
+                    }
                     resultCell.setCellValue(value);
                 }
             }

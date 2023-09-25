@@ -193,12 +193,15 @@ public class EvalPersonBiz {
         final EvalPersonOnceHolder evalHolder = EvalPersonCache.Instance().getCurHolder(experimentId,experimentPersonId);
         experimentIndicatorViewPhysicalExamRsEntityList.forEach(experimentIndicatorViewPhysicalExamRsEntity -> {
             String indicatorInstanceId = experimentIndicatorViewPhysicalExamRsEntity.getIndicatorInstanceId();
-            String currentVal = evalHolder.getIndicatorVal(indicatorInstanceId,false);
+            String currentVal = "";
             String unit=null;
+            int scale=2;
             AtomicReference<String> resultExplainAtomicReference = new AtomicReference<>("");
             ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
             if (Objects.nonNull(experimentIndicatorInstanceRsEntity)) {
+                currentVal=evalHolder.getIndicatorVal(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(),false);
                 unit = experimentIndicatorInstanceRsEntity.getUnit();
+                scale=getScale(experimentIndicatorInstanceRsEntity.getIndicatorName());
                 SpelEvalResult evalRst= spelEngine.loadFromSpelCache().withReasonId(experimentId, experimentPersonId,
                         experimentIndicatorInstanceRsEntity.getCaseIndicatorInstanceId(), EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
                         .eval(context);
@@ -218,7 +221,7 @@ public class EvalPersonBiz {
                     .operateFlowId(operateFlowId)
                     .name(experimentIndicatorViewPhysicalExamRsEntity.getName())
                     .fee(experimentIndicatorViewPhysicalExamRsEntity.getFee())
-                    .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.HALF_UP))
+                    .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(scale, RoundingMode.HALF_UP))
                             .orElse(currentVal))
                     .unit(unit)
                     .resultExplain(experimentIndicatorViewPhysicalExamRsEntity.getResultAnalysis())
@@ -321,18 +324,23 @@ public class EvalPersonBiz {
         final EvalPersonOnceHolder evalHolder = EvalPersonCache.Instance().getCurHolder(experimentId,experimentPersonId);
         experimentIndicatorViewSupportExamRsEntityList.forEach(experimentIndicatorViewSupportExamRsEntity -> {
             String indicatorInstanceId = experimentIndicatorViewSupportExamRsEntity.getIndicatorInstanceId();
-            String currentVal = evalHolder.getIndicatorVal(indicatorInstanceId,false);
+            String currentVal = "";
             String unit = null;
+            int scale=2;
             AtomicReference<String> resultExplainAtomicReference = new AtomicReference<>("");
 
             ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
             if (Objects.nonNull(experimentIndicatorInstanceRsEntity)) {
+                currentVal=evalHolder.getIndicatorVal(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(),false);
                 unit = experimentIndicatorInstanceRsEntity.getUnit();
+                scale=getScale(experimentIndicatorInstanceRsEntity.getIndicatorName());
                 SpelEvalResult evalRst= spelEngine.loadFromSpelCache().withReasonId(experimentId, experimentPersonId,
                                 experimentIndicatorInstanceRsEntity.getCaseIndicatorInstanceId(), EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
                         .eval(context);
                 if(ShareUtil.XObject.notEmpty(evalRst)) {
                     resultExplainAtomicReference.set(evalRst.getValString());
+                }else {
+                    resultExplainAtomicReference.set(currentVal);
                 }
 
             }
@@ -347,7 +355,7 @@ public class EvalPersonBiz {
                     .operateFlowId(operateFlowId)
                     .name(experimentIndicatorViewSupportExamRsEntity.getName())
                     .fee(experimentIndicatorViewSupportExamRsEntity.getFee())
-                    .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(2, RoundingMode.HALF_UP))
+                    .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(scale, RoundingMode.HALF_UP))
                             .orElse(currentVal))
                     .unit(unit)
                     .resultExplain(experimentIndicatorViewSupportExamRsEntity.getResultAnalysis())
@@ -393,6 +401,10 @@ public class EvalPersonBiz {
                 .build();
         operateCostBiz.saveCost(costRequest);
         experimentIndicatorViewSupportExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamReportRsEntityList);
+    }
+    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压");
+    private int getScale(String indciatorName){
+        return INDICTATORNameBloodPressure.contains(indciatorName)?0:2;
     }
     private BigDecimal getExperimentPersonRestitution(BigDecimal fee,String experimentPersonId){
         //获取在该消费之前的保险购买记录并计算报销比例
