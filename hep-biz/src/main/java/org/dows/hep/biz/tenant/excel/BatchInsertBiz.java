@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -24,6 +25,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class BatchInsertBiz {
 
@@ -93,11 +95,8 @@ public class BatchInsertBiz {
     /**
      * 解析导入文件
      * 兼容 .xls 和 .xlsx
-     *
-     * @return
-     * @throws IOException
      */
-    public File parseImportExcelStream(MultipartFile multipartFile)  {
+    public File parseImportExcelStream(MultipartFile multipartFile) {
         //获取临时文件
         File file = multipartFileToFile(multipartFile);
         if (!file.exists()) {
@@ -107,13 +106,13 @@ public class BatchInsertBiz {
         Workbook book = null;
         try {
             fileInputStream = new FileInputStream(file);
+            boolean fg = file.delete();
+            log.info(file.getName() + "临时文件删除：" + fg);
             book = WorkbookFactory.create(fileInputStream);
             fileInputStream.close();
+
         } catch (IOException e) {
-            throw new BizException("不是原始的Excel文件,请下载模版更新后导入");
-        }finally{
-            //删除临时文件
-            file.delete();
+            throw new BizException("不是原始的Excel文件,请下载模版更新后导入:");
         }
         if (BeanUtil.isEmpty(book)) {
             return null;
@@ -141,7 +140,7 @@ public class BatchInsertBiz {
             fileOutputStream.close();
             book.close();
             resultBook.close();
-        }catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return tempFile;
@@ -157,7 +156,7 @@ public class BatchInsertBiz {
                     String value = null;
                     CellType cellType = cell.getCellType();
                     if (CellType.NUMERIC.equals(cellType)) {
-                        value = String.valueOf((int)cell.getNumericCellValue());
+                        value = String.valueOf((int) cell.getNumericCellValue());
                     } else {
                         value = cell.getStringCellValue();
                     }
