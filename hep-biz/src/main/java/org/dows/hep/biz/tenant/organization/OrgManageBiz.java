@@ -128,7 +128,6 @@ public class OrgManageBiz{
             //重新编译后读取文件
             File newFile=  batchInsertBiz.parseImportExcelStream(file);
             fin = new FileInputStream(newFile.getPath());
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

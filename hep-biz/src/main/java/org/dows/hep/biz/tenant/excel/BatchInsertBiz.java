@@ -5,10 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
-import org.apache.poi.poifs.filesystem.NotOLE2FileException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.dows.framework.api.exceptions.BizException;
@@ -100,31 +97,30 @@ public class BatchInsertBiz {
      * @return
      * @throws IOException
      */
-    public File parseImportExcelStream(MultipartFile multipartFile) throws IOException {
+    public File parseImportExcelStream(MultipartFile multipartFile)  {
         //获取临时文件
         File file = multipartFileToFile(multipartFile);
         if (!file.exists()) {
             return null;
         }
+        FileInputStream fileInputStream = null;
         Workbook book = null;
-        try {// 2007
-            book = new XSSFWorkbook(file);
-        } catch (NotOfficeXmlFileException ex) {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            book = new HSSFWorkbook(fileInputStream);
+        try {
+            fileInputStream = new FileInputStream(file);
+            book = WorkbookFactory.create(fileInputStream);
             fileInputStream.close();
-        } catch (NotOLE2FileException ignored) {
-            throw new BizException("不是Excel文件");
-        } catch (InvalidFormatException e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new BizException("不是原始的Excel文件,请下载模版更新后导入");
+        }finally{
+            //删除临时文件
+            file.delete();
         }
         if (BeanUtil.isEmpty(book)) {
             return null;
         }
-        //删除临时文件
-        file.delete();
         Workbook resultBook = new XSSFWorkbook();
         int sheetNum = book.getNumberOfSheets();
+
         if (sheetNum == 0) {
             return null;
         }
@@ -139,11 +135,15 @@ public class BatchInsertBiz {
             }
         }
         File tempFile = new File("importTemp.xlsx");
-        //是否存在
-        FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
-        resultBook.write(fileOutputStream);
-        fileOutputStream.close();
-        resultBook.close();
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+            resultBook.write(fileOutputStream);
+            fileOutputStream.close();
+            book.close();
+            resultBook.close();
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
         return tempFile;
     }
 
