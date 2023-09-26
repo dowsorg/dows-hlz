@@ -134,7 +134,7 @@ public class BatchInsertBiz {
             for (int j = 0; j <= lastRowNum; j++) {
                 Row row = sheet.getRow(j);
                 Row resultRow = resultSheet.createRow(j);
-                parseRow(row, resultRow);
+                parseRow(i, j, row, resultRow);
             }
         }
         File tempFile = new File("importTemp.xlsx");
@@ -148,32 +148,48 @@ public class BatchInsertBiz {
         return tempFile;
     }
 
-    private void parseRow(Row row, Row resultRow) {
+    private void parseRow(int sheetNum, int rowNum, Row row, Row resultRow) {
         if (row != null) {
             int lastCellNum = row.getLastCellNum();
             for (int k = 0; k <= lastCellNum; k++) {
                 Cell cell = row.getCell(k);
                 Cell resultCell = resultRow.createCell(k);
                 if (cell != null) {
-                    String value = null;
-                    CellType cellType = cell.getCellType();
-                    if (CellType.NUMERIC.equals(cellType)){
-                        value = String.valueOf((int)cell.getNumericCellValue());
-                    }else{
-                        value = cell.getStringCellValue();
-                    }
+                    checkValue(sheetNum+1, rowNum+1, k+1, cell);
+                    String value = cell.getStringCellValue();
                     resultCell.setCellValue(value);
                 }
             }
         }
     }
 
+    private final static String TABLE_HEADER_ACCOUNT = "用户账号(code)";
+    private final static String TABLE_HEADER_NAME = "用户姓名";
+
+    /**
+     * 导入学生文件校验
+     * 1为始
+     */
+    private void checkValue(int sheetNum, int rowNum, int cellNum, Cell cell) {
+        //账号密码不能为纯数字
+        if (CellType.NUMERIC.equals(cell.getCellType())) {
+            throw new BizException("在第" + sheetNum + "页,第" + rowNum + "行，第" + cellNum + "列，发现纯数字,请修改");
+        }
+        if (cellNum > 2) {
+            throw new BizException("有超出取值范围的列" + cellNum);
+        }
+        if (rowNum == 1) {
+            if (cellNum == 1 && !TABLE_HEADER_ACCOUNT.equals(cell.getStringCellValue())) {
+                throw new BizException("表头账号列不对");
+            }
+            if (cellNum == 2 && !TABLE_HEADER_NAME.equals(cell.getStringCellValue())) {
+                throw new BizException("表头姓名列不对");
+            }
+        }
+    }
 
     /**
      * 获取上传文件
-     *
-     * @param file
-     * @return
      */
     private MultipartFile getMultipartFile(File file) {
         FileInputStream fileInputStream = null;
