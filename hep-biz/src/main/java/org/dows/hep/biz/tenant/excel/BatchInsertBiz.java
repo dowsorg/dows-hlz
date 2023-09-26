@@ -23,6 +23,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -187,7 +188,7 @@ public class BatchInsertBiz {
             }
         } else {
             if (cellNum == 1 && containsChineseCharacters(value)) {
-                throw new BizException("账号不能有中文");
+                throw new BizException("账号只能有数字和字母");
             }
         }
     }
@@ -200,8 +201,12 @@ public class BatchInsertBiz {
         if (str == null) {
             return false;
         }
+        //不能是中文
         String regex = "[\u4e00-\u9fa5]+";
-        return str.matches(".*" + regex + ".*");
+        str.matches(".*" + regex + ".*");
+        //只能是数字和字母
+        return Pattern.matches("^[a-zA-Z0-9]+$", str);
+
     }
 
     public File multipartFileToFile(MultipartFile multipartFile) {
