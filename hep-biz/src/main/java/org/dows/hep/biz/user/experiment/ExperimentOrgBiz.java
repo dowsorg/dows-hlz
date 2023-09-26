@@ -23,7 +23,7 @@ import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.dao.ExperimentOrgNoticeDao;
 import org.dows.hep.biz.dao.ExperimentPersonDao;
 import org.dows.hep.biz.dao.OperateFlowDao;
-import org.dows.hep.biz.eval.ExperimentPersonCache;
+import org.dows.hep.biz.eval.*;
 import org.dows.hep.biz.event.EventExecutor;
 import org.dows.hep.biz.event.ExperimentEventRules;
 import org.dows.hep.biz.event.ExperimentSettingCache;
@@ -89,6 +89,8 @@ public class ExperimentOrgBiz {
     private final ExperimentOrgService experimentOrgService;
 
     private final CaseOrgFeeService caseOrgFeeService;
+
+    private final QueryPersonBiz queryPersonBiz;
 
     /**
      * @param
@@ -541,18 +543,20 @@ public class ExperimentOrgBiz {
         Map<String, OperateFlowEntity> mapFlow = ShareUtil.XCollection.toMap(rowsFlow, OperateFlowEntity::getExperimentPersonId);
 
         //关键指标
-        Map<String, List<String>> mapCoreIndicators = experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period, personIds);
+        //Map<String, List<String>> mapCoreIndicators = experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period, personIds);
 
-        List<ExperimentPersonResponse> rst=ShareUtil.XCollection.map(rowsPerson, true, src->{
-            ExperimentPersonResponse dst= CopyWrapper.create(ExperimentPersonResponse::new)
+        EvalPersonOnceHolder evalHolder= EvalPersonCache.Instance().getCurHolder(personRequest.getExperimentInstanceId(),personRequest.getExperimentPersonId());
+
+        List<ExperimentPersonResponse> rst=ShareUtil.XCollection.map(rowsPerson, true, src-> {
+            ExperimentPersonResponse dst = CopyWrapper.create(ExperimentPersonResponse::new)
                     .endFrom(src)
                     .setId(src.getId().toString())
                     .setName(src.getUserName());
             Optional.ofNullable(mapFlow.get(src.getExperimentPersonId()))
-                    .ifPresent(i->dst.setOperateFlowId(i.getOperateFlowId())
+                    .ifPresent(i -> dst.setOperateFlowId(i.getOperateFlowId())
                             .setFlowPeriod(i.getPeriods()));
-            return dst.setHealthPoint(experimentIndicatorInstanceRsBiz.getHealthPoint(period, src.getExperimentPersonId()))
-                    .setCoreIndicators(mapCoreIndicators.get(src.getExperimentPersonId()));
+            return dst.setHealthPoint(evalHolder.getHealthPoint(false))
+                    .setCoreIndicators(queryPersonBiz.getCoreIndicatorVals(src.getExperimentPersonId(),evalHolder));
         });
 
         return Page.<ExperimentPersonResponse>of(pageNo, pageSize).setRecords(rst);
@@ -648,4 +652,6 @@ public class ExperimentOrgBiz {
         BeanUtils.copyProperties(personEntity, response);
         return response;
     }
+
+
 }
