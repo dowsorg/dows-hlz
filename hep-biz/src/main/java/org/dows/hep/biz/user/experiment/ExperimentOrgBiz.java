@@ -545,7 +545,7 @@ public class ExperimentOrgBiz {
         //关键指标
         //Map<String, List<String>> mapCoreIndicators = experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period, personIds);
 
-        EvalPersonOnceHolder evalHolder= EvalPersonCache.Instance().getCurHolder(personRequest.getExperimentInstanceId(),personRequest.getExperimentPersonId());
+
 
         List<ExperimentPersonResponse> rst=ShareUtil.XCollection.map(rowsPerson, true, src-> {
             ExperimentPersonResponse dst = CopyWrapper.create(ExperimentPersonResponse::new)
@@ -555,6 +555,7 @@ public class ExperimentOrgBiz {
             Optional.ofNullable(mapFlow.get(src.getExperimentPersonId()))
                     .ifPresent(i -> dst.setOperateFlowId(i.getOperateFlowId())
                             .setFlowPeriod(i.getPeriods()));
+            EvalPersonOnceHolder evalHolder= EvalPersonCache.Instance().getCurHolder(src.getExperimentInstanceId(),src.getExperimentPersonId());
             return dst.setHealthPoint(evalHolder.getHealthPoint(false))
                     .setCoreIndicators(queryPersonBiz.getCoreIndicatorVals(src.getExperimentPersonId(),evalHolder));
         });
