@@ -65,4 +65,7 @@ public class OrgNoticeResponse{
     @Schema(title = "突发事件处理措施列表")
     private List<ExptOrgNoticeActionVO> actions;
 
+    @Schema(title = "人物信息")
+    private ExperimentPersonResponse personInfo;
+
 }
