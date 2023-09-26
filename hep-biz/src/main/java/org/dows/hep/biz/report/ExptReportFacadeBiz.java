@@ -149,6 +149,7 @@ public class ExptReportFacadeBiz {
         List<ExperimentGroupEntity> list = lambdaQueryChainWrapper.list();
         Collections.sort(list);
         Page<ExperimentGroupEntity> pageResult = lambdaQueryChainWrapper.page(pageRequest.getPage());
+        pageResult.setRecords(list);
         return convertGroupPageResult(pageResult, pageRequest.getExptInstanceId());
     }
 
