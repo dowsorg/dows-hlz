@@ -246,7 +246,7 @@ public class ExperimentOrgBiz {
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId);
         findOrgNotice.setFollowUpNoticeIds(followupNoticeIds);*/
 
-        return ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
+        Page<OrgNoticeResponse> rst= ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
                 ExperimentOrgNoticeEntity::getId,
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
                 ExperimentOrgNoticeEntity::getExperimentPersonId,
@@ -262,6 +262,19 @@ public class ExperimentOrgBiz {
                 ExperimentOrgNoticeEntity::getReadState,
                 ExperimentOrgNoticeEntity::getActionState
         ), i -> CopyWrapper.create(OrgNoticeResponse::new).endFrom(i));
+        rst.getRecords().forEach(i-> {
+            if (!EnumExperimentOrgNoticeType.FOLLOWUP.getCode().equals(i.getNoticeSrcType())) {
+                return;
+            }
+            Page<ExperimentPersonResponse> personInfo = pageExperimentPersons(ExperimentPersonRequest.builder()
+                    .experimentPersonId(i.getExperimentPersonId())
+                    .build());
+            if (ShareUtil.XObject.isEmpty(personInfo.getRecords())) {
+                return;
+            }
+            i.setPersonInfo(personInfo.getRecords().get(0));
+        });
+        return rst;
     }
 
     /**
@@ -496,7 +509,15 @@ public class ExperimentOrgBiz {
      */
     public Page<ExperimentPersonResponse> pageExperimentPersons(ExperimentPersonRequest personRequest) {
 
-        List<ExperimentPersonEntity> rowsPerson= ExperimentPersonCache.Instance().getPersonsByOrgId(personRequest.getExperimentInstanceId(),personRequest.getExperimentOrgId());
+        List<ExperimentPersonEntity> rowsPerson=null;
+        if(ShareUtil.XObject.notEmpty(personRequest.getExperimentPersonId())){
+            ExperimentPersonEntity rowPeron=ExperimentPersonCache.Instance().getPerson(personRequest.getExperimentInstanceId(),personRequest.getExperimentPersonId());
+            if(ShareUtil.XObject.notEmpty(rowPeron)){
+                rowsPerson=List.of(rowPeron);
+            }
+        }else {
+            rowsPerson = ExperimentPersonCache.Instance().getPersonsByOrgId(personRequest.getExperimentInstanceId(), personRequest.getExperimentOrgId());
+        }
         if(ShareUtil.XObject.isEmpty(rowsPerson)){
             return new Page<>();
         }
