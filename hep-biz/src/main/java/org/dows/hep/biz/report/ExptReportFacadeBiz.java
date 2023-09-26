@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import jakarta.servlet.http.HttpServletRequest;
@@ -143,10 +144,11 @@ public class ExptReportFacadeBiz {
      * @date 2023/7/31 14:16
      */
     public Page<ExptGroupReportPageResponse> pageGroupReport(ExptGroupReportPageRequest pageRequest) {
-        Page<ExperimentGroupEntity> pageResult = experimentGroupService.lambdaQuery()
-                .eq(ExperimentGroupEntity::getExperimentInstanceId, pageRequest.getExptInstanceId())
-                .orderByAsc(ExperimentGroupEntity::getId)
-                .page(pageRequest.getPage());
+        LambdaQueryChainWrapper<ExperimentGroupEntity> eq = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, pageRequest.getExptInstanceId());
+        List<ExperimentGroupEntity> list = eq.list();
+        Collections.sort(list);
+        Page<ExperimentGroupEntity> pageResult = eq.page(pageRequest.getPage());
         return convertGroupPageResult(pageResult, pageRequest.getExptInstanceId());
     }
 
