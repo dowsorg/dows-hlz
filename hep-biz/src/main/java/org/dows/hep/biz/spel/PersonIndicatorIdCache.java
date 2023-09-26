@@ -81,6 +81,13 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
         }
         return coll.getSortedIndicators();
     }
+    public List<ExperimentIndicatorInstanceRsEntity> getCoreIndicators(String exptPersonId){
+        PersonIndicatorIdCollection coll= this.loadingCache().get(exptPersonId);
+        if(ShareUtil.XObject.isEmpty(coll)){
+            return Collections.emptyList();
+        }
+        return coll.getCoreIndicators();
+    }
     public Map<String,String> getMapBaseCase2ExptId(String exptPersonId){
         PersonIndicatorIdCollection coll= this.loadingCache().get(exptPersonId);
         if(ShareUtil.XObject.isEmpty(coll)){
@@ -159,6 +166,9 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
             rst.getMapExptIndicators().put(i.getExperimentIndicatorInstanceId(), i);
             rst.getSortedIndicators().add(i);
             i.setDocType(EnumIndicatorDocType.NONE).setMin(null).setMax(null);
+            if(Optional.ofNullable( i.getCore()).orElse(0)>0){
+                rst.getCoreIndicators().add(i);
+            }
             EnumIndicatorType indicatorType=EnumIndicatorType.of(i.getType());
             if(null==indicatorType){
                 return;
@@ -285,6 +295,9 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
 
         @Getter
         private final Set<String> watchIndicatorIds=new HashSet<>();
+
+        @Getter
+        private final List<ExperimentIndicatorInstanceRsEntity> coreIndicators=new ArrayList<>();
 
        /* @Getter
         private final Map<String,ExperimentIndicatorInstanceRsEntity> docEnergyIndicators=new LinkedHashMap<>();
