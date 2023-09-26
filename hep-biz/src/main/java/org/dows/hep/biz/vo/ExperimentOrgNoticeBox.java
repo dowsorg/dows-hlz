@@ -40,6 +40,9 @@ public class ExperimentOrgNoticeBox  {
     public boolean isEventNotice(){
         return EnumExperimentOrgNoticeType.EVENTTriggered.getCode().equals(entity.getNoticeSrcType());
     }
+    public boolean isFollowUp(){
+        return EnumExperimentOrgNoticeType.FOLLOWUP.getCode().equals(entity.getNoticeSrcType());
+    }
 
 
     public String toActionsJsonOrDefault(boolean forceFlag) throws JsonProcessingException{
