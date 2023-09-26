@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 
@@ -30,7 +31,7 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "ExperimentGroup", title = "实验小组")
 @TableName("experiment_group")
-public class ExperimentGroupEntity implements CrudEntity {
+public class ExperimentGroupEntity implements CrudEntity,Comparable<ExperimentGroupEntity>{
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @Schema(title = "数据库ID")
@@ -79,5 +80,9 @@ public class ExperimentGroupEntity implements CrudEntity {
     @Schema(title = "时间戳")
     private Date dt;
 
+    @Override
+    public int compareTo(@NotNull ExperimentGroupEntity o) {
+        return Integer.parseInt(this.groupNo) - Integer.parseInt(o.groupNo);
+    }
 }
 
