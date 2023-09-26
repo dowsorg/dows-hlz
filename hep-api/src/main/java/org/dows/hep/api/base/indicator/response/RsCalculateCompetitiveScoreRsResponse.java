@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author runsix
@@ -17,6 +18,9 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class RsCalculateCompetitiveScoreRsResponse implements Serializable {
+  @Schema(title = "小组竞争性得分")
+  Map<String,GroupCompetitiveScoreRsResponse> mapGroupScores;
+
   @Schema(title = "小组竞争性得分列表")
   List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList;
 }
