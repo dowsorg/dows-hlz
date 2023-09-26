@@ -122,6 +122,8 @@ public class BatchInsertBiz {
         if (BeanUtil.isEmpty(book)) {
             return null;
         }
+        //删除临时文件
+        file.delete();
         Workbook resultBook = new XSSFWorkbook();
         int sheetNum = book.getNumberOfSheets();
         if (sheetNum == 0) {
@@ -143,8 +145,6 @@ public class BatchInsertBiz {
         resultBook.write(fileOutputStream);
         fileOutputStream.close();
         resultBook.close();
-        //删除临时文件
-        file.delete();
         return tempFile;
     }
 
