@@ -31,6 +31,7 @@ import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
+import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.properties.FindSoftProperties;
@@ -499,10 +500,10 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
 
         Integer totalRank = getTotalRank(exptGroupId, exptData);
         ExptSandReportModel.ScoreInfo.Score totalScore = ExptSandReportModel.ScoreInfo.Score.builder()
-                .healthIndexScore(tHealthIndexScore.toString())
-                .knowledgeScore(tKnowledgeScore.toString())
-                .treatmentPercentScore(tTreatmentPercentScore.toString())
-                .totalScore(tTotalScore.toString())
+                .healthIndexScore(BigDecimalUtil.formatRoundDecimal(tHealthIndexScore, 2 ))
+                .knowledgeScore(BigDecimalUtil.formatRoundDecimal(tKnowledgeScore, 2 ))
+                .treatmentPercentScore(BigDecimalUtil.formatRoundDecimal(tTreatmentPercentScore, 2 ))
+                .totalScore(BigDecimalUtil.formatRoundDecimal(tTotalScore, 2 ))
                 .totalRanking(String.valueOf(totalRank))
                 .build();
 

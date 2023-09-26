@@ -224,4 +224,25 @@ public class QueryPersonBiz {
         });
         return rst;
     }
+
+    public List<String> getCoreIndicatorVals(String experimentPersonId,EvalPersonOnceHolder evalHolder){
+        List<ExperimentIndicatorInstanceRsEntity> coreIndicators= personIndicatorIdCache.getCoreIndicators(experimentPersonId);
+        if(ShareUtil.XObject.isEmpty(coreIndicators)){
+            return Collections.emptyList();
+        }
+        List<String> rst=new ArrayList<>();
+        if(null==evalHolder) {
+            evalHolder = EvalPersonCache.Instance().getCurHolder(experimentPersonId);
+        }
+        if(ShareUtil.XObject.isEmpty(evalHolder)){
+            return Collections.emptyList();
+        }
+        for(ExperimentIndicatorInstanceRsEntity item:coreIndicators){
+            String curVal=evalHolder.getIndicatorVal(item.getExperimentIndicatorInstanceId(),false);
+            String unit=Optional.ofNullable(item.getUnit()).orElse("");
+            rst.add(String.format("%s:%s%s", item.getIndicatorName(), curVal, unit));
+        }
+        return rst;
+
+    }
 }
