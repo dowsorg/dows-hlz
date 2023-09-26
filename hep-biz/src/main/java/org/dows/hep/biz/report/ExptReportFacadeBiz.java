@@ -147,9 +147,10 @@ public class ExptReportFacadeBiz {
         LambdaQueryChainWrapper<ExperimentGroupEntity> lambdaQueryChainWrapper = experimentGroupService.lambdaQuery()
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, pageRequest.getExptInstanceId());
         List<ExperimentGroupEntity> list = lambdaQueryChainWrapper.list();
-        Collections.sort(list);
+        list.sort(Comparator.comparingInt(a -> Integer.parseInt(a.getGroupNo())));
         Page<ExperimentGroupEntity> pageResult = lambdaQueryChainWrapper.page(pageRequest.getPage());
-        pageResult.setRecords(list.subList(0,pageResult.getRecords().size()));
+        int index =(int) ((pageResult.getCurrent()-1)*pageResult.getSize());
+        pageResult.setRecords(list.subList(index,index + pageResult.getRecords().size()));
         return convertGroupPageResult(pageResult, pageRequest.getExptInstanceId());
     }
 
