@@ -5,7 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.entity.ContentType;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
@@ -17,7 +16,6 @@ import org.dows.framework.doc.api.entity.excel.ExcelSelector;
 import org.dows.framework.doc.api.entity.excel.Point;
 import org.dows.framework.doc.api.entity.excel.SheetRange;
 import org.dows.hep.biz.util.AssertUtil;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +23,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -136,7 +135,7 @@ public class BatchInsertBiz {
             for (int j = 0; j <= lastRowNum; j++) {
                 Row row = sheet.getRow(j);
                 Row resultRow = resultSheet.createRow(j);
-                parseRow(i, j, row, resultRow);
+                parseRow(j, row, resultRow);
             }
         }
         File tempFile = new File("importTemp.xlsx");
@@ -148,15 +147,21 @@ public class BatchInsertBiz {
         return tempFile;
     }
 
-    private void parseRow(int sheetNum, int rowNum, Row row, Row resultRow) {
+    private void parseRow(int rowNum, Row row, Row resultRow) {
         if (row != null) {
             int lastCellNum = row.getLastCellNum();
             for (int k = 0; k <= lastCellNum; k++) {
                 Cell cell = row.getCell(k);
                 Cell resultCell = resultRow.createCell(k);
                 if (cell != null) {
-                    checkValue(sheetNum+1, rowNum+1, k+1, cell);
-                    String value = cell.getStringCellValue();
+                    String value = null;
+                    CellType cellType = cell.getCellType();
+                    if (CellType.NUMERIC.equals(cellType)) {
+                        value = String.valueOf(cell.getNumericCellValue());
+                    } else {
+                        value = cell.getStringCellValue();
+                    }
+                    checkValue(rowNum + 1, k + 1, value);
                     resultCell.setCellValue(value);
                 }
             }
@@ -170,40 +175,38 @@ public class BatchInsertBiz {
      * 导入学生文件校验
      * 1为始
      */
-    private void checkValue(int sheetNum, int rowNum, int cellNum, Cell cell) {
-        //账号密码不能为纯数字
-        if (CellType.NUMERIC.equals(cell.getCellType())) {
-            throw new BizException("在第" + sheetNum + "页,第" + rowNum + "行，第" + cellNum + "列，发现纯数字,请修改");
-        }
+    private void checkValue(int rowNum, int cellNum, String value) {
         if (cellNum > 2) {
             throw new BizException("有超出取值范围的列" + cellNum);
         }
         if (rowNum == 1) {
-            if (cellNum == 1 && !TABLE_HEADER_ACCOUNT.equals(cell.getStringCellValue())) {
+            if (cellNum == 1 && !TABLE_HEADER_ACCOUNT.equals(value)) {
                 throw new BizException("表头账号列不对");
             }
-            if (cellNum == 2 && !TABLE_HEADER_NAME.equals(cell.getStringCellValue())) {
+            if (cellNum == 2 && !TABLE_HEADER_NAME.equals(value)) {
                 throw new BizException("表头姓名列不对");
+            }
+        } else {
+            if (cellNum == 1 && containsChineseCharacters(value)) {
+                throw new BizException("账号只能有数字和字母");
             }
         }
     }
 
     /**
-     * 获取上传文件
+     * 中文正则
+     * true
      */
-    private MultipartFile getMultipartFile(File file) {
-        FileInputStream fileInputStream = null;
-        MultipartFile multipartFile = null;
-        try {
-            fileInputStream = new FileInputStream(file);
-            multipartFile = new MockMultipartFile(file.getName(), file.getName(),
-                    ContentType.APPLICATION_OCTET_STREAM.toString(), fileInputStream);
-            fileInputStream.close();
-        } catch (Exception e) {
-            throw new BizException("File 转 MultipartFile文件异常");
+    private boolean containsChineseCharacters(String str) {
+        if (str == null) {
+            return false;
         }
+        //不能是中文
+        String regex = "[\u4e00-\u9fa5]+";
+        str.matches(".*" + regex + ".*");
+        //只能是数字和字母
+        return Pattern.matches("^[a-zA-Z0-9]+$", str);
 
-        return multipartFile;
     }
 
     public File multipartFileToFile(MultipartFile multipartFile) {
