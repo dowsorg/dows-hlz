@@ -144,11 +144,11 @@ public class ExptReportFacadeBiz {
      * @date 2023/7/31 14:16
      */
     public Page<ExptGroupReportPageResponse> pageGroupReport(ExptGroupReportPageRequest pageRequest) {
-        LambdaQueryChainWrapper<ExperimentGroupEntity> eq = experimentGroupService.lambdaQuery()
+        LambdaQueryChainWrapper<ExperimentGroupEntity> lambdaQueryChainWrapper = experimentGroupService.lambdaQuery()
                 .eq(ExperimentGroupEntity::getExperimentInstanceId, pageRequest.getExptInstanceId());
-        List<ExperimentGroupEntity> list = eq.list();
+        List<ExperimentGroupEntity> list = lambdaQueryChainWrapper.list();
         Collections.sort(list);
-        Page<ExperimentGroupEntity> pageResult = eq.page(pageRequest.getPage());
+        Page<ExperimentGroupEntity> pageResult = lambdaQueryChainWrapper.page(pageRequest.getPage());
         return convertGroupPageResult(pageResult, pageRequest.getExptInstanceId());
     }
 
