@@ -1,6 +1,5 @@
 package org.dows.hep.biz.user.experiment;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +9,6 @@ import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.enums.EnumEventActionState;
 import org.dows.hep.api.enums.EnumExperimentOrgNoticeType;
 import org.dows.hep.api.enums.EnumWebSocketType;
-import org.dows.hep.api.user.experiment.request.ExperimentPersonRequest;
-import org.dows.hep.api.user.experiment.response.ExperimentPersonResponse;
 import org.dows.hep.api.user.experiment.response.OrgNoticeResponse;
 import org.dows.hep.api.user.experiment.vo.ExptOrgNoticeActionVO;
 import org.dows.hep.biz.dao.ExperimentParticipatorDao;
@@ -200,7 +197,7 @@ public class ExperimentOrgNoticeBiz {
         if(noticeBox.isEventNotice()) {
             return rst.setActions(noticeBox.fromActionsJson(false));
         }
-        if(noticeBox.isFollowUp()) {
+       /* if(noticeBox.isFollowUp()) {
             Page<ExperimentPersonResponse> personInfos = CrudContextHolder.getBean(ExperimentOrgBiz.class).pageExperimentPersons(ExperimentPersonRequest.builder()
                     .experimentPersonId(noticeBox.getEntity().getExperimentPersonId())
                     .build());
@@ -208,7 +205,7 @@ public class ExperimentOrgNoticeBiz {
                 return rst;
             }
             rst.setPersonInfo(personInfos.getRecords().get(0));
-        }
+        }*/
         return rst;
     }
     //endregion
