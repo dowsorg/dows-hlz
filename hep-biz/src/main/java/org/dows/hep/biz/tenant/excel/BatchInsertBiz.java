@@ -187,7 +187,7 @@ public class BatchInsertBiz {
                 throw new BizException("表头姓名列不对");
             }
         } else {
-            if (cellNum == 1 && containsChineseCharacters(value)) {
+            if (cellNum == 1 && !containsChineseCharacters(value)) {
                 throw new BizException("账号只能有数字和字母");
             }
         }
@@ -202,8 +202,8 @@ public class BatchInsertBiz {
             return false;
         }
         //不能是中文
-        String regex = "[\u4e00-\u9fa5]+";
-        str.matches(".*" + regex + ".*");
+//        String regex = "[\u4e00-\u9fa5]+";
+//        str.matches(".*" + regex + ".*");
         //只能是数字和字母
         return Pattern.matches("^[a-zA-Z0-9]+$", str);
 
