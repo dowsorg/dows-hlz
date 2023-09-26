@@ -262,7 +262,7 @@ public class ExperimentOrgBiz {
                 ExperimentOrgNoticeEntity::getReadState,
                 ExperimentOrgNoticeEntity::getActionState
         ), i -> CopyWrapper.create(OrgNoticeResponse::new).endFrom(i));
-        rst.getRecords().forEach(i-> {
+       /* rst.getRecords().forEach(i-> {
             if (!EnumExperimentOrgNoticeType.FOLLOWUP.getCode().equals(i.getNoticeSrcType())) {
                 return;
             }
@@ -273,7 +273,7 @@ public class ExperimentOrgBiz {
                 return;
             }
             i.setPersonInfo(personInfo.getRecords().get(0));
-        });
+        });*/
         return rst;
     }
 
