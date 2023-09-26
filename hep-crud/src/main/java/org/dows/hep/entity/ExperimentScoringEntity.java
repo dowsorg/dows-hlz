@@ -90,6 +90,9 @@ public class ExperimentScoringEntity implements CrudEntity {
     @Schema(title = "排名")
     private Integer rankNo;
 
+    @Schema(title = "竞争性得分计算")
+    private String hpScoreJson;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

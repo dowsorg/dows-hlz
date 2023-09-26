@@ -5,11 +5,10 @@ import org.dows.hep.api.base.indicator.request.RsCalculateCompetitiveScoreReques
 import org.dows.hep.api.base.indicator.response.GroupCompetitiveScoreRsResponse;
 import org.dows.hep.api.base.indicator.response.RsCalculateCompetitiveScoreRsResponse;
 import org.dows.hep.api.enums.EnumIndicatorType;
-import org.dows.hep.biz.spel.PersonIndicatorIdCache;
+import org.dows.hep.api.user.experiment.vo.HealthIndexScoreVO;
 import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
-import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.ExperimentPersonEntity;
 import org.springframework.stereotype.Component;
 
@@ -28,11 +27,17 @@ public class EvalCompetitiveScoreBiz {
     private final ExperimentPersonCache experimentPersonCache;
     private final EvalPersonCache evalPersonCache;
 
+    private BigDecimal MINHPScore=BigDecimal.ZERO;
+    private BigDecimal MAXHPScore=BigDecimal.valueOf(100L);
+
+    private final int SCALEScore=2;
+
+
     public RsCalculateCompetitiveScoreRsResponse evalCompetitiveScore(RsCalculateCompetitiveScoreRequestRs rsCalculateCompetitiveScoreRequestRs) {
-        List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList = new ArrayList<>();
+
         String experimentId = rsCalculateCompetitiveScoreRequestRs.getExperimentId();
         Integer periods = rsCalculateCompetitiveScoreRequestRs.getPeriods();
-        Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap = new HashMap<>();
+        Map<String, GroupCompetitiveScoreRsResponse> kExperimentGroupIdVGroupCompetitiveScoreMap = new HashMap<>();
 
 
         Map<String, ExperimentPersonEntity> kExperimentPersonIdVCasePersonIdMap = experimentPersonCache.getMapPersons(experimentId);
@@ -70,35 +75,70 @@ public class EvalCompetitiveScoreBiz {
             kCasePersonIdVMaxHealthScoreMap.put(casePersonId, maxBigDecimal);
         });
 
+
         kExperimentGroupIdVExperimentPersonEntityListMap.forEach((experimentGroupId, experimentPersonEntityList) -> {
-            List<BigDecimal> valuedScores=new ArrayList<>();
+            List<HealthIndexScoreVO> personScores=new ArrayList<>();
             experimentPersonEntityList.forEach(experimentPersonEntity -> {
                 String experimentPersonId = experimentPersonEntity.getExperimentPersonId();
                 String casePersonId = experimentPersonEntity.getCasePersonId();
                 BigDecimal minHealthScore = kCasePersonIdVMinHealthScoreMap.get(casePersonId);
                 BigDecimal maxHealthScore = kCasePersonIdVMaxHealthScoreMap.get(casePersonId);
-                ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = PersonIndicatorIdCache.Instance().getSysIndicator(experimentPersonId,EnumIndicatorType.HEALTH_POINT);
-                String defHealthScore = experimentIndicatorInstanceRsEntity.getDef();
-                BigDecimal curHealthScore=mapPersonXHp.get(experimentPersonId);
 
-                BigDecimal resultHealthScore = evalCompetitiveScore(curHealthScore, BigDecimalUtil.valueOf(defHealthScore), minHealthScore, maxHealthScore);
+
+                BigDecimal curHealthScore=mapPersonXHp.get(experimentPersonId);
+                //ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = PersonIndicatorIdCache.Instance().getSysIndicator(experimentPersonId,EnumIndicatorType.HEALTH_POINT);
+                //String defHealthScore = experimentIndicatorInstanceRsEntity.getDef();
+                //BigDecimal resultHealthScore = evalCompetitiveScore(curHealthScore, BigDecimalUtil.valueOf(defHealthScore), minHealthScore, maxHealthScore);
+                BigDecimal resultHealthScore = evalCompetitiveScore(curHealthScore,minHealthScore, maxHealthScore);
                 if(ShareUtil.XObject.notEmpty(resultHealthScore)) {
-                    valuedScores.add(resultHealthScore);
+                    personScores.add(new HealthIndexScoreVO()
+                            .setCasePersonId(casePersonId)
+                            .setPersonName(experimentPersonEntity.getUserName())
+                            .setCurHP(curHealthScore)
+                            .setRstScore(resultHealthScore)
+                            .setMinScore(minHealthScore)
+                            .setMaxScore(maxHealthScore)
+                    );
                 }
+
             });
-            kExperimentGroupIdVGroupCompetitiveScoreMap.put(experimentGroupId, getAvg(valuedScores));
+            GroupCompetitiveScoreRsResponse groupScore=new GroupCompetitiveScoreRsResponse()
+                    .setExperimentGroupId(experimentGroupId)
+                    .setGroupCompetitiveScore(getAvg(personScores))
+                    .setPersonScores(personScores);
+            kExperimentGroupIdVGroupCompetitiveScoreMap.put(experimentGroupId, groupScore);
         });
-        kExperimentGroupIdVGroupCompetitiveScoreMap.forEach((experimentGroupId, groupCompetitiveScore) -> {
-            groupCompetitiveScoreRsResponseList.add(GroupCompetitiveScoreRsResponse
-                    .builder()
-                    .experimentGroupId(experimentGroupId)
-                    .groupCompetitiveScore(groupCompetitiveScore)
-                    .build());
-        });
+
         return RsCalculateCompetitiveScoreRsResponse
                 .builder()
-                .groupCompetitiveScoreRsResponseList(groupCompetitiveScoreRsResponseList)
+                .mapGroupScores(kExperimentGroupIdVGroupCompetitiveScoreMap)
+                //.groupCompetitiveScoreRsResponseList(kExperimentGroupIdVGroupCompetitiveScoreMap.values().stream().toList())
                 .build();
+    }
+
+    private BigDecimal evalCompetitiveScore(BigDecimal curSocre, BigDecimal minScore, BigDecimal maxScore){
+        if(null==minScore){
+            minScore=curSocre;
+        }
+        if(null==maxScore){
+            maxScore=curSocre;
+        }
+        if(minScore.compareTo(maxScore)==0){
+            return curSocre;
+        }
+        if(maxScore.compareTo(curSocre)<=0){
+            return MAXHPScore;
+        }
+        if(curSocre.compareTo(minScore)<=0){
+            return MINHPScore;
+        }
+        return BigDecimalOptional.valueOf(curSocre)
+                .sub(minScore)
+                .mul(MAXHPScore.subtract(MINHPScore))
+                .div(maxScore.subtract(minScore), SCALEScore)
+                .add(MINHPScore)
+                .getValue(SCALEScore);
+
     }
     private BigDecimal evalCompetitiveScore(BigDecimal currentHealthScore, BigDecimal defHealthScore, BigDecimal minHealthScore, BigDecimal maxHealthScore) {
         if(ShareUtil.XObject.anyEmpty(currentHealthScore,defHealthScore)){
@@ -121,12 +161,12 @@ public class EvalCompetitiveScoreBiz {
         }
         return resultBigDecimal;
     }
-    private BigDecimal getAvg(List<BigDecimal> values){
+    private BigDecimal getAvg(List<HealthIndexScoreVO> values){
         if(ShareUtil.XObject.isEmpty(values)){
             return BigDecimal.ONE;
         }
         BigDecimalOptional total=BigDecimalOptional.create();
-        values.forEach(i->total.add(i));
+        values.forEach(i->total.add(i.getRstScore()));
         return total.div(BigDecimalUtil.valueOf(values.size()), 2, RoundingMode.HALF_UP).getValue();
 
     }
