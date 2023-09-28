@@ -96,7 +96,7 @@ public class BatchInsertBiz {
      * 解析导入文件
      * 兼容 .xls 和 .xlsx
      */
-    public File parseImportExcelStream(MultipartFile multipartFile) {
+    public File parseImportExcelStream(MultipartFile multipartFile) throws IOException {
         //获取临时文件
         File file = multipartFileToFile(multipartFile);
         if (!file.exists()) {
@@ -106,13 +106,14 @@ public class BatchInsertBiz {
         Workbook book = null;
         try {
             fileInputStream = new FileInputStream(file);
-            boolean fg = file.delete();
-            log.info(file.getName() + "临时文件删除：" + fg);
             book = WorkbookFactory.create(fileInputStream);
-            fileInputStream.close();
-
         } catch (IOException e) {
-            throw new BizException("不是原始的Excel文件,请下载模版更新后导入:");
+            throw new BizException("不是原始的Excel文件,请使用模版导入！！！");
+        } finally {
+            if (fileInputStream != null) {
+                fileInputStream.close();
+            }
+            log.info(file.getName() + "临时文件删除：" + file.delete());
         }
         if (BeanUtil.isEmpty(book)) {
             return null;
