@@ -23,6 +23,13 @@ services:
 #    networks:
 #      dev_net:
 #        ipv4_address: 172.18.0.6
+    #服务的CPU使用被限制在最多50%的CPU能力，内存使用被限制在最多500MB。同时，这个服务至少需要25%的CPU和200MB的内存
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 512M
 
 networks:
   dev_net:
