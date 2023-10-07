@@ -45,7 +45,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -827,23 +826,36 @@ public class OrgBiz {
     public IPage<CaseOrgResponse> listOrgnization(CaseOrgRequest request) {
         //1、实验的时候获取已发布的机构,案例获取全部，不需要传status
         Set<String> orgIds = new HashSet<>();
-        if(request.getStatus() != null && request.getStatus() == 1) {
-            List<AccountOrgResponse> orgList = accountOrgApi.getValidAccountOrgList(request.getStatus());
-            if(orgList != null && orgList.size() > 0) {
-                orgList.forEach(org -> {
-                    orgIds.add(org.getOrgId());
-                });
-            }
-        }
-        //2、查询
-        LambdaQueryWrapper<CaseOrgEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(StringUtils.isNotEmpty(request.getOrgId()), CaseOrgEntity::getOrgId, request.getOrgId())
-                .in(orgIds != null && orgIds.size() > 0,CaseOrgEntity::getOrgId,orgIds)
+        //2.查询
+        LambdaQueryWrapper<CaseOrgEntity> caseOrgEntityWrapper = new LambdaQueryWrapper<>();
+        caseOrgEntityWrapper.eq(StringUtils.isNotEmpty(request.getOrgId()), CaseOrgEntity::getOrgId, request.getOrgId())
                 .like(StringUtils.isNotEmpty(request.getOrgName()), CaseOrgEntity::getOrgName, request.getOrgName())
                 .eq(StringUtils.isNotEmpty(request.getCaseInstanceId()), CaseOrgEntity::getCaseInstanceId, request.getCaseInstanceId())
                 .orderByDesc(CaseOrgEntity::getDt);
+        List<CaseOrgEntity> list = caseOrgService.list(caseOrgEntityWrapper);
+        if(request.getStatus() != null && request.getStatus() == 1) {
+//            List<AccountOrgResponse> orgList = accountOrgApi.getValidAccountOrgList(request.getStatus());
+            list.forEach(caseOrgEntity -> {
+                AccountOrgResponse accountOrg = accountOrgApi.getAccountOrgByOrgId(caseOrgEntity.getOrgId(), "3");
+                if (accountOrg != null) {
+                    orgIds.add(accountOrg.getOrgId());
+                }
+            });
+            //3.过滤
+            list = list.stream().filter(org ->orgIds.contains(org.getOrgId())).toList();
+        }
+        //2、查询
+//        LambdaQueryWrapper<CaseOrgEntity> queryWrapper = new LambdaQueryWrapper<>();
+//        queryWrapper.eq(StringUtils.isNotEmpty(request.getOrgId()), CaseOrgEntity::getOrgId, request.getOrgId())
+//                .in(orgIds != null && orgIds.size() > 0,CaseOrgEntity::getOrgId,orgIds)
+//                .like(StringUtils.isNotEmpty(request.getOrgName()), CaseOrgEntity::getOrgName, request.getOrgName())
+//                .eq(StringUtils.isNotEmpty(request.getCaseInstanceId()), CaseOrgEntity::getCaseInstanceId, request.getCaseInstanceId())
+//                .orderByDesc(CaseOrgEntity::getDt);
+        //组装分页
         Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
-        IPage<CaseOrgEntity> orgList = caseOrgService.page(page, queryWrapper);
+        int index = (request.getPageNo()-1)*request.getPageSize();
+        page.setRecords(list.subList(index,index+request.getPageSize()));
+        IPage<CaseOrgEntity> orgList = caseOrgService.page(page);
         //复制属性
         IPage<CaseOrgResponse> pageVo = new Page<>();
         BeanUtils.copyProperties(orgList, pageVo, new String[]{"records"});
