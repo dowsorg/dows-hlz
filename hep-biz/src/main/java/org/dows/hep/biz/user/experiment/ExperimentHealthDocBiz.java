@@ -22,6 +22,7 @@ import org.dows.hep.entity.ExperimentIndicatorLogEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
 
@@ -37,6 +38,8 @@ public class ExperimentHealthDocBiz {
     private final EvalPersonCache evalPersonCache;
 
     private final ExperimentIndicatorLogDao experimentIndicatorLogDao;
+    //数值转换
+    private final static String XIN_LV = "心率";
     /**
      * 获取健康档案左上基本信息
      * @param appId
@@ -87,6 +90,14 @@ public class ExperimentHealthDocBiz {
             EnumIndicatorDocType docType=EnumIndicatorDocType.of(i.getDocType());
             if(docType==EnumIndicatorDocType.NONE){
                 return;
+            }
+            if(XIN_LV.equals(i.getExperimentIndicatorName())){
+                BigDecimal cuaVal = BigDecimal.valueOf(Double.parseDouble(i.getCurVal()));
+                i.setCurVal(cuaVal.setScale(0, RoundingMode.HALF_UP).toString());
+                BigDecimal lastVal = BigDecimal.valueOf(Double.parseDouble(i.getLastVal()));
+                i.setLastVal(lastVal.setScale(0, RoundingMode.HALF_UP).toString());
+                BigDecimal periodInitVal = BigDecimal.valueOf(Double.parseDouble(i.getPeriodInitVal()));
+                i.setPeriodInitVal(periodInitVal.setScale(0, RoundingMode.HALF_UP).toString());
             }
             Map< String, ExptIndicatorValLine> mapLines=mapTypeLines.computeIfAbsent(docType, k->new HashMap<>());
             ExptIndicatorValLine line= mapLines.computeIfAbsent(i.getExperimentIndicatorId(), k->new ExptIndicatorValLine()
