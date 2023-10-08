@@ -834,7 +834,6 @@ public class OrgBiz {
                 .orderByDesc(CaseOrgEntity::getDt);
         List<CaseOrgEntity> list = caseOrgService.list(caseOrgEntityWrapper);
         if(request.getStatus() != null && request.getStatus() == 1) {
-//            List<AccountOrgResponse> orgList = accountOrgApi.getValidAccountOrgList(request.getStatus());
             list.forEach(caseOrgEntity -> {
                 AccountOrgResponse accountOrg = accountOrgApi.getAccountOrgByOrgId(caseOrgEntity.getOrgId(), "3");
                 if (accountOrg != null) {
@@ -844,13 +843,7 @@ public class OrgBiz {
             //3.过滤
             list = list.stream().filter(org ->orgIds.contains(org.getOrgId())).toList();
         }
-        //2、查询
-//        LambdaQueryWrapper<CaseOrgEntity> queryWrapper = new LambdaQueryWrapper<>();
-//        queryWrapper.eq(StringUtils.isNotEmpty(request.getOrgId()), CaseOrgEntity::getOrgId, request.getOrgId())
-//                .in(orgIds != null && orgIds.size() > 0,CaseOrgEntity::getOrgId,orgIds)
-//                .like(StringUtils.isNotEmpty(request.getOrgName()), CaseOrgEntity::getOrgName, request.getOrgName())
-//                .eq(StringUtils.isNotEmpty(request.getCaseInstanceId()), CaseOrgEntity::getCaseInstanceId, request.getCaseInstanceId())
-//                .orderByDesc(CaseOrgEntity::getDt);
+
         //组装分页
         int pageSize = request.getPageSize();
         Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
@@ -861,9 +854,13 @@ public class OrgBiz {
             page.setRecords(list);
         }else{
             int index = (request.getPageNo() - 1) * pageSize;
-            page.setRecords(list.subList(index, index + pageSize));
+            int maxIndex = index + pageSize;
+            if ( maxIndex > list.size()){
+                maxIndex = list.size();
+            }
+            page.setRecords(list.subList(index, maxIndex));
         }
-        IPage<CaseOrgEntity> orgList = caseOrgService.page(page);
+        IPage<CaseOrgEntity> orgList = caseOrgService.page(page,caseOrgEntityWrapper);
         //复制属性
         IPage<CaseOrgResponse> pageVo = new Page<>();
         BeanUtils.copyProperties(orgList, pageVo, new String[]{"records"});
