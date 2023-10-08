@@ -25,10 +25,12 @@ public class AccountInstanceExtBiz {
     /**
      * 分页获取,不重复的 accountIds
      */
-    public Set<String> getAccountInstanceList(long pageNo, long pageSize) {
+    public Set<String> getAccountInstanceList(String source,long pageNo, long pageSize) {
         Set<String> accountIds = new HashSet<>();
         LambdaQueryWrapper<AccountInstance> accountWrapper = new LambdaQueryWrapper<>();
-        accountWrapper.orderByDesc(AccountInstance::getDt);
+        accountWrapper
+                .eq(AccountInstance::getSource,source)
+                .orderByDesc(AccountInstance::getDt);
         Page<AccountInstance> page = new Page<>(pageNo, pageSize);
         IPage<AccountInstance> resultPage = accountInstanceService.page(page, accountWrapper);
         resultPage.getRecords().forEach(accountInstance -> {

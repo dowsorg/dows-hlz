@@ -512,11 +512,11 @@ public class PersonManageBiz {
             }
         }else {
             //2、管理员获取所有accountIds
-//            List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
-//            responses.forEach(res -> {
-//                accountIds.add(res.getAccountId());
-//            });
-            accountIds.addAll(accountInstanceExtBiz.getAccountInstanceList(request.getPageNo(),request.getPageSize()));
+            List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
+            responses.forEach(res -> {
+                accountIds.add(res.getAccountId());
+            });
+//            accountIds.addAll(accountInstanceExtBiz.getAccountInstanceList(request.getPageNo(),request.getPageSize()));
         }
         request.setAccountIds(accountIds);
         return accountInstanceApi.customAccountInstanceList(request);
@@ -798,7 +798,7 @@ public class PersonManageBiz {
      */
     public IPage<PersonInstanceResponse> listPerson(AccountInstanceRequest request) {
         //1、获取所有accountIds
-        Set<String> accountIds = accountInstanceExtBiz.getAccountInstanceList(request.getPageNo(), request.getPageSize());
+        Set<String> accountIds = accountInstanceExtBiz.getAccountInstanceList(request.getSource(),request.getPageNo(), request.getPageSize());
 
         request.setAccountIds(accountIds);
         IPage<AccountInstanceResponse> accountInstancePage = accountInstanceApi.customAccountInstanceList(request);
