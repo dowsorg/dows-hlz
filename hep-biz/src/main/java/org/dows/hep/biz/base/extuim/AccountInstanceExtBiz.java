@@ -20,7 +20,8 @@ public class AccountInstanceExtBiz {
     private final AccountInstanceService accountInstanceService;
 
     /**
-     * 分页获取,不重复的 accountIds
+     * 分页获取,人物管理列表
+     * accountIds
      */
     public IPage<AccountInstance> getAccountInstancePages(String source,long pageNo, long pageSize) {
         LambdaQueryWrapper<AccountInstance> accountWrapper = new LambdaQueryWrapper<>();
