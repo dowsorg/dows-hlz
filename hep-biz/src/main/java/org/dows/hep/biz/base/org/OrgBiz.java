@@ -853,16 +853,17 @@ public class OrgBiz {
 //                .orderByDesc(CaseOrgEntity::getDt);
         //组装分页
         int pageSize = request.getPageSize();
-        Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), pageSize);
+        Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
 
         if (pageSize > list.size()) {
             //不够分页，放全部
+            page.setSize(list.size());
             page.setRecords(list);
         }else{
             int index = (request.getPageNo() - 1) * pageSize;
             page.setRecords(list.subList(index, index + pageSize));
         }
-        IPage<CaseOrgEntity> orgList = caseOrgService.page(page);
+        IPage<CaseOrgEntity> orgList = caseOrgService.page(page,caseOrgEntityWrapper);
         //复制属性
         IPage<CaseOrgResponse> pageVo = new Page<>();
         BeanUtils.copyProperties(orgList, pageVo, new String[]{"records"});
