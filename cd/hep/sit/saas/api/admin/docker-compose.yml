@@ -25,9 +25,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: 2048M
         reservations:
-          memory: 512M
+          memory: 1024M
 
 networks:
   sit_net:
