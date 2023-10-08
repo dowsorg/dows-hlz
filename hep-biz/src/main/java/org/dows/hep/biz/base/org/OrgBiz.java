@@ -863,7 +863,7 @@ public class OrgBiz {
             int index = (request.getPageNo() - 1) * pageSize;
             page.setRecords(list.subList(index, index + pageSize));
         }
-        IPage<CaseOrgEntity> orgList = caseOrgService.page(page,caseOrgEntityWrapper);
+        IPage<CaseOrgEntity> orgList = caseOrgService.page(page);
         //复制属性
         IPage<CaseOrgResponse> pageVo = new Page<>();
         BeanUtils.copyProperties(orgList, pageVo, new String[]{"records"});
