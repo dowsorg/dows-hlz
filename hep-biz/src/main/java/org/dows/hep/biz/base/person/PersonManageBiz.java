@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
 import org.dows.account.biz.enums.EnumAccountStatusCode;
 import org.dows.account.biz.exception.AccountException;
+import org.dows.account.entity.AccountInstance;
 import org.dows.account.request.AccountGroupInfoRequest;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.request.AccountUserRequest;
@@ -516,7 +517,6 @@ public class PersonManageBiz {
             responses.forEach(res -> {
                 accountIds.add(res.getAccountId());
             });
-//            accountIds.addAll(accountInstanceExtBiz.getAccountInstanceList(request.getPageNo(),request.getPageSize()));
         }
         request.setAccountIds(accountIds);
         return accountInstanceApi.customAccountInstanceList(request);
@@ -798,10 +798,15 @@ public class PersonManageBiz {
      */
     public IPage<PersonInstanceResponse> listPerson(AccountInstanceRequest request) {
         //1、获取所有accountIds
-        Set<String> accountIds = accountInstanceExtBiz.getAccountInstanceList(request.getSource(),request.getPageNo(), request.getPageSize());
-
+        Set<String> accountIds = new HashSet<>();
+        IPage<AccountInstance> accountInstanceIPage = accountInstanceExtBiz.getAccountInstancePages(request.getSource(),request.getPageNo(), request.getPageSize());
+        accountInstanceIPage.getRecords().forEach(accountInstance -> {
+            accountIds.add(accountInstance.getAccountId());
+        });
         request.setAccountIds(accountIds);
+        request.setPageNo(1);
         IPage<AccountInstanceResponse> accountInstancePage = accountInstanceApi.customAccountInstanceList(request);
+        BeanUtils.copyProperties(accountInstanceIPage, accountInstancePage, new String[]{"records"});
         //获取关键指标
         Map<String, List<String>> mapCoreIndicators= caseIndicatorInstanceBiz.getCoreByAccountIdList(accountIds);
         //3、复制

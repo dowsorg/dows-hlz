@@ -8,9 +8,6 @@ import org.dows.account.entity.AccountInstance;
 import org.dows.account.service.AccountInstanceService;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * uim拓展服务
  *
@@ -25,18 +22,14 @@ public class AccountInstanceExtBiz {
     /**
      * 分页获取,不重复的 accountIds
      */
-    public Set<String> getAccountInstanceList(String source,long pageNo, long pageSize) {
-        Set<String> accountIds = new HashSet<>();
+    public IPage<AccountInstance> getAccountInstancePages(String source,long pageNo, long pageSize) {
         LambdaQueryWrapper<AccountInstance> accountWrapper = new LambdaQueryWrapper<>();
         accountWrapper
                 .eq(AccountInstance::getSource,source)
                 .orderByDesc(AccountInstance::getDt);
         Page<AccountInstance> page = new Page<>(pageNo, pageSize);
         IPage<AccountInstance> resultPage = accountInstanceService.page(page, accountWrapper);
-        resultPage.getRecords().forEach(accountInstance -> {
-            accountIds.add(accountInstance.getAccountId());
-        });
-        return accountIds;
+        return resultPage;
     }
 
 }
