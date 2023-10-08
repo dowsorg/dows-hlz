@@ -852,9 +852,16 @@ public class OrgBiz {
 //                .eq(StringUtils.isNotEmpty(request.getCaseInstanceId()), CaseOrgEntity::getCaseInstanceId, request.getCaseInstanceId())
 //                .orderByDesc(CaseOrgEntity::getDt);
         //组装分页
-        Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
-        int index = (request.getPageNo()-1)*request.getPageSize();
-        page.setRecords(list.subList(index,index+request.getPageSize()));
+        int pageSize = request.getPageSize();
+        Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), pageSize);
+
+        if (pageSize > list.size()) {
+            //不够分页，放全部
+            page.setRecords(list);
+        }else{
+            int index = (request.getPageNo() - 1) * pageSize;
+            page.setRecords(list.subList(index, index + pageSize));
+        }
         IPage<CaseOrgEntity> orgList = caseOrgService.page(page);
         //复制属性
         IPage<CaseOrgResponse> pageVo = new Page<>();
