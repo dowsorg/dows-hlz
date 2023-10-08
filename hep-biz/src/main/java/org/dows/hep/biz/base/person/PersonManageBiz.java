@@ -21,6 +21,7 @@ import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
+import org.dows.hep.biz.base.extuim.AccountInstanceExtBiz;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
@@ -86,6 +87,7 @@ public class PersonManageBiz {
 
     private final TenantCaseEventBiz tenantCaseEventBiz;
 
+    private final AccountInstanceExtBiz accountInstanceExtBiz;
     /**
      * @param
      * @return
@@ -510,10 +512,11 @@ public class PersonManageBiz {
             }
         }else {
             //2、管理员获取所有accountIds
-            List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
-            responses.forEach(res -> {
-                accountIds.add(res.getAccountId());
-            });
+//            List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
+//            responses.forEach(res -> {
+//                accountIds.add(res.getAccountId());
+//            });
+            accountIds.addAll(accountInstanceExtBiz.getAccountInstanceList(request.getPageNo(),request.getPageSize()));
         }
         request.setAccountIds(accountIds);
         return accountInstanceApi.customAccountInstanceList(request);
@@ -795,12 +798,8 @@ public class PersonManageBiz {
      */
     public IPage<PersonInstanceResponse> listPerson(AccountInstanceRequest request) {
         //1、获取所有accountIds
-        Set<String> accountIds = new HashSet<>();
-        List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
-        //2、将accountIds传入
-        responses.forEach(res -> {
-            accountIds.add(res.getAccountId());
-        });
+        Set<String> accountIds = accountInstanceExtBiz.getAccountInstanceList(request.getPageNo(), request.getPageSize());
+
         request.setAccountIds(accountIds);
         IPage<AccountInstanceResponse> accountInstancePage = accountInstanceApi.customAccountInstanceList(request);
         //获取关键指标
