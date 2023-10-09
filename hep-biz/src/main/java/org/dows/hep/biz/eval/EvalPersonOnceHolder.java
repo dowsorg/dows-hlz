@@ -54,7 +54,7 @@ public class EvalPersonOnceHolder {
 
     private EvalPersonOnceData cacheData;
 
-    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压");
+    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压","心率");
 
     //region holders
     public EvalPersonOnceHolder getLastHolder(){
