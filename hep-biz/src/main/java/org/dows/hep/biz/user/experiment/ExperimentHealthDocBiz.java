@@ -37,8 +37,7 @@ public class ExperimentHealthDocBiz {
     private final EvalPersonCache evalPersonCache;
 
     private final ExperimentIndicatorLogDao experimentIndicatorLogDao;
-    //数值转换
-    private final static String XIN_LV = "心率";
+
     /**
      * 获取健康档案左上基本信息
      * @param appId

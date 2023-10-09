@@ -22,12 +22,7 @@ services:
 #    networks:
 #      uat_net:
 #        ipv4_address: 172.18.0.6
-    deploy:
-      resources:
-        limits:
-          memory: 2048M
-        reservations:
-          memory: 512M
+
 
 networks:
   uat_net:
