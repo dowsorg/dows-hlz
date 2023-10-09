@@ -402,7 +402,7 @@ public class EvalPersonBiz {
         operateCostBiz.saveCost(costRequest);
         experimentIndicatorViewSupportExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamReportRsEntityList);
     }
-    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压");
+    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压","心率");
     private int getScale(String indciatorName){
         return INDICTATORNameBloodPressure.contains(indciatorName)?0:2;
     }
