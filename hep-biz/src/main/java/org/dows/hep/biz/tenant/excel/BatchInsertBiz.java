@@ -6,6 +6,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -161,8 +162,10 @@ public class BatchInsertBiz {
                     } else {
                         value = cell.getStringCellValue();
                     }
-                    checkValue(rowNum + 1, k + 1, value);
-                    resultCell.setCellValue(value);
+                    if (StringUtils.isNotBlank(value)){
+                        checkValue(rowNum + 1, k + 1, value);
+                        resultCell.setCellValue(value);
+                    }
                 }
             }
         }
