@@ -1,6 +1,7 @@
 package org.dows.hep.biz.user.experiment;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.response.ExperimentIndicatorViewBaseInfoRsResponse;
 import org.dows.hep.api.enums.EnumIndicatorDocType;
 import org.dows.hep.api.user.experiment.response.ExptHealthDocInfoResponse;
@@ -92,12 +93,8 @@ public class ExperimentHealthDocBiz {
                 return;
             }
             if(XIN_LV.equals(i.getExperimentIndicatorName())){
-                BigDecimal cuaVal = BigDecimal.valueOf(Double.parseDouble(i.getCurVal()));
+                BigDecimal cuaVal = new BigDecimal(StringUtils.isBlank(i.getCurVal()) ? "0" : i.getCurVal());
                 i.setCurVal(cuaVal.setScale(0, RoundingMode.HALF_UP).toString());
-                BigDecimal lastVal = BigDecimal.valueOf(Double.parseDouble(i.getLastVal()));
-                i.setLastVal(lastVal.setScale(0, RoundingMode.HALF_UP).toString());
-                BigDecimal periodInitVal = BigDecimal.valueOf(Double.parseDouble(i.getPeriodInitVal()));
-                i.setPeriodInitVal(periodInitVal.setScale(0, RoundingMode.HALF_UP).toString());
             }
             Map< String, ExptIndicatorValLine> mapLines=mapTypeLines.computeIfAbsent(docType, k->new HashMap<>());
             ExptIndicatorValLine line= mapLines.computeIfAbsent(i.getExperimentIndicatorId(), k->new ExptIndicatorValLine()
