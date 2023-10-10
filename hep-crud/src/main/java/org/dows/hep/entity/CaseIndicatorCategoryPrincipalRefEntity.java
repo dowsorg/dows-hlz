@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 import java.util.Date;
 
 /**
+ * 案例库指标实体关联关系
  * @author runsix
  */
 @Data

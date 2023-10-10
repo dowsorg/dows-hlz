@@ -22,7 +22,7 @@ public class AccountInstanceExtBiz {
 
     /**
      * 分页获取,人物管理列表
-     * source 为 人物管理
+     * source 人物管理
      * accountIds
      */
     public IPage<AccountInstance> getAccountInstancePages(String source, long pageNo, long pageSize) {
