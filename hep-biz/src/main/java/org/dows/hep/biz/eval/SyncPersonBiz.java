@@ -446,10 +446,11 @@ public class SyncPersonBiz {
                     .flatMap(List::stream)
                     .forEach(src-> {
                         listIndicatorCategoryRef.add(new CaseIndicatorCategoryRefEntity()
-                                .setAppId(src.getAppId())
+                                .setAppId(APPId)
                                 .setIndicatorInstanceId(mapNewId.get(src.getIndicatorInstanceId()))
                                 .setIndicatorCategoryId(mapNewId.get(src.getIndicatorCategoryId()))
                                 .setCaseIndicatorCategoryRefId(idGenerator.nextIdStr())
+                                .setSeq(src.getSeq())
                         );
                     });
             return this;
