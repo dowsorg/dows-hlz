@@ -35,7 +35,7 @@ public class ToolBiz {
 
     public String ping(){
 
-       return "1010-a";
+       return "1012";
     }
 
     public String getWebSocketState(String exptId){
