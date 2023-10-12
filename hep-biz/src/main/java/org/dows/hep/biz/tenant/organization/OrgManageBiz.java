@@ -1,9 +1,9 @@
 package org.dows.hep.biz.tenant.organization;
 
-import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountInstanceRequest;
+import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.tenant.excel.BatchMemberInsertRequest;
 import org.dows.hep.api.tenant.organization.request.AddOrgMemberRequest;
 import org.dows.hep.api.tenant.organization.request.AddOrgRequest;
@@ -13,6 +13,7 @@ import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.tenant.excel.BatchInsertBiz;
 import org.dows.hep.biz.util.AssertUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -112,7 +113,7 @@ public class OrgManageBiz{
     * @开始时间: 
     * @创建时间: 2023年4月24日 上午09:00:00
     */
-    @DSTransactional
+
     public Map<String, Object> importOrgMember(AccountInstanceRequest request, MultipartFile file) {
         Map<String, Object> map = new HashMap<>();
         //失败成员列表
@@ -137,7 +138,6 @@ public class OrgManageBiz{
             for (int i = 0; i < list.size(); i++) {
                 request.setAccountName(list.get(i).getAccountName());
                 request.setUserName(list.get(i).getUserName());
-                request.setPassword(list.get(i).getPassword());
                 request.setIdentifier(orgManageBiz.createCode(7));
                 String message = "";
                 try {
@@ -154,6 +154,9 @@ public class OrgManageBiz{
                     }
                 }
             }
+        }
+        if (!CollectionUtils.isEmpty(memberList)){
+            throw new BizException("导入异常，具体如下" + memberList);
         }
         map.put("finishCount", finishCount);
         map.put("failCount", failCount);
