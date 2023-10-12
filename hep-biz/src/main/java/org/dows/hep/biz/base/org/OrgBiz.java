@@ -45,7 +45,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -809,8 +808,8 @@ public class OrgBiz {
                 .principalId(vo.getAccountId())
                 .build());
         //4.复制事件
-        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(), vo.getAccountId(), accountId,
-                accountInstanceResponse.getUserName());
+//        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(), vo.getAccountId(), accountId,
+//                accountInstanceResponse.getUserName());
         return vo.getAccountId();
     }
 
