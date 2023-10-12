@@ -3,7 +3,6 @@ package org.dows.hep.biz.tenant.organization;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountInstanceRequest;
-import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.tenant.excel.BatchMemberInsertRequest;
 import org.dows.hep.api.tenant.organization.request.AddOrgMemberRequest;
 import org.dows.hep.api.tenant.organization.request.AddOrgRequest;
@@ -13,7 +12,6 @@ import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.tenant.excel.BatchInsertBiz;
 import org.dows.hep.biz.util.AssertUtil;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -154,9 +152,6 @@ public class OrgManageBiz{
                     }
                 }
             }
-        }
-        if (!CollectionUtils.isEmpty(memberList)){
-            throw new BizException("导入异常，具体如下" + memberList);
         }
         map.put("finishCount", finishCount);
         map.put("failCount", failCount);
