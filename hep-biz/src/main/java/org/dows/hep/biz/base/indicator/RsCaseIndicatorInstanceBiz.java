@@ -16,6 +16,7 @@ import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseIndicatorInstanceService;
 import org.dows.hep.service.CaseIndicatorRuleService;
 import org.dows.hep.service.IndicatorExpressionInfluenceService;
+import org.dows.hep.service.IndicatorInstanceService;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,8 @@ public class RsCaseIndicatorInstanceBiz {
   private final IndicatorExpressionInfluenceService indicatorExpressionInfluenceService;
   private final CaseIndicatorInstanceService caseIndicatorInstanceService;
   private final CaseIndicatorRuleService caseIndicatorRuleService;
+
+  private final IndicatorInstanceService indicatorInstanceService;
 
   public String convertConditionValList2Case(
       String conditionValList,
@@ -400,10 +403,17 @@ public class RsCaseIndicatorInstanceBiz {
   }
 
   public void checkIfCanDeleteCaseIndicatorInstanceEntity(CaseIndicatorInstanceEntity caseIndicatorInstanceEntity) {
-    if (Objects.isNull(caseIndicatorInstanceEntity)) {return;}
+    if (Objects.isNull(caseIndicatorInstanceEntity)) {
+      return;
+    }
     String indicatorInstanceId = caseIndicatorInstanceEntity.getIndicatorInstanceId();
     if (StringUtils.isNotBlank(indicatorInstanceId)) {
-      throw new RsCaseIndicatorInstanceBizException(EnumESC.CASE_INDICATOR_INSTANCE_COME_FROM_DATABASE_CANNOT_DELETE);
+      if (indicatorInstanceService.lambdaQuery()
+              .eq(IndicatorInstanceEntity::getIndicatorInstanceId, indicatorInstanceId)
+              .select(IndicatorInstanceEntity::getIndicatorInstanceId)
+              .count() > 0) {
+        throw new RsCaseIndicatorInstanceBizException(EnumESC.CASE_INDICATOR_INSTANCE_COME_FROM_DATABASE_CANNOT_DELETE);
+      }
     }
   }
 
