@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.IndicatorExpressionEntity;
 import org.dows.hep.entity.IndicatorExpressionItemEntity;
+import org.dows.hep.entity.snapshot.SnapCaseIndicatorExpressionItemEntity;
 import org.dows.hep.service.IndicatorExpressionItemService;
 import org.dows.hep.service.IndicatorExpressionService;
 import org.springframework.stereotype.Component;
@@ -77,6 +78,32 @@ public class IndicatorExpressionDao extends BaseSubDao<IndicatorExpressionServic
                 .eq(oneFlag, IndicatorExpressionEntity::getSource,sources.iterator().next())
                 .in(!oneFlag, IndicatorExpressionEntity::getSource, sources)
                 .orderByAsc(IndicatorExpressionEntity::getId)
+                .select(cols)
+                .list();
+    }
+
+    public List<IndicatorExpressionEntity> getByExpressionId(Collection<String> expressionIds, Integer source, SFunction<IndicatorExpressionEntity,?>... cols) {
+        if (ShareUtil.XObject.isEmpty(expressionIds)) {
+            return Collections.emptyList();
+        }
+        final boolean oneFlag = expressionIds.size() == 1;
+        return service.lambdaQuery()
+                .eq(oneFlag, IndicatorExpressionEntity::getIndicatorExpressionId, expressionIds.iterator().next())
+                .in(!oneFlag, IndicatorExpressionEntity::getIndicatorExpressionId, expressionIds)
+                .eq(ShareUtil.XObject.notEmpty(source), IndicatorExpressionEntity::getSource, source)
+                .select(cols)
+                .list();
+    }
+
+    public List<IndicatorExpressionItemEntity> getSubByExpressionId(Collection<String> expressionIds, SFunction<IndicatorExpressionItemEntity,?>... cols) {
+        if (ShareUtil.XObject.isEmpty(expressionIds)) {
+            return Collections.emptyList();
+        }
+        final boolean oneFlag = expressionIds.size() == 1;
+        return subService.lambdaQuery()
+                .eq(oneFlag, IndicatorExpressionItemEntity::getIndicatorExpressionId, expressionIds.iterator().next())
+                .in(!oneFlag, IndicatorExpressionItemEntity::getIndicatorExpressionId, expressionIds)
+                .orderByAsc(IndicatorExpressionItemEntity::getIndicatorExpressionId, IndicatorExpressionItemEntity::getSeq)
                 .select(cols)
                 .list();
     }

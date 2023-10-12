@@ -188,6 +188,13 @@ public class ShareUtil {
             return Lists.partition(src, size).stream().map(ArrayList::new).collect(Collectors.toList());
         }
 
+        public static <T> List<List<T>> splitByBatchSize(List<T> src,int batchSize){
+            if(ShareUtil.XObject.isEmpty(src)){
+                return Collections.emptyList();
+            }
+            return Lists.partition(src, batchSize).stream().map(ArrayList::new).collect(Collectors.toList());
+        }
+
         public static <T, R> List<R> map(Iterable<T> collection,  Function<? super T, ? extends R> func) {
             return CollUtil.map(collection, func, true);
         }
