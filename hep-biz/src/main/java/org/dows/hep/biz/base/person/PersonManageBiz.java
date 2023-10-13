@@ -21,6 +21,7 @@ import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
+import org.dows.hep.biz.base.extuim.AccountInstanceExtBiz;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
@@ -86,6 +87,7 @@ public class PersonManageBiz {
 
     private final TenantCaseEventBiz tenantCaseEventBiz;
 
+    private final AccountInstanceExtBiz accountInstanceExtBiz;
     /**
      * @param
      * @return
@@ -803,6 +805,7 @@ public class PersonManageBiz {
         });
         request.setAccountIds(accountIds);
         IPage<AccountInstanceResponse> accountInstancePage = accountInstanceApi.customAccountInstanceList(request);
+
         //获取关键指标
         Map<String, List<String>> mapCoreIndicators= caseIndicatorInstanceBiz.getCoreByAccountIdList(accountIds);
         //3、复制

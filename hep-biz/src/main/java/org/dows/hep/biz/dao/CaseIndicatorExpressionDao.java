@@ -89,7 +89,7 @@ public class CaseIndicatorExpressionDao extends BaseSubDao<CaseIndicatorExpressi
         return service.lambdaQuery()
                 .eq(oneFlag, CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, experssionIds.iterator().next())
                 .in(!oneFlag, CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, experssionIds)
-                .eq(null != sources && sources.size() == 1, CaseIndicatorExpressionEntity::getSource, sources.iterator().next())
+                .eq(null != sources && sources.size() == 1, CaseIndicatorExpressionEntity::getSource, null==sources?null: sources.iterator().next())
                 .in(null != sources && sources.size() > 1, CaseIndicatorExpressionEntity::getSource, sources)
                 .orderByAsc(CaseIndicatorExpressionEntity::getId)
                 .select(cols)

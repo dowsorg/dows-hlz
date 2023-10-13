@@ -5,12 +5,15 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.materials.request.MaterialsAttachmentRequest;
 import org.dows.hep.api.base.materials.request.MaterialsRequest;
@@ -127,6 +130,9 @@ public class ExptReportFacadeBiz {
 //                .orderByDesc(sortByAllotUserNameAsc != null && sortByAllotUserNameAsc == 0, ExperimentInstanceEntity::getAppointorName)
 //                .orderByDesc(sortByExptModeAsc != null && sortByExptModeAsc == 0, ExperimentInstanceEntity::getModel)
                 .page(pageRequest.getPage());
+        HashMap<@Nullable Object, @Nullable Object> objectHashMap = Maps.newHashMap();
+
+
         return convertPageResult(pageResult);
     }
 
@@ -138,9 +144,13 @@ public class ExptReportFacadeBiz {
      * @date 2023/7/31 14:16
      */
     public Page<ExptGroupReportPageResponse> pageGroupReport(ExptGroupReportPageRequest pageRequest) {
-        Page<ExperimentGroupEntity> pageResult = experimentGroupService.lambdaQuery()
-                .eq(ExperimentGroupEntity::getExperimentInstanceId, pageRequest.getExptInstanceId())
-                .page(pageRequest.getPage());
+        LambdaQueryChainWrapper<ExperimentGroupEntity> lambdaQueryChainWrapper = experimentGroupService.lambdaQuery()
+                .eq(ExperimentGroupEntity::getExperimentInstanceId, pageRequest.getExptInstanceId());
+        List<ExperimentGroupEntity> list = lambdaQueryChainWrapper.list();
+        list.sort(Comparator.comparingInt(a -> Integer.parseInt(a.getGroupNo())));
+        Page<ExperimentGroupEntity> pageResult = lambdaQueryChainWrapper.page(pageRequest.getPage());
+        int index =(int) ((pageResult.getCurrent()-1)*pageResult.getSize());
+        pageResult.setRecords(list.subList(index,index + pageResult.getRecords().size()));
         return convertGroupPageResult(pageResult, pageRequest.getExptInstanceId());
     }
 
@@ -205,7 +215,7 @@ public class ExptReportFacadeBiz {
 
                 /*使用新数据*/
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regeneratePdf);
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regeneratePdf,ExptReportTypeEnum.EXPT);
                 // 压缩并上传报告
 //                Path uploadPath = Paths.get(exptInstanceId, exptZipFullName);
 //                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, exptZipName, exptZipSuffix);
@@ -277,7 +287,7 @@ public class ExptReportFacadeBiz {
 
                 /*2.使用新数据*/
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regeneratePdf);
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regeneratePdf,ExptReportTypeEnum.GROUP);
                 // 压缩并上传报告
 //                Path uploadPath = Paths.get(exptInstanceId, groupZipFullName);
 //                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, groupZipName, groupZipSuffix);
@@ -524,7 +534,7 @@ public class ExptReportFacadeBiz {
     }
 
     // todo 后续策略模式
-    private ExptReportVO generatePdf(String experimentInstanceId, String experimentGroupId, boolean regenerate) {
+    private ExptReportVO generatePdf(String experimentInstanceId, String experimentGroupId, boolean regenerate,ExptReportTypeEnum reportType) {
         List<ExptGroupReportVO> exptGroupReportVOS = new ArrayList<>();
         ExptReportVO result = ExptReportVO.builder()
                 .groupReportList(exptGroupReportVOS)
@@ -532,25 +542,29 @@ public class ExptReportFacadeBiz {
 
         ExptSettingModeEnum exptSettingMode = experimentSettingBiz.getExptSettingMode(experimentInstanceId);
         switch (exptSettingMode) {
+            //方案模式
             case SCHEME -> {
                 ExptReportVO schemeReportVO = schemeReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 exptGroupReportVOS.addAll(schemeReportVO.getGroupReportList());
             }
-            case SAND -> {
-                ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
-                exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
+            case SAND -> {//沙盘模式
+                if(reportType==ExptReportTypeEnum.GROUP) {
+                    ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
+                    exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
+                }
             }
-            case SAND_SCHEME -> {
+            case SAND_SCHEME -> {//标准模式
                 ExptReportVO schemeReportVO = schemeReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
                 exptGroupReportVOS.addAll(schemeReportVO.getGroupReportList());
                 exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
             }
         }
-        // 实验总报告
-        ExptReportVO overviewReportVO = overviewReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
-        exptGroupReportVOS.addAll(overviewReportVO.getGroupReportList());
-
+        if(reportType==ExptReportTypeEnum.EXPT) {
+            // 实验总报告
+            ExptReportVO overviewReportVO = overviewReportHandler.generatePdfReport(experimentInstanceId, null, regenerate);
+            exptGroupReportVOS.addAll(overviewReportVO.getGroupReportList());
+        }
         return result;
     }
 

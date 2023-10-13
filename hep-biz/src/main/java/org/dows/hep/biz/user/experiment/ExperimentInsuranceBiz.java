@@ -1,13 +1,11 @@
 package org.dows.hep.biz.user.experiment;
 
-import cn.hutool.json.JSONUtil;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.enums.EnumOrgFeeType;
-import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
 import org.dows.hep.api.user.experiment.request.ExperimentPersonInsuranceRequest;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
@@ -24,13 +22,9 @@ import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -65,15 +59,6 @@ public class ExperimentInsuranceBiz {
     @DSTransactional
     public Boolean isPurchaseInsure(ExperimentPersonInsuranceRequest experimentPersonInsuranceRequest, HttpServletRequest request) {
 
-        ExperimentPersonInsuranceEntity insuranceEntity = experimentPersonInsuranceService.lambdaQuery()
-                .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
-                .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
-                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
-                .eq(ExperimentPersonInsuranceEntity::getOperateOrgId,experimentPersonInsuranceRequest.getOperateOrgId())
-                .one();
-        if(null!=insuranceEntity){
-            return true;
-        }
         ExptRequestValidator validator = ExptRequestValidator.create("3",
                         experimentPersonInsuranceRequest.getExperimentInstanceId(),
                         experimentPersonInsuranceRequest.getExperimentGroupId(),
@@ -82,6 +67,24 @@ public class ExperimentInsuranceBiz {
                 .checkExperimentPerson()
                 .checkExperimentOrg()
                 .checkExperimentInstance();
+        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId()),
+                LocalDateTime.now(), true);
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
+                .throwMessage("未找到实验时间设置");
+
+        ExperimentPersonInsuranceEntity insuranceEntity = experimentPersonInsuranceService.lambdaQuery()
+                .eq(ExperimentPersonInsuranceEntity::getExperimentInstanceId,experimentPersonInsuranceRequest.getExperimentInstanceId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId,experimentPersonInsuranceRequest.getExperimentGroupId())
+                .eq(ExperimentPersonInsuranceEntity::getExperimentPersonId,experimentPersonInsuranceRequest.getExperimentPersonId())
+                .eq(ExperimentPersonInsuranceEntity::getOperateOrgId,experimentPersonInsuranceRequest.getOperateOrgId())
+                .orderByDesc(ExperimentPersonInsuranceEntity::getId)
+                .last("limit 1")
+                .one();
+        if(null!=insuranceEntity&&
+                nowPoint.getGameDay()<=Optional.ofNullable(insuranceEntity.getBuyGameDay()).orElse(0)+365) {
+            return true;
+        }
+
         ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(validator);
         Double bxf = flowValidator.getOrgFee4Bxf().orElse(0d);
         experimentPersonInsuranceRequest.setInsuranceAmount(BigDecimalUtil.valueOf(bxf));
@@ -123,7 +126,8 @@ public class ExperimentInsuranceBiz {
         Double reimburseRatio = 0.0d;
         if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
             CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
-                    .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                    //.eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
+                    .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getOrgId())
                     .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
                     .eq(CaseOrgFeeEntity::getDeleted, false)
                     .one();
@@ -131,7 +135,7 @@ public class ExperimentInsuranceBiz {
                 reimburseRatio = feeEntity.getReimburseRatio();
             }
         }
-        //4、计算失效时间
+       /* //4、计算失效时间
         //4.1、首先获取实验设置，判断真实天数与模拟数据的比例
         Date expdate = new Date();
         String configVals = experimentSettingBiz.getSandSettingStr(experimentPersonInsuranceRequest.getExperimentInstanceId());
@@ -191,19 +195,16 @@ public class ExperimentInsuranceBiz {
                     break;
                 }
             }
-        }
+        }*/
 
         Boolean flag;
-        ExperimentTimePoint nowPoint= ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create("3",experimentPersonInsuranceRequest.getExperimentInstanceId()),
-                LocalDateTime.now(), true);
-        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(nowPoint))
-                .throwMessage("未找到实验时间设置");
+
         Integer buyDay=nowPoint.getGameDay();
-        if(insuranceEntity != null && !ReflectUtil.isObjectNull(insuranceEntity)){
+        if(insuranceEntity != null ){
             //更新
             flag = experimentPersonInsuranceService.lambdaUpdate()
                     .set(ExperimentPersonInsuranceEntity::getIndate,new Date())
-                    .set(ExperimentPersonInsuranceEntity::getExpdate,expdate)
+                    //.set(ExperimentPersonInsuranceEntity::getExpdate,expdate)
                     .set(ExperimentPersonInsuranceEntity::getBuyGameDay,buyDay)
                     .set(ExperimentPersonInsuranceEntity::getPeriods,experimentPersonInsuranceRequest.getPeriods())
                     .eq(ExperimentPersonInsuranceEntity::getId,insuranceEntity.getId())
@@ -221,7 +222,7 @@ public class ExperimentInsuranceBiz {
                     .insuranceAmount(experimentPersonInsuranceRequest.getInsuranceAmount())
                     .reimburseRatio(reimburseRatio)
                     .indate(new Date())
-                    .expdate(expdate)
+                    //.expdate(expdate)
                     .buyGameDay(buyDay)
                     .build();
             flag = experimentPersonInsuranceService.save(experimentPersonInsuranceEntity);
@@ -235,7 +236,7 @@ public class ExperimentInsuranceBiz {
                 .experimentOrgId(experimentPersonInsuranceRequest.getOperateOrgId())
                 .periods(Integer.parseInt(experimentPersonInsuranceRequest.getPeriods()))
                 .indate(new Date())
-                .expdate(expdate)
+                //.expdate(expdate)
                 .build();
         operateInsuranceService.save(insuranceEntity1);
         return flag;
@@ -383,7 +384,8 @@ public class ExperimentInsuranceBiz {
                 .eq(ExperimentPersonInsuranceEntity::getExperimentGroupId, experimentPersonInsuranceRequest.getExperimentGroupId())
 //                .eq(ExperimentPersonInsuranceEntity::getPeriods, experimentPersonInsuranceRequest.getPeriods())
                 .eq(ExperimentPersonInsuranceEntity::getOperateOrgId, experimentPersonInsuranceRequest.getOperateOrgId())
-                .eq(ExperimentPersonInsuranceEntity::getDeleted, false)
+                .orderByDesc(ExperimentPersonInsuranceEntity::getId)
+                .last("limit 1")
                 .one();
         if (entity == null || ReflectUtil.isObjectNull(entity)) {
             map.put("result",false);
@@ -400,9 +402,9 @@ public class ExperimentInsuranceBiz {
             intervalDays=Math.min(entity.getBuyGameDay()+YEARDays, (int)exptColl.getTotalDays())-nowPoint.getGameDay();
         }
         if(intervalDays>0){
-            long interval = (entity.getExpdate().getTime() - new Date().getTime())/1000;
+            //long interval = (entity.getExpdate().getTime() - new Date().getTime())/1000;
             map.put("result", true);
-            map.put("interval",interval);
+            //map.put("interval",interval);
             map.put("intervalDays",intervalDays);
         }else{
             map.put("result", false);

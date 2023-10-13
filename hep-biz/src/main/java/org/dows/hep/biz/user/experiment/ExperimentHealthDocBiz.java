@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * 健康档案接口
@@ -36,6 +37,7 @@ public class ExperimentHealthDocBiz {
     private final EvalPersonCache evalPersonCache;
 
     private final ExperimentIndicatorLogDao experimentIndicatorLogDao;
+
     /**
      * 获取健康档案左上基本信息
      * @param appId
@@ -76,6 +78,10 @@ public class ExperimentHealthDocBiz {
                 ExperimentIndicatorLogEntity::getUnit,
                 ExperimentIndicatorLogEntity::getEvalDay,
                 ExperimentIndicatorLogEntity::getCurVal);
+        Map<String,ExperimentIndicatorLogEntity> mapDistinctByDay=ShareUtil.XCollection.toMap(rowsIndicator,
+                LinkedHashMap::new,i->String.format("%s-%s", i.getExperimentIndicatorId(),i.getEvalDay()),  Function.identity(), true );
+        rowsIndicator=mapDistinctByDay.values().stream().toList();
+        mapDistinctByDay.clear();
 
         Map<EnumIndicatorDocType,Map< String, ExptIndicatorValLine>> mapTypeLines=new HashMap<>();
         rowsIndicator.forEach(i->{

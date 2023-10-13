@@ -34,14 +34,14 @@ public class ExperimentFlowRules {
         ExperimentCacheKey exptKey=ExperimentCacheKey.create(appId,experimentInstanceId);
         ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(exptColl))
-                .throwMessage("未找到实验设置");
+                .throwMessage("未找到实验设置[实验id:%s]",experimentInstanceId);
 
         if(!exptColl.hasSandMode()){
             return rst;
         }
         ExperimentTimerCache.CacheData cacheTimer=ExperimentTimerCache.Instance().getCacheData(exptKey);
         AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cacheTimer,()->cacheTimer.getMapTimer()))
-                .throwMessage("未找到沙盘时间设置");
+                .throwMessage("未找到沙盘时间设置[实验id:%s]",experimentInstanceId);
         ExperimentTimerEntity curTimer=cacheTimer.getCurTimer(LocalDateTime.now());
         if(ShareUtil.XObject.isEmpty(curTimer)){
             return rst.setCurrentPeriod(0);
@@ -64,7 +64,7 @@ public class ExperimentFlowRules {
     }
     public IntervalResponse countdown(ExperimentCacheKey exptKey,ExperimentSettingCollection exptColl,boolean isAdmin){
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(exptColl))
-                .throwMessage("未找到实验设置");
+                .throwMessage("未找到实验设置[实验id:%s]",exptKey.getExperimentInstanceId());
         IntervalResponse rst=new IntervalResponse();
         rst.setAppId(exptColl.getAppId());
         rst.setExperimentInstanceId(exptColl.getExperimentInstanceId());
@@ -100,7 +100,7 @@ public class ExperimentFlowRules {
         }
         ExperimentTimerCache.CacheData cacheTimer = ExperimentTimerCache.Instance().getCacheData(exptKey);
         AssertUtil.trueThenThrow(ShareUtil.XObject.anyEmpty(cacheTimer, () -> cacheTimer.getMapTimer()))
-                .throwMessage("未找到沙盘时间设置");
+                .throwMessage("未找到沙盘时间设置[实验id:%s]",exptKey.getExperimentInstanceId());
         //沙盘模式
         rst.setSandTimeUnit("天");
         for (ExperimentTimerEntity item : cacheTimer.getMapTimer().values()) {
@@ -158,7 +158,8 @@ public class ExperimentFlowRules {
         final ExperimentTimerEntity lastTimer = cacheTimer.getTimerByPeriod(cacheTimer.getMapTimer().size());
         if (lastTimer.getState().equals(EnumExperimentState.FINISH.getState())
                 || lastTimer.getEndTime().getTime() + lastTimer.getPeriodInterval() <= nowTs) {
-            rst.setState(lastTimer.getState());
+            rst.setState(lastTimer.getState().equals(EnumExperimentState.UNBEGIN.getState())?
+                    lastTimer.getState():EnumExperimentState.FINISH.getState());
             rst.setPeriod(lastTimer.getPeriod());
             if(!lastTimer.getPaused()) {
                 rst.setSandRemnantSecond(0L);

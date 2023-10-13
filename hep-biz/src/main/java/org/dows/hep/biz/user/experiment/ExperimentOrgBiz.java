@@ -23,7 +23,7 @@ import org.dows.hep.biz.dao.ExperimentEventDao;
 import org.dows.hep.biz.dao.ExperimentOrgNoticeDao;
 import org.dows.hep.biz.dao.ExperimentPersonDao;
 import org.dows.hep.biz.dao.OperateFlowDao;
-import org.dows.hep.biz.eval.ExperimentPersonCache;
+import org.dows.hep.biz.eval.*;
 import org.dows.hep.biz.event.EventExecutor;
 import org.dows.hep.biz.event.ExperimentEventRules;
 import org.dows.hep.biz.event.ExperimentSettingCache;
@@ -90,6 +90,8 @@ public class ExperimentOrgBiz {
 
     private final CaseOrgFeeService caseOrgFeeService;
 
+    private final QueryPersonBiz queryPersonBiz;
+
     /**
      * @param
      * @return
@@ -153,7 +155,8 @@ public class ExperimentOrgBiz {
                 .setOperateTime(dateNow)
                 .setOperateGameDay(timePoint.getGameDay());
         //计算每次操作应该返回的报销金额
-        BigDecimal reimburse = getExperimentPersonRestitution(BigDecimalUtil.valueOf(ghf), startOrgFlow.getExperimentPersonId());
+        //BigDecimal reimburse = getExperimentPersonRestitution(BigDecimalUtil.valueOf(ghf), startOrgFlow.getExperimentPersonId());
+        BigDecimal reimburse =ShareBiz.getRefundFee(startOrgFlow.getExperimentPersonId(),timePoint.getGameDay(), BigDecimalUtil.valueOf(ghf));
         //保存消费记录
         CostRequest costRequest = CostRequest.builder()
                 .operateCostId(idGenerator.nextIdStr())
@@ -238,11 +241,14 @@ public class ExperimentOrgBiz {
             findOrgNotice.setExperimentPersonIds(ShareUtil.XCollection.map(experimentPersonDao.getByOrgId(findOrgNotice.getExperimentOrgId(),
                     ExperimentPersonEntity::getExperimentPersonId), ExperimentPersonEntity::getExperimentPersonId));
         }
-        List<String> followupNoticeIds = ShareUtil.XCollection.map(experimentOrgNoticeDao.getTopFollowUpNoticeIds(findOrgNotice.getExperimentPersonIds()),
-                ExperimentOrgNoticeEntity::getExperimentOrgNoticeId);
-        findOrgNotice.setFollowUpNoticeIds(followupNoticeIds);
+        Set<String> monitorOrgIds=ExperimentPersonCache.Instance().getMonitorOrgIds(findOrgNotice.getExperimentInstanceId());
 
-        return ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
+        findOrgNotice.setContainsFollowUp(monitorOrgIds.contains(findOrgNotice.getExperimentOrgId()));
+        /* List<String> followupNoticeIds = ShareUtil.XCollection.map(experimentOrgNoticeDao.getTopFollowUpNoticeIds(findOrgNotice.getExperimentPersonIds()),
+                ExperimentOrgNoticeEntity::getExperimentOrgNoticeId);
+        findOrgNotice.setFollowUpNoticeIds(followupNoticeIds);*/
+
+        Page<OrgNoticeResponse> rst= ShareBiz.buildPage(experimentOrgNoticeDao.pageByCondition(findOrgNotice,
                 ExperimentOrgNoticeEntity::getId,
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
                 ExperimentOrgNoticeEntity::getExperimentPersonId,
@@ -258,6 +264,19 @@ public class ExperimentOrgBiz {
                 ExperimentOrgNoticeEntity::getReadState,
                 ExperimentOrgNoticeEntity::getActionState
         ), i -> CopyWrapper.create(OrgNoticeResponse::new).endFrom(i));
+       /* rst.getRecords().forEach(i-> {
+            if (!EnumExperimentOrgNoticeType.FOLLOWUP.getCode().equals(i.getNoticeSrcType())) {
+                return;
+            }
+            Page<ExperimentPersonResponse> personInfo = pageExperimentPersons(ExperimentPersonRequest.builder()
+                    .experimentPersonId(i.getExperimentPersonId())
+                    .build());
+            if (ShareUtil.XObject.isEmpty(personInfo.getRecords())) {
+                return;
+            }
+            i.setPersonInfo(personInfo.getRecords().get(0));
+        });*/
+        return rst;
     }
 
     /**
@@ -492,7 +511,15 @@ public class ExperimentOrgBiz {
      */
     public Page<ExperimentPersonResponse> pageExperimentPersons(ExperimentPersonRequest personRequest) {
 
-        List<ExperimentPersonEntity> rowsPerson= ExperimentPersonCache.Instance().getPersonsByOrgId(personRequest.getExperimentInstanceId(),personRequest.getExperimentOrgId());
+        List<ExperimentPersonEntity> rowsPerson=null;
+        if(ShareUtil.XObject.notEmpty(personRequest.getExperimentPersonId())){
+            ExperimentPersonEntity rowPeron=ExperimentPersonCache.Instance().getPerson(personRequest.getExperimentInstanceId(),personRequest.getExperimentPersonId());
+            if(ShareUtil.XObject.notEmpty(rowPeron)){
+                rowsPerson=List.of(rowPeron);
+            }
+        }else {
+            rowsPerson = ExperimentPersonCache.Instance().getPersonsByOrgId(personRequest.getExperimentInstanceId(), personRequest.getExperimentOrgId());
+        }
         if(ShareUtil.XObject.isEmpty(rowsPerson)){
             return new Page<>();
         }
@@ -516,18 +543,21 @@ public class ExperimentOrgBiz {
         Map<String, OperateFlowEntity> mapFlow = ShareUtil.XCollection.toMap(rowsFlow, OperateFlowEntity::getExperimentPersonId);
 
         //关键指标
-        Map<String, List<String>> mapCoreIndicators = experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period, personIds);
+        //Map<String, List<String>> mapCoreIndicators = experimentIndicatorInstanceRsBiz.getCoreByPeriodsAndExperimentPersonIdList(period, personIds);
 
-        List<ExperimentPersonResponse> rst=ShareUtil.XCollection.map(rowsPerson, true, src->{
-            ExperimentPersonResponse dst= CopyWrapper.create(ExperimentPersonResponse::new)
+
+
+        List<ExperimentPersonResponse> rst=ShareUtil.XCollection.map(rowsPerson, true, src-> {
+            ExperimentPersonResponse dst = CopyWrapper.create(ExperimentPersonResponse::new)
                     .endFrom(src)
                     .setId(src.getId().toString())
                     .setName(src.getUserName());
             Optional.ofNullable(mapFlow.get(src.getExperimentPersonId()))
-                    .ifPresent(i->dst.setOperateFlowId(i.getOperateFlowId())
+                    .ifPresent(i -> dst.setOperateFlowId(i.getOperateFlowId())
                             .setFlowPeriod(i.getPeriods()));
-            return dst.setHealthPoint(experimentIndicatorInstanceRsBiz.getHealthPoint(period, src.getExperimentPersonId()))
-                    .setCoreIndicators(mapCoreIndicators.get(src.getExperimentPersonId()));
+            EvalPersonOnceHolder evalHolder= EvalPersonCache.Instance().getCurHolder(src.getExperimentInstanceId(),src.getExperimentPersonId());
+            return dst.setHealthPoint(evalHolder.getHealthPoint(false))
+                    .setCoreIndicators(queryPersonBiz.getCoreIndicatorVals(src.getExperimentPersonId(),evalHolder));
         });
 
         return Page.<ExperimentPersonResponse>of(pageNo, pageSize).setRecords(rst);
@@ -623,4 +653,6 @@ public class ExperimentOrgBiz {
         BeanUtils.copyProperties(personEntity, response);
         return response;
     }
+
+
 }

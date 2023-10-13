@@ -27,6 +27,7 @@ import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
+import org.dows.hep.biz.util.JacksonUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -307,7 +308,13 @@ public class ExperimentScoringBiz {
             if (Objects.isNull(costTotal)) {
                 costTotal = BigDecimal.ZERO;
             }
-            BigDecimal groupMoneyScore = BigDecimal.valueOf(100).multiply(BigDecimal.ONE.subtract((costTotal.divide(initTotal, 2, RoundingMode.DOWN))));
+            BigDecimal groupMoneyScore;
+            if(initTotal.compareTo(BigDecimal.ZERO)<=0){
+                groupMoneyScore=BigDecimal.ZERO;
+            }else{
+                groupMoneyScore= BigDecimal.valueOf(100).multiply(BigDecimal.ONE.subtract((costTotal.divide(initTotal, 2, RoundingMode.DOWN))));
+            }
+
             groupMoneyScoreRsResponseList.add(GroupMoneyScoreRsResponse
                     .builder()
                     .experimentGroupId(experimentOrgGroupId)
@@ -376,20 +383,21 @@ public class ExperimentScoringBiz {
         questionnaireScoreMap.putAll(experimentQuestionnaireScoreBiz.listExptQuestionnaireScore(experimentInstanceId, periods));
 
         //B、健康指数得分
-        Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap = new HashMap<>();
+        //Map<String, BigDecimal> kExperimentGroupIdVGroupCompetitiveScoreMap = new HashMap<>();
         RsCalculateCompetitiveScoreRsResponse rsCalculateCompetitiveScoreRsResponse = this.rsCalculateCompetitiveScore(RsCalculateCompetitiveScoreRequestRs
                 .builder()
                 .experimentId(experimentInstanceId)
                 .periods(periods)
                 .build());
-        List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList = rsCalculateCompetitiveScoreRsResponse.getGroupCompetitiveScoreRsResponseList();
+        Map<String, GroupCompetitiveScoreRsResponse> mapGroupScores=rsCalculateCompetitiveScoreRsResponse.getMapGroupScores();
+       /* List<GroupCompetitiveScoreRsResponse> groupCompetitiveScoreRsResponseList = rsCalculateCompetitiveScoreRsResponse.getGroupCompetitiveScoreRsResponseList();
         if (Objects.nonNull(groupCompetitiveScoreRsResponseList) && !groupCompetitiveScoreRsResponseList.isEmpty()) {
             groupCompetitiveScoreRsResponseList.forEach(groupCompetitiveScoreRsResponse -> {
                 String experimentGroupId = groupCompetitiveScoreRsResponse.getExperimentGroupId();
                 BigDecimal groupCompetitiveScore = groupCompetitiveScoreRsResponse.getGroupCompetitiveScore();
                 kExperimentGroupIdVGroupCompetitiveScoreMap.put(experimentGroupId, groupCompetitiveScore);
             });
-        }
+        }*/
 
         //C、医疗占比得分
         Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap = new HashMap<>();
@@ -419,7 +427,10 @@ public class ExperimentScoringBiz {
                 questionnaireScoreBigDecimal = BigDecimal.ZERO;
             }
             //健康竞赛分
-            BigDecimal groupCompetitiveScoreBigDecimal = kExperimentGroupIdVGroupCompetitiveScoreMap.get(experimentGroupId);
+            GroupCompetitiveScoreRsResponse groupScore=  mapGroupScores.get(experimentGroupId);
+            BigDecimal groupCompetitiveScoreBigDecimal = Optional.ofNullable(groupScore)
+                    .map(GroupCompetitiveScoreRsResponse::getGroupCompetitiveScore)
+                    .orElse(null);
             if (Objects.isNull(groupCompetitiveScoreBigDecimal)) {
                 groupCompetitiveScoreBigDecimal = BigDecimal.ZERO;
             }
@@ -445,6 +456,9 @@ public class ExperimentScoringBiz {
             BigDecimal finalHealthIndexScore = groupCompetitiveScoreBigDecimal.multiply(healthIndexWeight);
             BigDecimal finalMedicalRatioScoreScore = groupIdVGroupMoneyScoreBigDecimal.multiply(medicalRatioWeight);
 
+            String hpScoreJson= JacksonUtil.toJsonSilence(Optional.ofNullable(groupScore)
+                    .map(GroupCompetitiveScoreRsResponse::getPersonScores)
+                    .orElse(null),true);
             experimentScoringEntityList.add(ExperimentScoringEntity
                     .builder()
                     .experimentScoringId(idGenerator.nextIdStr())
@@ -462,6 +476,7 @@ public class ExperimentScoringBiz {
                     .percentTreatmentPercentScore(finalMedicalRatioScoreScore.divide(totalScoreBigDecimal, 2, RoundingMode.HALF_UP).toString())
                     .scoringCount(scoringCountAtomicInteger.get())
                     .periods(periods)
+                    .hpScoreJson(hpScoreJson)
                     .build());
         });
         //计算排名

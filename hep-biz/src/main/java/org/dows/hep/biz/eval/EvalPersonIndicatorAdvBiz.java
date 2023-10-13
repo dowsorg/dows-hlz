@@ -55,6 +55,7 @@ public class EvalPersonIndicatorAdvBiz {
             ExperimentTimePoint timePoint = ExperimentSettingCache.Instance().getTimePointByRealTimeSilence(ExperimentCacheKey.create(req.getAppId(), req.getExperimentId()), LocalDateTime.now(), true);
             EvalPersonSyncRequest evalReq = new EvalPersonSyncRequest()
                     .setFuncType(req.getFuncType())
+                    .setSilence(req.isSilence())
                     .setTimePoint(timePoint);
             ts=logCostTime(sb,"2-timepoint", ts);
 
@@ -105,8 +106,15 @@ public class EvalPersonIndicatorAdvBiz {
             if (null == values) {
                 continue;
             }
-            SpelEvalResult evalRst = SpelEngine.Instance().loadFromSpelCache().withReasonId(experimentId, experimentPersonId, item.getCaseIndicatorInstanceId(), source)
-                    .evalSum(context, mapSum);
+            SpelEvalResult evalRst;
+            if(evalReq.isSilence()){
+                evalRst= SpelEngine.Instance().loadFromSpelCache().withReasonIdSilence(experimentId, experimentPersonId, item.getCaseIndicatorInstanceId(), source)
+                        .evalSum(context, mapSum);
+            }else{
+                evalRst= SpelEngine.Instance().loadFromSpelCache().withReasonId(experimentId, experimentPersonId, item.getCaseIndicatorInstanceId(), source)
+                        .evalSum(context, mapSum);
+            }
+
             if (ShareUtil.XObject.allNotEmpty(evalRst, () -> evalRst.getVal())) {
                 values.setCurVal(evalRst.getValString());
             }

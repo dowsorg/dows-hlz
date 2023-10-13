@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.response.AccountInstanceResponse;
+import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
@@ -185,6 +186,7 @@ public class PersonManageRest {
      * @param
      * @return
      */
+    @Resubmit(duration = 1)
     @Operation(summary =  "创建教师/学生")
     @PostMapping("v1/basePerson/person/createTeacherOrStudent")
     public AccountInstanceResponse createTeacherOrStudent(@RequestBody AccountInstanceRequest request){

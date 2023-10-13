@@ -75,6 +75,15 @@ public class IndicatorInstanceDao extends BaseDao<IndicatorInstanceService, Indi
                 .list();
     }
 
+    public List<IndicatorInstanceEntity> getIndicatorsByCategIds(Collection<String> categIds,SFunction<IndicatorInstanceEntity, ?>...cols ){
+        return service.lambdaQuery()
+                .eq(categIds.size()==1, IndicatorInstanceEntity::getIndicatorCategoryId,categIds.iterator().next())
+                .in(categIds.size()>1,IndicatorInstanceEntity::getIndicatorCategoryId,categIds)
+                .orderByAsc(IndicatorInstanceEntity::getId)
+                .select(cols)
+                .list();
+    }
+
 
 
 }

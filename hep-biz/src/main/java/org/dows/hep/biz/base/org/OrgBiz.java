@@ -258,15 +258,31 @@ public class OrgBiz {
                 ids.add("fill");
             }
             request.setIds(ids);
+        }else{
+
         }
+
         IPage<AccountOrgResponse> accountOrgResponse = accountOrgApi.customAccountOrgList(request);
         //2、总人数剔除教师一个
         List<AccountOrgResponse> accountList = accountOrgResponse.getRecords();
-        if (accountList != null && accountList.size() > 0) {
-            accountList.forEach(account -> {
-                account.setCurrentNum(account.getCurrentNum() - 1);
-            });
-        }
+
+        accountList.forEach(account -> {
+            //班级名称
+            String orgName = account.getOrgName();
+            Set<String> accountIds = accountInstanceApi.getAccountInstanceList(
+                    AccountInstanceRequest.builder()
+                            .appId(request.getAppId()).build()).stream().map(AccountInstanceResponse::getAccountId).collect(Collectors.toSet());
+            IPage<AccountInstanceResponse> accountInstanceIPage = accountInstanceApi.customAccountInstanceList(
+                    AccountInstanceRequest.builder()
+                            .pageNo(1)
+                            .pageSize(5)
+                            .orgName(orgName)
+                            .roleName("学生")
+                            .accountIds(accountIds)
+                            .appId(request.getAppId()).build());
+            account.setCurrentNum((int)accountInstanceIPage.getTotal());
+        });
+
         accountOrgResponse.setRecords(accountList);
         return accountOrgResponse;
     }
@@ -826,23 +842,41 @@ public class OrgBiz {
     public IPage<CaseOrgResponse> listOrgnization(CaseOrgRequest request) {
         //1、实验的时候获取已发布的机构,案例获取全部，不需要传status
         Set<String> orgIds = new HashSet<>();
-        if(request.getStatus() != null && request.getStatus() == 1) {
-            List<AccountOrgResponse> orgList = accountOrgApi.getValidAccountOrgList(request.getStatus());
-            if(orgList != null && orgList.size() > 0) {
-                orgList.forEach(org -> {
-                    orgIds.add(org.getOrgId());
-                });
-            }
-        }
-        //2、查询
-        LambdaQueryWrapper<CaseOrgEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(StringUtils.isNotEmpty(request.getOrgId()), CaseOrgEntity::getOrgId, request.getOrgId())
-                .in(orgIds != null && orgIds.size() > 0,CaseOrgEntity::getOrgId,orgIds)
+        //2.查询
+        LambdaQueryWrapper<CaseOrgEntity> caseOrgEntityWrapper = new LambdaQueryWrapper<>();
+        caseOrgEntityWrapper.eq(StringUtils.isNotEmpty(request.getOrgId()), CaseOrgEntity::getOrgId, request.getOrgId())
                 .like(StringUtils.isNotEmpty(request.getOrgName()), CaseOrgEntity::getOrgName, request.getOrgName())
                 .eq(StringUtils.isNotEmpty(request.getCaseInstanceId()), CaseOrgEntity::getCaseInstanceId, request.getCaseInstanceId())
                 .orderByDesc(CaseOrgEntity::getDt);
+        List<CaseOrgEntity> list = caseOrgService.list(caseOrgEntityWrapper);
+        if(request.getStatus() != null && request.getStatus() == 1) {
+            list.forEach(caseOrgEntity -> {
+                AccountOrgResponse accountOrg = accountOrgApi.getAccountOrgByOrgId(caseOrgEntity.getOrgId(), "3");
+                if (accountOrg != null) {
+                    orgIds.add(accountOrg.getOrgId());
+                }
+            });
+            //3.过滤
+            list = list.stream().filter(org ->orgIds.contains(org.getOrgId())).toList();
+        }
+
+        //组装分页
+        int pageSize = request.getPageSize();
         Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
-        IPage<CaseOrgEntity> orgList = caseOrgService.page(page, queryWrapper);
+
+        if (pageSize > list.size()) {
+            //不够分页，放全部
+            page.setSize(list.size());
+            page.setRecords(list);
+        }else{
+            int index = (request.getPageNo() - 1) * pageSize;
+            int maxIndex = index + pageSize;
+            if ( maxIndex > list.size()){
+                maxIndex = list.size();
+            }
+            page.setRecords(list.subList(index, maxIndex));
+        }
+        IPage<CaseOrgEntity> orgList = caseOrgService.page(page,caseOrgEntityWrapper);
         //复制属性
         IPage<CaseOrgResponse> pageVo = new Page<>();
         BeanUtils.copyProperties(orgList, pageVo, new String[]{"records"});

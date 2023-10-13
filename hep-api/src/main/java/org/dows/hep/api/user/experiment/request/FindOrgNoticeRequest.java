@@ -32,5 +32,9 @@ public class FindOrgNoticeRequest extends BaseExptRequest {
     @Schema(title = "随访通知列表")
     private List<String> followUpNoticeIds;
 
+    @JsonIgnore
+    @Schema(title = "是否包含随访通知")
+    private boolean containsFollowUp;
+
 
 }

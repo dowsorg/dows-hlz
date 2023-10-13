@@ -1,6 +1,5 @@
 package org.dows.hep.biz.tenant.organization;
 
-import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountInstanceRequest;
@@ -11,10 +10,12 @@ import org.dows.hep.api.tenant.organization.request.OrgFeeSettingRequest;
 import org.dows.hep.api.tenant.organization.request.OrgFuncRequest;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.tenant.excel.BatchInsertBiz;
+import org.dows.hep.biz.util.AssertUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -110,7 +111,7 @@ public class OrgManageBiz{
     * @开始时间: 
     * @创建时间: 2023年4月24日 上午09:00:00
     */
-    @DSTransactional
+
     public Map<String, Object> importOrgMember(AccountInstanceRequest request, MultipartFile file) {
         Map<String, Object> map = new HashMap<>();
         //失败成员列表
@@ -122,19 +123,20 @@ public class OrgManageBiz{
         InputStream fin = null;
         try {
 //            fin = file.getInputStream();
-            File newFile = batchInsertBiz.multipartFileToFile(file);
-            fin =  batchInsertBiz.parseImportExcelStream(newFile);
-            newFile.delete();
+            AssertUtil.trueThenThrow(file.isEmpty()).throwMessage("导入文件为空");
+            //重新编译后读取文件
+            File newFile=  batchInsertBiz.parseImportExcelStream(file);
+            fin = new FileInputStream(newFile.getPath());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         List<BatchMemberInsertRequest> list = batchInsertBiz.batchInsert(fin, 2, 500, BatchMemberInsertRequest.class, "accountName");
         //2、插入用户信息
+        String pageMessage = "";
         if (list != null && list.size() > 0) {
             for (int i = 0; i < list.size(); i++) {
                 request.setAccountName(list.get(i).getAccountName());
                 request.setUserName(list.get(i).getUserName());
-                request.setPassword(list.get(i).getPassword());
                 request.setIdentifier(orgManageBiz.createCode(7));
                 String message = "";
                 try {
@@ -152,9 +154,15 @@ public class OrgManageBiz{
                 }
             }
         }
+        if (memberList.isEmpty()){
+            pageMessage = "文件导入成功！";
+        }else {
+            pageMessage = "文件导入账号已存在！" + memberList.stream().map(BatchMemberInsertRequest::getAccountName).toList();
+        }
         map.put("finishCount", finishCount);
         map.put("failCount", failCount);
         map.put("memberList", memberList);
+        map.put("message",pageMessage);
         return map;
     }
     /**

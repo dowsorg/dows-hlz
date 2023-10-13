@@ -31,6 +31,7 @@ import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
+import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.properties.FindSoftProperties;
@@ -488,16 +489,21 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
             tTreatmentPercentScore = tTreatmentPercentScore.add(pTreatmentPercentScore);
             tTotalScore = tTotalScore.add(pTotalScore);
         }
-        tHealthIndexScore = tHealthIndexScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
-        tKnowledgeScore = tKnowledgeScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
-        tTreatmentPercentScore = tTreatmentPercentScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
-        tTotalScore = tTotalScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
+        //tHealthIndexScore = tHealthIndexScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
+        //tKnowledgeScore = tKnowledgeScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
+        //tTreatmentPercentScore = tTreatmentPercentScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
+        //tTotalScore = tTotalScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
+
+        //tHealthIndexScore = tHealthIndexScore.multiply(BigDecimal.valueOf(healthIndexWeight)).divide(BigDecimal.valueOf(100),2,RoundingMode.HALF_UP);
+        //tKnowledgeScore = tKnowledgeScore.multiply(BigDecimal.valueOf(knowledgeWeight)).divide(BigDecimal.valueOf(100),2,RoundingMode.HALF_UP);
+        //tTreatmentPercentScore = tTreatmentPercentScore.multiply(BigDecimal.valueOf(medicalRatioWeight)).divide(BigDecimal.valueOf(100),2,RoundingMode.HALF_UP);
+
         Integer totalRank = getTotalRank(exptGroupId, exptData);
         ExptSandReportModel.ScoreInfo.Score totalScore = ExptSandReportModel.ScoreInfo.Score.builder()
-                .healthIndexScore(tHealthIndexScore.toString())
-                .knowledgeScore(tKnowledgeScore.toString())
-                .treatmentPercentScore(tTreatmentPercentScore.toString())
-                .totalScore(tTotalScore.toString())
+                .healthIndexScore(BigDecimalUtil.formatRoundDecimal(tHealthIndexScore, 2 ))
+                .knowledgeScore(BigDecimalUtil.formatRoundDecimal(tKnowledgeScore, 2 ))
+                .treatmentPercentScore(BigDecimalUtil.formatRoundDecimal(tTreatmentPercentScore, 2 ))
+                .totalScore(BigDecimalUtil.formatRoundDecimal(tTotalScore, 2 ))
                 .totalRanking(String.valueOf(totalRank))
                 .build();
 

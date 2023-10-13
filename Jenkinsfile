@@ -128,7 +128,7 @@ pipeline {
                         sh "sshpass -p $OFFLINE_AS_PWD scp -r $FORM_SIT_CD_PATH $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST:$TO_SIT_CD_PATH"
                         sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST 'cd $TO_SIT_CD_PATH/admin;$DOCKER_OFFLINE_LOGIN;$DOCKER_CONTAINER_START'"
 
-                        sh "sshpass -p $OFFLINE_AS_USERNAME ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"$branch\"' \"$gitCommitAuthorName\" 'api-hep-admin' 'SIT环境' '\"$gitCommitMessage\"' '\"$changes\"' 'green'"
+                        sh "sshpass -p $OFFLINE_AS_PWD ssh $OFFLINE_AS_USERNAME@$OFFLINE_AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '\"$branch\" \"$gitCommitAuthorName\" \"api-hep-admin\" \"SIT环境\" \"$gitCommitMessage\" \"$changes\" \"green\"'"
                         //sh "sshpass -p $AS_PWD ssh $AS_USERNAME@$AS_HOST sh $TO_SIT_CD_PATH/admin/robot.sh '"$branch"' '"$gitCommitAuthorName"' 'api-hep-admin' 'SIT环境发布' '"$gitCommitMessage"' '"$changes"' 'green'"
 
                     } else if (branch.startsWith('uat-')) {

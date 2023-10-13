@@ -40,7 +40,7 @@ public class FoodCalcBiz {
     protected FoodDishesDao foodDishesDao;
     //保留两位小数
     protected static final int NUMBERScale2=2;
-    protected static final String EMPTYValue="-";
+    protected static final String EMPTYValue="0";
 
     protected CategCache getCategCache(){
         return CategCacheFactory.FOODMaterial.getCache() ;

@@ -1,6 +1,7 @@
 package org.dows.hep.biz.eval;
 
 import lombok.Data;
+import org.dows.hep.biz.base.indicator.ExperimentOrgModuleBiz;
 import org.dows.hep.biz.cache.BaseLoadingCache;
 import org.dows.hep.biz.dao.ExperimentGroupDao;
 import org.dows.hep.biz.dao.ExperimentPersonDao;
@@ -45,6 +46,9 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
 
     @Autowired
     private ExperimentOrgService experimentOrgService;
+
+    @Autowired
+    private ExperimentOrgModuleBiz experimentOrgModuleBiz;
 
     protected ExperimentPersonCache() {
         super(CACHEInitCapacity, CACHEMaxSize, CACHEExpireSeconds, 0);
@@ -121,6 +125,13 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         });
         return rst;
     }
+    public Set<String> getMonitorOrgIds(String experimentId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return Collections.emptySet();
+        }
+        return cached.getSetMonitorOrgId();
+    }
 
     public Set<String> getCasePersonIdSet(String experimentId){
         ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
@@ -166,6 +177,7 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         rowsOrg.forEach(i->{
             rst.mapOrgs.put(i.getExperimentOrgId(),i);
         });
+        rst.getSetMonitorOrgId().addAll(experimentOrgModuleBiz.getMonitorOrgIds(rst.mapOrgs.keySet()));
         return rst;
     }
 
@@ -180,5 +192,8 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         private final Map<String, ExperimentGroupEntity> mapGroups=new HashMap<>();
 
         private final Map<String, ExperimentOrgEntity> mapOrgs=new HashMap<>();
+
+        //监测随访机构id
+        private final Set<String> setMonitorOrgId=new HashSet<>();
     }
 }

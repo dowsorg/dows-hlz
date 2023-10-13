@@ -4,12 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.annotation.Resubmit;
-import org.dows.hep.api.base.indicator.request.BatchUpdateCoreRequestRs;
-import org.dows.hep.api.base.indicator.request.BatchUpdateFoodRequestRs;
-import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorInstanceRequestRs;
-import org.dows.hep.api.base.indicator.request.UpdateIndicatorInstanceMoveRequestRs;
+import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
 import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
+import org.dows.hep.biz.eval.SyncPersonBiz;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +25,8 @@ import java.util.concurrent.ExecutionException;
 @Tag(name = "指标实例", description = "指标实例")
 public class IndicatorInstanceRest {
     private final IndicatorInstanceBiz indicatorInstanceBiz;
+
+    private final SyncPersonBiz syncPersonBiz;
 
     @Resubmit(duration = 2)
     @Operation(summary = "创建或修改指标实例")
@@ -62,5 +63,11 @@ public class IndicatorInstanceRest {
     @GetMapping("v1/baseIndicator/indicatorInstance/getByAppId")
     public List<IndicatorInstanceCategoryResponseRs> getByAppId(@RequestParam String appId) {
         return indicatorInstanceBiz.getByAppId(appId);
+    }
+
+    @Operation(summary = "一键同步")
+    @PostMapping("v1/baseIndicator/indicatorInstance/syncAll")
+    public Boolean syncAll(@RequestBody @Validated SyncIndicatorRequest req) {
+        return syncPersonBiz.syncPersonIndicator(req);
     }
 }

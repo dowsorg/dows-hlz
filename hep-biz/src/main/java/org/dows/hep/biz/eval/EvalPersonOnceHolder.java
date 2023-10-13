@@ -54,7 +54,7 @@ public class EvalPersonOnceHolder {
 
     private EvalPersonOnceData cacheData;
 
-    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压");
+    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压","心率");
 
     //region holders
     public EvalPersonOnceHolder getLastHolder(){
@@ -371,7 +371,7 @@ public class EvalPersonOnceHolder {
         }
         ExperimentEvalLogEntity logEval = CopyWrapper.create(ExperimentEvalLogEntity::new)
                 .endFrom(data.getHeader())
-                .setFuncType(data.getHeader().getFuncType().getCode())
+                .setFuncType(Optional.ofNullable( data.getHeader().getFuncType()).map(EnumEvalFuncType::getCode).orElse(EnumEvalFuncType.FUNCCommon.getCode()))
                 .setExperimentInstanceId(cacheKey.getExperimentInstanceId())
                 .setExperimentPersonId(cacheKey.getExperimentPersonId());
         logEval.setRisks(JacksonUtil.toJsonSilence(data.getRisks(), true));
