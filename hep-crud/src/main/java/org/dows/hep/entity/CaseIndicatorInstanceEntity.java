@@ -15,6 +15,7 @@ import org.dows.framework.crud.api.CrudEntity;
 import java.util.Date;
 
 /**
+ * 案例指标实例
  * @author runsix
  */
 @Data

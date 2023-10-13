@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.tenant.casus.request.FindCaseEventRequest;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -174,6 +175,16 @@ public class CaseEventDao extends BaseSubDao<CaseEventService, CaseEventEntity, 
                 .eq(oneFlag, CaseEventEntity::getPersonId,personIds.iterator().next())
                 .in(!oneFlag, CaseEventEntity::getPersonId,personIds)
                 .select(cols)
+                .list();
+    }
+
+    /**
+     * 查询人物关联突发事件
+     */
+    public List<CaseEventEntity> getCaseEventsByPersonId(String appId, String personId) {
+        return service.lambdaQuery()
+                .eq(StringUtils.isNotBlank(personId), CaseEventEntity::getPersonId, personId)
+                .eq(StringUtils.isNotBlank(appId), CaseEventEntity::getAppId, appId)
                 .list();
     }
 
