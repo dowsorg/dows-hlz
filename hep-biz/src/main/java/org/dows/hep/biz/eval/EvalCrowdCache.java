@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static org.dows.hep.biz.constant.ConstantParameters.APPId;
+import static org.dows.hep.biz.constant.CaseBizConstants.APPId;
 
 
 /**

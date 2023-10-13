@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.dows.hep.biz.base.org.OrgBiz.createCode;
 import static org.dows.hep.biz.base.person.PersonManageBiz.randomWord;
-import static org.dows.hep.biz.constant.ConstantParameters.*;
+import static org.dows.hep.biz.constant.CaseBizConstants.*;
 
 /**
  * TODO:

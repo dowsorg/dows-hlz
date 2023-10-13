@@ -5,7 +5,7 @@ package org.dows.hep.biz.constant;
  *
  * @description: lifel 2023/10/10
  */
-public class ConstantParameters {
+public class CaseBizConstants {
 
     /**
      * 系统代号
