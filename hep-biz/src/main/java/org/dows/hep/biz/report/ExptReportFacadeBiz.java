@@ -215,7 +215,7 @@ public class ExptReportFacadeBiz {
 
                 /*使用新数据*/
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regeneratePdf);
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, null, regeneratePdf,ExptReportTypeEnum.EXPT);
                 // 压缩并上传报告
 //                Path uploadPath = Paths.get(exptInstanceId, exptZipFullName);
 //                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, exptZipName, exptZipSuffix);
@@ -287,7 +287,7 @@ public class ExptReportFacadeBiz {
 
                 /*2.使用新数据*/
                 // 生成报告
-                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regeneratePdf);
+                ExptReportVO exptReportVO = generatePdf(exptInstanceId, exptGroupId, regeneratePdf,ExptReportTypeEnum.GROUP);
                 // 压缩并上传报告
 //                Path uploadPath = Paths.get(exptInstanceId, groupZipFullName);
 //                boolean zipRes = zip(exptInstanceId, exptReportVO, uploadPath, groupZipName, groupZipSuffix);
@@ -534,7 +534,7 @@ public class ExptReportFacadeBiz {
     }
 
     // todo 后续策略模式
-    private ExptReportVO generatePdf(String experimentInstanceId, String experimentGroupId, boolean regenerate) {
+    private ExptReportVO generatePdf(String experimentInstanceId, String experimentGroupId, boolean regenerate,ExptReportTypeEnum reportType) {
         List<ExptGroupReportVO> exptGroupReportVOS = new ArrayList<>();
         ExptReportVO result = ExptReportVO.builder()
                 .groupReportList(exptGroupReportVOS)
@@ -548,8 +548,10 @@ public class ExptReportFacadeBiz {
                 exptGroupReportVOS.addAll(schemeReportVO.getGroupReportList());
             }
             case SAND -> {//沙盘模式
-                ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
-                exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
+                if(reportType==ExptReportTypeEnum.GROUP) {
+                    ExptReportVO sandReportVO = sandReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
+                    exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
+                }
             }
             case SAND_SCHEME -> {//标准模式
                 ExptReportVO schemeReportVO = schemeReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
@@ -558,10 +560,11 @@ public class ExptReportFacadeBiz {
                 exptGroupReportVOS.addAll(sandReportVO.getGroupReportList());
             }
         }
-        // 实验总报告
-        ExptReportVO overviewReportVO = overviewReportHandler.generatePdfReport(experimentInstanceId, experimentGroupId, regenerate);
-        exptGroupReportVOS.addAll(overviewReportVO.getGroupReportList());
-
+        if(reportType==ExptReportTypeEnum.EXPT) {
+            // 实验总报告
+            ExptReportVO overviewReportVO = overviewReportHandler.generatePdfReport(experimentInstanceId, null, regenerate);
+            exptGroupReportVOS.addAll(overviewReportVO.getGroupReportList());
+        }
         return result;
     }
 
