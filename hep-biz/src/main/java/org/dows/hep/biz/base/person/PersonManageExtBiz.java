@@ -51,13 +51,18 @@ public class PersonManageExtBiz {
     /**
      * 案例机构人物复制
      */
-    public String duplicateCaseOrgPerson(String caseOrgId, String caseInstanceId, String accountId) throws ExecutionException, InterruptedException {
+    @DSTransactional
+    public String duplicateCaseOrgPerson(String caseOrgId, String caseInstanceId, String accountId) {
+        long startTime = System.currentTimeMillis();
         PersonInstanceResponse personInstanceResponse = duplicatePerson(accountId, ORG_PERSON);
         if (personInstanceResponse == null) {
             throw new BizException("复制人物异常");
         }
         String newAccount = personInstanceResponse.getAccountId();
-        return orgBiz.addPersonToCaseOrg(newAccount, caseInstanceId, caseOrgId, APPId);
+        String date = orgBiz.addPersonToCaseOrg(newAccount, caseInstanceId, caseOrgId, APPId);
+        long endTime = System.currentTimeMillis();
+        long useTime = endTime - startTime;
+        return date;
     }
 
     /**
@@ -66,7 +71,7 @@ public class PersonManageExtBiz {
     @DSTransactional
     public PersonInstanceResponse duplicatePerson(String accountId, String source) {
         //为空则人物是 人物管理复制
-        if (StringUtils.isBlank(source)){
+        if (StringUtils.isBlank(source)) {
             source = PERSON_MANAGE;
         }
         //1.账号用户关系
