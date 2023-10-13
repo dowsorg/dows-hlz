@@ -10,6 +10,7 @@ import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.sysevent.BaseEventDealer;
 import org.dows.hep.biz.event.sysevent.data.*;
+import org.dows.hep.biz.report.ExptReportFacadeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.biz.util.ShareUtil;
@@ -35,6 +36,8 @@ public class ExperimentReportDealer extends BaseEventDealer {
     private final ExperimentTimerDao experimentTimerDao;
 
     private final ExperimentScoringBiz experimentScoringBiz;
+
+    private final ExptReportFacadeBiz exptReportFacadeBiz;
 
     @Override
     protected boolean coreDeal(EventDealResult rst, SysEventRow row, SysEventRunStat stat) {
@@ -68,6 +71,11 @@ public class ExperimentReportDealer extends BaseEventDealer {
         }
         this.pushTimeState(rst, ExperimentCacheKey.create(appId,experimentInstanceId), exptColl, EnumWebSocketType.FLOW_SAND_END , row);
         experimentScoringBiz.getRank(experimentInstanceId);
+
+        final String accountId="admin";
+        final boolean regenerate=false;
+        exptReportFacadeBiz.exportExptReport(experimentInstanceId,accountId , true, regenerate, regenerate);
+        exptReportFacadeBiz.exportGroupReport(experimentInstanceId, null, accountId, regenerate, regenerate);
         return true;
 
     }

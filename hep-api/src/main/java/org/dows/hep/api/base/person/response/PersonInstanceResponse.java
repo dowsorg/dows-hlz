@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -53,4 +54,10 @@ public class PersonInstanceResponse{
 
     @Schema(title = "关键指标列表")
     private List<String> coreIndicators;
+
+    @Schema(title = "更新时间")
+    private Date updateDt;
+
+    @Schema(title = "插入时间")
+    private Date dt;
 }
