@@ -15,6 +15,7 @@ import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.service.*;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.rbac.api.RbacRoleApi;
 import org.dows.user.api.api.UserExtinfoApi;
 import org.dows.user.api.api.UserInstanceApi;
@@ -55,6 +56,19 @@ public class XAccountInstanceApi {
 
         return accountInstanceService.lambdaQuery()
                 .eq(AccountInstance::getSource, source)
+                .orderByAsc(AccountInstance::getId)
+                .select(cols)
+                .list();
+
+    }
+    public List<AccountInstance> getAccountInstancesByAccountIds(Collection<String> accountIds, SFunction<AccountInstance,?>...cols) {
+        if(ShareUtil.XObject.isEmpty(accountIds)){
+            return Collections.emptyList();
+        }
+
+        return accountInstanceService.lambdaQuery()
+                .eq(accountIds.size()==1, AccountInstance::getAccountId, accountIds.iterator().next())
+                .in(accountIds.size()>1, AccountInstance::getAccountId, accountIds)
                 .orderByAsc(AccountInstance::getId)
                 .select(cols)
                 .list();

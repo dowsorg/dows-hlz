@@ -256,8 +256,10 @@ public class PersonManageBiz {
                 .accountId(request.getAccountId().toString())
                 .status(request.getStatus())
                 .appId(request.getAppId())
+                .dt(new Date())
                 .build();
-        String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        //String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        String userId = xAccountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
         return userId;
     }
 
