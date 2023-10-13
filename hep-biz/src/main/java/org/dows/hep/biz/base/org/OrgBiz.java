@@ -472,21 +472,14 @@ public class OrgBiz {
         List<AccountGroupResponse> responseList = groupResponseIPage.getRecords();
 
         final List<String> caseAccountIds = ShareUtil.XCollection.map(responseList, AccountGroupResponse::getAccountId);
-        final Map<String, CasePersonEntity> mapCasePersons = ShareUtil.XCollection.toMap(casePersonService.lambdaQuery()
-                .in(CasePersonEntity::getAccountId, caseAccountIds)
-                .eq(CasePersonEntity::getCaseOrgId, caseOrgId)
-                .list(), CasePersonEntity::getAccountId);
+
         final Map<String, List<String>> mapCoreIndicators = caseIndicatorInstanceBiz.getCoreByAccountIdList(caseAccountIds);
         responseList.forEach(group -> {
-            CasePersonEntity casePersonEntity = mapCasePersons.get(group.getAccountId());
-            if (null == casePersonEntity) {
-                return;
-            }
-            //group.setHealthPoint(caseIndicatorInstanceBiz.getHealthPoint(casePersonEntity.getCasePersonId()));
-            group.setHealthPoint(caseIndicatorInstanceBiz.v2GetHealthPoint(casePersonEntity.getAccountId()));
+
+            group.setHealthPoint(caseIndicatorInstanceBiz.v2GetHealthPoint(group.getAccountId()));
             caseResponseList.add(CopyWrapper.create(CaseAccountGroupResponse::new)
                     .endFrom(group)
-                    .setCoreIndicators(mapCoreIndicators.get(casePersonEntity.getAccountId())));
+                    .setCoreIndicators(mapCoreIndicators.get(group.getAccountId())));
 
         });
         return rst;

@@ -59,4 +59,5 @@ public class CreateOrUpdateCaseIndicatorInstanceRequestRs implements Serializabl
 
   @Schema(title = "最大值")
   private String max;
+
 }
