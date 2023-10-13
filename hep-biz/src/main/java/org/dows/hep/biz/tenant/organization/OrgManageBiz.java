@@ -132,6 +132,7 @@ public class OrgManageBiz{
         }
         List<BatchMemberInsertRequest> list = batchInsertBiz.batchInsert(fin, 2, 500, BatchMemberInsertRequest.class, "accountName");
         //2、插入用户信息
+        String pageMessage = "";
         if (list != null && list.size() > 0) {
             for (int i = 0; i < list.size(); i++) {
                 request.setAccountName(list.get(i).getAccountName());
@@ -153,9 +154,15 @@ public class OrgManageBiz{
                 }
             }
         }
+        if (memberList.isEmpty()){
+            pageMessage = "文件导入成功！";
+        }else {
+            pageMessage = "文件导入账号已存在！" + memberList.stream().map(BatchMemberInsertRequest::getAccountName).toList();
+        }
         map.put("finishCount", finishCount);
         map.put("failCount", failCount);
         map.put("memberList", memberList);
+        map.put("message",pageMessage);
         return map;
     }
     /**
