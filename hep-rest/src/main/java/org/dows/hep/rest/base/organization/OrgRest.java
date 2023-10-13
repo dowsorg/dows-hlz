@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.request.AccountOrgRequest;
-import org.dows.account.response.AccountGroupResponse;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.util.JwtUtil;
 import org.dows.hep.api.enums.EnumToken;
@@ -16,6 +15,7 @@ import org.dows.hep.api.tenant.casus.response.CaseAccountGroupResponse;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.base.person.PersonManageExtBiz;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutionException;
 @Tag(name = "机构", description = "机构")
 public class OrgRest {
     private final OrgBiz orgBiz;
-
+    private final PersonManageExtBiz personManageExtBiz;
     /**
      * 班级 列表
      * @param
@@ -232,13 +232,14 @@ public class OrgRest {
     }
 
     /**
-     * 复制机构人物
+     * 复制案例机构人物
      */
-    @Operation(summary = "复制机构人物")
+    @Operation(summary = "复制案例机构人物")
     @PostMapping("v1/baseOrg/org/copyPerson")
     public String copyPerson(@RequestParam String caseOrgId,
                              @RequestParam String caseInstanceId,
                              @RequestParam String accountId) throws ExecutionException, InterruptedException {
-        return orgBiz.copyPerson(caseOrgId,caseInstanceId,accountId);
+//        return orgBiz.copyPerson(caseOrgId,caseInstanceId,accountId);
+        return personManageExtBiz.duplicateCaseOrgPerson(caseOrgId,caseInstanceId,accountId);
     }
 }

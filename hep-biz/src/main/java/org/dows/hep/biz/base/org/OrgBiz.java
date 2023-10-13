@@ -826,8 +826,8 @@ public class OrgBiz {
                 .principalId(vo.getAccountId())
                 .build());
         //4.复制事件
-        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(), vo.getAccountId(), accountId,
-                accountInstanceResponse.getUserName());
+//        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(), vo.getAccountId(), accountId,
+//                accountInstanceResponse.getUserName());
         return vo.getAccountId();
     }
 

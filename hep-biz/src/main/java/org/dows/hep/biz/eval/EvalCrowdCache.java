@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+import static org.dows.hep.biz.constant.CaseBizConstants.APPId;
+
+
 /**
  * @author : wuzl
  * @date : 2023/9/14 14:54
@@ -39,7 +42,7 @@ public class EvalCrowdCache extends BaseLoadingCache<ExperimentCacheKey, EvalCro
     @Autowired
     private SnapRiskModelDao snapRiskModelDao;
 
-    private final static String APPId="3";
+
 
     public EvalCrowdCache.CacheData getCacheData(String experimentId){
         return getCacheData(ExperimentCacheKey.create(APPId, experimentId));
