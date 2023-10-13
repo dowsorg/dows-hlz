@@ -109,7 +109,7 @@ public class BatchInsertBiz {
             fileInputStream = new FileInputStream(file);
             book = WorkbookFactory.create(fileInputStream);
         } catch (IOException e) {
-            throw new BizException("不是原始的Excel文件,请使用模版导入！！！");
+            throw new BizException("不是原始的Excel文件,请使用模版导入！");
         } finally {
             if (fileInputStream != null) {
                 fileInputStream.close();

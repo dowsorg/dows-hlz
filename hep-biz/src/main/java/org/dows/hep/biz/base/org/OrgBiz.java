@@ -45,6 +45,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -258,15 +259,31 @@ public class OrgBiz {
                 ids.add("fill");
             }
             request.setIds(ids);
+        }else{
+
         }
+
         IPage<AccountOrgResponse> accountOrgResponse = accountOrgApi.customAccountOrgList(request);
         //2、总人数剔除教师一个
         List<AccountOrgResponse> accountList = accountOrgResponse.getRecords();
-        if (accountList != null && accountList.size() > 0) {
-            accountList.forEach(account -> {
-                account.setCurrentNum(account.getCurrentNum() - 1);
-            });
-        }
+
+        accountList.forEach(account -> {
+            //班级名称
+            String orgName = account.getOrgName();
+            Set<String> accountIds = accountInstanceApi.getAccountInstanceList(
+                    AccountInstanceRequest.builder()
+                            .appId(request.getAppId()).build()).stream().map(AccountInstanceResponse::getAccountId).collect(Collectors.toSet());
+            IPage<AccountInstanceResponse> accountInstanceIPage = accountInstanceApi.customAccountInstanceList(
+                    AccountInstanceRequest.builder()
+                            .pageNo(1)
+                            .pageSize(5)
+                            .orgName(orgName)
+                            .roleName("学生")
+                            .accountIds(accountIds)
+                            .appId(request.getAppId()).build());
+            account.setCurrentNum((int)accountInstanceIPage.getTotal());
+        });
+
         accountOrgResponse.setRecords(accountList);
         return accountOrgResponse;
     }
