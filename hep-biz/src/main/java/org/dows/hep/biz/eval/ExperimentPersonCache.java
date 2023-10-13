@@ -19,6 +19,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.dows.hep.biz.constant.ConstantParameters.APPId;
+
 /**
  * @author : wuzl
  * @date : 2023/9/7 20:07
@@ -35,7 +37,6 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
     protected final static int CACHEInitCapacity = 100;
     protected final static int CACHEMaxSize = 1500;
     protected final static int CACHEExpireSeconds = 60 * 60*24*7 ;
-    protected final static String APPId="3";
 
     @Autowired
     private ExperimentPersonDao experimentPersonDao;

@@ -56,4 +56,7 @@ public class CreateOrUpdateIndicatorInstanceRequestRs implements Serializable {
 
   @Schema(title = "最大值")
   private String max;
+
+  @Schema(title = "人物accountId")
+  private String accountId;
 }

@@ -21,10 +21,11 @@ import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
-import org.dows.hep.biz.base.extuim.AccountInstanceExtBiz;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.util.StatefulJwtUtil;
 import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
@@ -87,7 +88,10 @@ public class PersonManageBiz {
 
     private final TenantCaseEventBiz tenantCaseEventBiz;
 
-    private final AccountInstanceExtBiz accountInstanceExtBiz;
+    private final XAccountInstanceApi xAccountInstanceApi;
+
+
+
     /**
      * @param
      * @return
@@ -197,6 +201,7 @@ public class PersonManageBiz {
      */
     @DSTransactional
     public Boolean editPerson(PersonInstanceRequest request) {
+        Date updatDt=new Date();
         //1、修改账户
         AccountInstanceRequest accountInstanceRequest = AccountInstanceRequest.builder()
                 .accountId(request.getAccountId().toString())
@@ -204,8 +209,10 @@ public class PersonManageBiz {
                 .nickName(request.getExtra())
                 .appId(request.getAppId())
                 .avatar(request.getAvatar())
+                .dt(updatDt)
                 .build();
-        String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        //String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        String userId = xAccountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
         //2、修改用户扩展信息
         if (StringUtils.isNotEmpty(request.getIntro())) {
             UserExtinfoResponse extinfoResponse = userExtinfoApi.getUserExtinfoByUserId(userId);
@@ -249,8 +256,10 @@ public class PersonManageBiz {
                 .accountId(request.getAccountId().toString())
                 .status(request.getStatus())
                 .appId(request.getAppId())
+                .dt(new Date())
                 .build();
-        String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        //String userId = accountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
+        String userId = xAccountInstanceApi.updateAccountInstanceByAccountId(accountInstanceRequest);
         return userId;
     }
 
@@ -796,15 +805,9 @@ public class PersonManageBiz {
      * @创建时间: 2023/4/25 17:35
      */
     public IPage<PersonInstanceResponse> listPerson(AccountInstanceRequest request) {
-        //1、获取所有accountIds
-        Set<String> accountIds = new HashSet<>();
-        List<AccountInstanceResponse> responses = accountInstanceApi.getAccountInstanceList(AccountInstanceRequest.builder().appId(request.getAppId()).build());
-        //2、将accountIds传入
-        responses.forEach(res -> {
-            accountIds.add(res.getAccountId());
-        });
-        request.setAccountIds(accountIds);
-        IPage<AccountInstanceResponse> accountInstancePage = accountInstanceApi.customAccountInstanceList(request);
+
+        IPage<AccountInstanceResponse> accountInstancePage = xAccountInstanceApi.customAccountInstanceList(request);
+        final List<String> accountIds = ShareUtil.XCollection.map(accountInstancePage.getRecords(), AccountInstanceResponse::getAccountId);
 
         //获取关键指标
         Map<String, List<String>> mapCoreIndicators= caseIndicatorInstanceBiz.getCoreByAccountIdList(accountIds);
@@ -823,6 +826,8 @@ public class PersonManageBiz {
                     .intro(accountInstance.getIntro())
                     .healthPoint(healthPoint)
                     .coreIndicators(mapCoreIndicators.get(accountInstance.getAccountId()))
+                    .dt(accountInstance.getDt())
+                    .updateDt(accountInstance.getDt())
                     .build();
             personInstanceResponseList.add(personInstance);
         });

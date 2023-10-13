@@ -12,6 +12,7 @@ import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.person.PersonManageBiz;
+import org.dows.hep.biz.base.person.PersonManageExtBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +33,7 @@ import java.util.concurrent.ExecutionException;
 @Tag(name = "人物管理", description = "人物管理")
 public class PersonManageRest {
     private final PersonManageBiz personManageBiz;
-
+    private final PersonManageExtBiz personManageExtBiz;
     /**
     * 批量删除人物
     * @param
@@ -85,8 +86,9 @@ public class PersonManageRest {
     @Operation(summary = "复制人物")
     @PostMapping("v1/basePerson/personManage/copyPerson")
     public PersonInstanceResponse copyPerson(@RequestParam @Validated String accountId,
-                                             @RequestParam @Validated String source) throws ExecutionException, InterruptedException {
-        return personManageBiz.copyPerson(accountId,source);
+                                             @RequestParam @Validated String source) {
+//        return personManageBiz.copyPerson(accountId,source);
+        return personManageExtBiz.duplicatePerson(accountId,source);
     }
 
     /**

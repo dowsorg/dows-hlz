@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.dows.account.api.*;
 import org.dows.account.biz.enums.EnumAccountStatusCode;
 import org.dows.account.biz.exception.AccountException;
+import org.dows.account.entity.AccountInstance;
 import org.dows.account.request.*;
 import org.dows.account.response.*;
 import org.dows.framework.api.util.ReflectUtil;
@@ -22,6 +23,7 @@ import org.dows.hep.api.tenant.casus.response.CaseAccountGroupResponse;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
+import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
@@ -45,6 +47,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @author jx
@@ -69,6 +72,8 @@ public class OrgBiz {
     private final AccountRoleApi accountRoleApi;
     private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
     private final TenantCaseEventBiz tenantCaseEventBiz;
+
+    private final XAccountInstanceApi xAccountInstanceApi;
 
     /**
      * @param
@@ -258,15 +263,31 @@ public class OrgBiz {
                 ids.add("fill");
             }
             request.setIds(ids);
+        }else{
+
         }
+
         IPage<AccountOrgResponse> accountOrgResponse = accountOrgApi.customAccountOrgList(request);
         //2、总人数剔除教师一个
         List<AccountOrgResponse> accountList = accountOrgResponse.getRecords();
-        if (accountList != null && accountList.size() > 0) {
-            accountList.forEach(account -> {
-                account.setCurrentNum(account.getCurrentNum() - 1);
-            });
-        }
+
+        accountList.forEach(account -> {
+            //班级名称
+            String orgName = account.getOrgName();
+            Set<String> accountIds = accountInstanceApi.getAccountInstanceList(
+                    AccountInstanceRequest.builder()
+                            .appId(request.getAppId()).build()).stream().map(AccountInstanceResponse::getAccountId).collect(Collectors.toSet());
+            IPage<AccountInstanceResponse> accountInstanceIPage = accountInstanceApi.customAccountInstanceList(
+                    AccountInstanceRequest.builder()
+                            .pageNo(1)
+                            .pageSize(5)
+                            .orgName(orgName)
+                            .roleName("学生")
+                            .accountIds(accountIds)
+                            .appId(request.getAppId()).build());
+            account.setCurrentNum((int)accountInstanceIPage.getTotal());
+        });
+
         accountOrgResponse.setRecords(accountList);
         return accountOrgResponse;
     }
@@ -455,21 +476,18 @@ public class OrgBiz {
         List<AccountGroupResponse> responseList = groupResponseIPage.getRecords();
 
         final List<String> caseAccountIds = ShareUtil.XCollection.map(responseList, AccountGroupResponse::getAccountId);
-        final Map<String, CasePersonEntity> mapCasePersons = ShareUtil.XCollection.toMap(casePersonService.lambdaQuery()
-                .in(CasePersonEntity::getAccountId, caseAccountIds)
-                .eq(CasePersonEntity::getCaseOrgId, caseOrgId)
-                .list(), CasePersonEntity::getAccountId);
+
         final Map<String, List<String>> mapCoreIndicators = caseIndicatorInstanceBiz.getCoreByAccountIdList(caseAccountIds);
+
+        final Map<String, Date> mapDt = ShareUtil.XCollection.toMap(xAccountInstanceApi.getAccountInstancesByAccountIds(caseAccountIds,
+                AccountInstance::getAccountId,
+                AccountInstance::getDt), AccountInstance::getAccountId, AccountInstance::getDt);
         responseList.forEach(group -> {
-            CasePersonEntity casePersonEntity = mapCasePersons.get(group.getAccountId());
-            if (null == casePersonEntity) {
-                return;
-            }
-            //group.setHealthPoint(caseIndicatorInstanceBiz.getHealthPoint(casePersonEntity.getCasePersonId()));
-            group.setHealthPoint(caseIndicatorInstanceBiz.v2GetHealthPoint(casePersonEntity.getAccountId()));
+            group.setDt(mapDt.get(group.getAccountId()));
+            group.setHealthPoint(caseIndicatorInstanceBiz.v2GetHealthPoint(group.getAccountId()));
             caseResponseList.add(CopyWrapper.create(CaseAccountGroupResponse::new)
                     .endFrom(group)
-                    .setCoreIndicators(mapCoreIndicators.get(casePersonEntity.getAccountId())));
+                    .setCoreIndicators(mapCoreIndicators.get(group.getAccountId())));
 
         });
         return rst;
@@ -808,8 +826,8 @@ public class OrgBiz {
                 .principalId(vo.getAccountId())
                 .build());
         //4.复制事件
-        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(), vo.getAccountId(), accountId,
-                accountInstanceResponse.getUserName());
+//        tenantCaseEventBiz.copyCaseEvent4Person(accountInstanceResponse.getAppId(), vo.getAccountId(), accountId,
+//                accountInstanceResponse.getUserName());
         return vo.getAccountId();
     }
 
