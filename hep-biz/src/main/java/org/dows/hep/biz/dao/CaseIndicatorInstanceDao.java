@@ -52,7 +52,7 @@ public class CaseIndicatorInstanceDao extends BaseDao<CaseIndicatorInstanceServi
             return Collections.emptyList();
         }
         return service.lambdaQuery()
-                .eq(CaseIndicatorInstanceEntity::getAppId,appId)
+                .eq(ShareUtil.XObject.notEmpty(appId), CaseIndicatorInstanceEntity::getAppId,appId)
                 .eq(CaseIndicatorInstanceEntity::getPrincipalId,personId)
                 .select(cols)
                 .list();

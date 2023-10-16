@@ -57,6 +57,13 @@ public class CaseIndicatorRuleDao extends BaseDao<CaseIndicatorRuleService, Case
                 .list();
     }
 
+    public boolean updateIndicatorDef(String indicatorId,String def){
+        return service.lambdaUpdate()
+                .eq(CaseIndicatorRuleEntity::getVariableId,indicatorId)
+                .set(CaseIndicatorRuleEntity::getDef,def)
+                .update();
+    }
+
 
 
 

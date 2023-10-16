@@ -18,11 +18,13 @@ import org.dows.account.request.AccountUserRequest;
 import org.dows.account.response.*;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
+import org.dows.hep.api.base.indicator.request.CaseRsCalculateHealthScoreRequestRs;
 import org.dows.hep.api.base.person.request.PersonInstanceRequest;
 import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
+import org.dows.hep.biz.eval.EvalCaseHealthIndexBiz;
 import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
 import org.dows.hep.biz.util.ShareUtil;
@@ -89,6 +91,8 @@ public class PersonManageBiz {
     private final TenantCaseEventBiz tenantCaseEventBiz;
 
     private final XAccountInstanceApi xAccountInstanceApi;
+
+    private final EvalCaseHealthIndexBiz evalCaseHealthIndexBiz;
 
 
 
@@ -777,6 +781,12 @@ public class PersonManageBiz {
             .appId(request.getAppId())
             .principalId(vo.getAccountId())
             .build());
+
+        evalCaseHealthIndexBiz.evalCasePersonHealthIndex(CaseRsCalculateHealthScoreRequestRs
+                .builder()
+                .appId(request.getAppId())
+                .accountId(vo.getAccountId())
+                .build());
         return PersonInstanceResponse.builder().accountId(vo.getAccountId())
                 .build();
     }
