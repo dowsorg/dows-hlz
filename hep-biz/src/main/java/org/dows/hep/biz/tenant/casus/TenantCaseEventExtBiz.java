@@ -30,7 +30,7 @@ public class TenantCaseEventExtBiz {
     private final RsUtilBiz rsUtilBiz;
     private final IdGenerator idGenerator;
     @Transactional(rollbackFor = Exception.class)
-    public void copyCaseEventForPerson(String appId, String oldAccountId, String newAccountId, String personName) throws ExecutionException, InterruptedException {
+    public void duplicateCaseEventForPerson(String appId, String oldAccountId, String newAccountId, String personName) throws ExecutionException, InterruptedException {
         List<CaseEventEntity> caseEventList = caseEventDao.getCaseEventsByPersonId(appId, oldAccountId);
         if (CollectionUtils.isEmpty(caseEventList)){
             return;
@@ -46,30 +46,28 @@ public class TenantCaseEventExtBiz {
         });
         cfPopulateKOldIdVNewIdMap.get();
 
-        List<CaseEventEntity> newCaseEventList = new ArrayList<>();
         CompletableFuture<Void> copyCaseEvent = CompletableFuture.runAsync(() -> {
             caseEventList.forEach(caseEventEntity -> {
                 caseEventEntity.setCaseEventId(kOldIdVNewIdMap.get(caseEventEntity.getCaseEventId()));
                 caseEventEntity.setPersonId(newAccountId);
                 caseEventEntity.setPersonName(personName);
                 caseEventEntity.setId(null);
-                newCaseEventList.add(caseEventEntity);
+                caseEventEntity.setDt(new Date());
             });
         });
         copyCaseEvent.get();
 
-        List<CaseEventActionEntity> newCaseEventActionEntityList = new ArrayList<>();
         CompletableFuture<Void> copyCaseEventAction = CompletableFuture.runAsync(() -> {
             caseEventActionEntityList.forEach(caseEventAction -> {
                 caseEventAction.setCaseEventActionId(idGenerator.nextIdStr());
                 caseEventAction.setCaseEventId(kOldIdVNewIdMap.get(caseEventAction.getCaseEventId()));
                 caseEventAction.setId(null);
-                newCaseEventActionEntityList.add(caseEventAction);
+                caseEventAction.setDt(new Date());
             });
         });
         copyCaseEventAction.get();
 
-        caseEventDao.tranSaveBatch(newCaseEventList,newCaseEventActionEntityList,null,null,null);
+        caseEventDao.tranSaveBatch(caseEventList,caseEventActionEntityList,null,null,null);
 
     }
 

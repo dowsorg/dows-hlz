@@ -8,7 +8,6 @@ import org.dows.hep.api.enums.EnumIndicatorRuleType;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -41,7 +40,6 @@ public class CaseIndicatorInstanceExtBiz {
     private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
     private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
     private final IdGenerator idGenerator;
-    private final CaseIndicatorExpressionBiz caseIndicatorExpressionBiz;
     private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
 
 
@@ -133,14 +131,14 @@ public class CaseIndicatorInstanceExtBiz {
      * 复制到新的人物上
      */
     @Transactional(rollbackFor = Exception.class)
-    public void copyPersonIndicator(String appId, String personId, String newAccount) throws ExecutionException, InterruptedException {
+    public void duplicatePersonIndicator(String appId, String personId, String newAccountId) throws ExecutionException, InterruptedException {
 
-        List<CaseIndicatorCategoryPrincipalRefEntity> casPrincipalRefList = caseIndicatorCategoryPrincipalRefService.lambdaQuery()
+        List<CaseIndicatorCategoryPrincipalRefEntity> casePrincipalRefList = caseIndicatorCategoryPrincipalRefService.lambdaQuery()
                 .eq(CaseIndicatorCategoryPrincipalRefEntity::getAppId, appId)
                 .eq(CaseIndicatorCategoryPrincipalRefEntity::getPrincipalId, personId)
                 .list();
         //案例指标目录id
-        Set<String> indicatorCategoryIdSet = casPrincipalRefList.stream()
+        Set<String> indicatorCategoryIdSet = casePrincipalRefList.stream()
                 .map(CaseIndicatorCategoryPrincipalRefEntity::getIndicatorCategoryId)
                 .collect(Collectors.toSet());
 
@@ -159,7 +157,7 @@ public class CaseIndicatorInstanceExtBiz {
                 .in(CaseIndicatorInstanceEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
                 .list();
 
-        // TODO 案例指标实例id
+        // 案例指标实例id
         Set<String> caseIndicatorInstanceIdSet = caseIndicatorInstanceList.stream()
                 .map(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId)
                 .collect(Collectors.toSet());
@@ -214,204 +212,204 @@ public class CaseIndicatorInstanceExtBiz {
         allOldIdSet.addAll(caseIndicatorInstanceIdSet);
         allOldIdSet.addAll(indicatorExpressionIdSet);
         allOldIdSet.addAll(caseIndicatorExperssionItemIdSet);
-        allOldIdSet.add(null);
-        allOldIdSet.add("");
+
         //生成新的id
         Map<String, String> kOldIdVNewIdMap = new HashMap<>();
-        CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() -> {
-            rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet);
-        });
+        CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
+            rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
         cfPopulateKOldIdVNewIdMap.get();
 
-        List<CaseIndicatorCategoryPrincipalRefEntity> newCasPrincapalRefList = new ArrayList<>();
-        CompletableFuture<Void> gitNewCasPrincipalRefList = CompletableFuture.runAsync(() -> {
-            gitNewCasPrincipalRefList(casPrincipalRefList, newCasPrincapalRefList, newAccount, kOldIdVNewIdMap);
-        });
+        CompletableFuture<Void> gitNewCasPrincipalRefList = CompletableFuture.runAsync(() ->
+            gitNewCasPrincipalRefList(casePrincipalRefList, newAccountId, kOldIdVNewIdMap));
         gitNewCasPrincipalRefList.get();
 
-        List<CaseIndicatorCategoryEntity> newCaseIndicatorCategoryEntityList = new ArrayList<>();
-        CompletableFuture<Void> getNewCaseIndicatorCategoryEntityList = CompletableFuture.runAsync(() -> {
-            getNewCaseIndicatorCategoryEntityList(caseIndicatorCategoryEntityList, newCaseIndicatorCategoryEntityList, kOldIdVNewIdMap);
-        });
+        CompletableFuture<Void> getNewCaseIndicatorCategoryEntityList = CompletableFuture.runAsync(() ->
+            getNewCaseIndicatorCategoryEntityList(caseIndicatorCategoryEntityList, kOldIdVNewIdMap));
         getNewCaseIndicatorCategoryEntityList.get();
 
-        List<CaseIndicatorInstanceEntity> newCaseIndicatorInstanceList = new ArrayList<>();
-        CompletableFuture<Void> getNewCaseIndicatorInstanceList = CompletableFuture.runAsync(() -> {
-            getNewCaseIndicatorInstanceList(caseIndicatorInstanceList, newCaseIndicatorInstanceList, newAccount, kOldIdVNewIdMap);
-        });
+        CompletableFuture<Void> getNewCaseIndicatorInstanceList = CompletableFuture.runAsync(() ->
+            getNewCaseIndicatorInstanceList(caseIndicatorInstanceList, newAccountId, kOldIdVNewIdMap));
         getNewCaseIndicatorInstanceList.get();
 
-        List<CaseIndicatorRuleEntity> newCaseIndicatorRuleList = new ArrayList<>();
-        CompletableFuture<Void> getNewCaseIndicatorRuleList = CompletableFuture.runAsync(() -> {
-            getNewCaseIndicatorRuleList(caseIndicatorRuleList, newCaseIndicatorRuleList, kOldIdVNewIdMap);
-        });
+        CompletableFuture<Void> getNewCaseIndicatorRuleList = CompletableFuture.runAsync(() ->
+            getNewCaseIndicatorRuleList(caseIndicatorRuleList, kOldIdVNewIdMap));
         getNewCaseIndicatorRuleList.get();
 
-        List<CaseIndicatorExpressionRefEntity> newCaseIndicatorExpressionRefList = new ArrayList<>();
-        CompletableFuture<Void> getNewCaseIndicatorExpressionRefList = CompletableFuture.runAsync(() -> {
-            getNewCaseIndicatorExpressionRefList(caseIndicatorExpressionRefList, newCaseIndicatorExpressionRefList, kOldIdVNewIdMap);
-        });
+        CompletableFuture<Void> getNewCaseIndicatorExpressionRefList = CompletableFuture.runAsync(() ->
+            getNewCaseIndicatorExpressionRefList(caseIndicatorExpressionRefList, kOldIdVNewIdMap));
         getNewCaseIndicatorExpressionRefList.get();
 
-        List<CaseIndicatorExpressionEntity> newCaseIndicatorExpressionList = new ArrayList<>();
-        CompletableFuture<Void> getNewCaseIndicatorExpressionList = CompletableFuture.runAsync(() -> {
-            getNewCaseIndicatorExpressionList(caseIndicatorExpressionList, newCaseIndicatorExpressionList, kOldIdVNewIdMap);
-        });
+        CompletableFuture<Void> getNewCaseIndicatorExpressionList = CompletableFuture.runAsync(() ->
+            getNewCaseIndicatorExpressionList(caseIndicatorExpressionList, kOldIdVNewIdMap));
         getNewCaseIndicatorExpressionList.get();
 
-        Set<CaseIndicatorExpressionItemEntity> newCaseExpressionItemList = new HashSet<>();
-        CompletableFuture<Void> getNewCaseExpressionItemList = CompletableFuture.runAsync(() -> {
-            getNewCaseExpressionItemList(caseExpressionItemList, newCaseExpressionItemList, kOldIdVNewIdMap);
-        });
+        CompletableFuture<Void> getNewCaseExpressionItemList = CompletableFuture.runAsync(() ->
+            getNewCaseExpressionItemList(caseExpressionItemList, kOldIdVNewIdMap));
         getNewCaseExpressionItemList.get();
 
-        Set<CaseIndicatorCategoryRefEntity> newCaseIndicatorCategoryRefList = new HashSet<>();
-        CompletableFuture<Void> getNewCaseIndicatorCategoryRefList = CompletableFuture.runAsync(() -> {
-            getNewCaseIndicatorCategoryRefList(new HashSet<>(caseIndicatorCategoryRefList), newCaseIndicatorCategoryRefList, kOldIdVNewIdMap);
-        });
+        CompletableFuture<Void> getNewCaseIndicatorCategoryRefList = CompletableFuture.runAsync(() ->
+            getNewCaseIndicatorCategoryRefList(new HashSet<>(caseIndicatorCategoryRefList), kOldIdVNewIdMap));
         getNewCaseIndicatorCategoryRefList.get();
 
-        List<CaseIndicatorExpressionInfluenceEntity> newCaseIndicatorInfluenceList = new ArrayList<>();
-        CompletableFuture<Void> getNewCaseIndicatorInfluenceList = CompletableFuture.runAsync(() -> {
-            getNewCaseIndicatorInfluenceList(caseIndicatorInfluenceList, newCaseIndicatorInfluenceList, kOldIdVNewIdMap);
-        });
+        CompletableFuture<Void> getNewCaseIndicatorInfluenceList = CompletableFuture.runAsync(() ->
+            getNewCaseIndicatorInfluenceList(caseIndicatorInfluenceList, kOldIdVNewIdMap));
         getNewCaseIndicatorInfluenceList.get();
 
         //save
-        caseIndicatorCategoryPrincipalRefService.saveOrUpdateBatch(newCasPrincapalRefList);
-        caseIndicatorCategoryService.saveOrUpdateBatch(newCaseIndicatorCategoryEntityList);
-        caseIndicatorInstanceService.saveOrUpdateBatch(newCaseIndicatorInstanceList);
-        caseIndicatorCategoryRefService.saveOrUpdateBatch(newCaseIndicatorCategoryRefList);
-        caseIndicatorRuleService.saveOrUpdateBatch(newCaseIndicatorRuleList);
-        caseIndicatorExpressionRefService.saveOrUpdateBatch(newCaseIndicatorExpressionRefList);
-        caseIndicatorExpressionService.saveOrUpdateBatch(newCaseIndicatorExpressionList);
-        caseIndicatorExpressionItemService.saveOrUpdateBatch(newCaseExpressionItemList);
-        caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(newCaseIndicatorInfluenceList);
+        caseIndicatorCategoryPrincipalRefService.saveOrUpdateBatch(casePrincipalRefList);
+        caseIndicatorCategoryService.saveOrUpdateBatch(caseIndicatorCategoryEntityList);
+        caseIndicatorInstanceService.saveOrUpdateBatch(caseIndicatorInstanceList);
+        caseIndicatorCategoryRefService.saveOrUpdateBatch(caseIndicatorCategoryRefList);
+        caseIndicatorRuleService.saveOrUpdateBatch(caseIndicatorRuleList);
+        caseIndicatorExpressionRefService.saveOrUpdateBatch(caseIndicatorExpressionRefList);
+        caseIndicatorExpressionService.saveOrUpdateBatch(caseIndicatorExpressionList);
+        caseIndicatorExpressionItemService.saveOrUpdateBatch(caseExpressionItemList);
+        caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(caseIndicatorInfluenceList);
     }
 
     private void getNewCaseIndicatorInfluenceList(List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorInfluenceList,
-                                                  List<CaseIndicatorExpressionInfluenceEntity> newCaseIndicatorInfluenceList,
                                                   Map<String, String> kOldIdVNewIdMap) {
+        if (checkNull(caseIndicatorInfluenceList, kOldIdVNewIdMap, "null")) {
+            return;
+        }
         caseIndicatorInfluenceList.forEach(caseIndicatorInfluence -> {
-            CaseIndicatorExpressionInfluenceEntity newCaseIndicatorInfluence = new CaseIndicatorExpressionInfluenceEntity();
-            BeanUtils.copyProperties(caseIndicatorInfluence, newCaseIndicatorInfluence);
-            newCaseIndicatorInfluence.setCaseIndicatorExpressionInfluenceId(idGenerator.nextIdStr());
-            newCaseIndicatorInfluence.setIndicatorInstanceId(kOldIdVNewIdMap.get(caseIndicatorInfluence.getIndicatorInstanceId()));
-            newCaseIndicatorInfluence.setInfluenceIndicatorInstanceIdList(
+            caseIndicatorInfluence.setCaseIndicatorExpressionInfluenceId(idGenerator.nextIdStr());
+            caseIndicatorInfluence.setIndicatorInstanceId(checkNullNewId(caseIndicatorInfluence.getIndicatorInstanceId(), kOldIdVNewIdMap));
+            caseIndicatorInfluence.setInfluenceIndicatorInstanceIdList(
                     rsCaseIndicatorInstanceBiz.convertIndicatorInstanceIdList2Case(caseIndicatorInfluence.getInfluenceIndicatorInstanceIdList(), kOldIdVNewIdMap));
-            newCaseIndicatorInfluence.setInfluencedIndicatorInstanceIdList(
+            caseIndicatorInfluence.setInfluencedIndicatorInstanceIdList(
                     rsCaseIndicatorInstanceBiz.convertIndicatorInstanceIdList2Case(caseIndicatorInfluence.getInfluencedIndicatorInstanceIdList(), kOldIdVNewIdMap));
-            newCaseIndicatorInfluence.setId(null);
-            newCaseIndicatorInfluenceList.add(newCaseIndicatorInfluence);
+            caseIndicatorInfluence.setId(null);
+            caseIndicatorInfluence.setDt(new Date());
         });
 
     }
 
     private void getNewCaseIndicatorCategoryRefList(Set<CaseIndicatorCategoryRefEntity> caseIndicatorCategoryRefList,
-                                                    Set<CaseIndicatorCategoryRefEntity> newCaseIndicatorCategoryRefList,
                                                     Map<String, String> kOldIdVNewIdMap) {
+        if (checkNull(caseIndicatorCategoryRefList, kOldIdVNewIdMap, "null")) {
+            return;
+        }
         caseIndicatorCategoryRefList.forEach(caseIndicatorCategoryRef -> {
-            CaseIndicatorCategoryRefEntity newCaseIndicatorCategoryRef = new CaseIndicatorCategoryRefEntity();
-            BeanUtils.copyProperties(caseIndicatorCategoryRef, newCaseIndicatorCategoryRef);
-            newCaseIndicatorCategoryRef.setCaseIndicatorCategoryRefId(idGenerator.nextIdStr());
-            newCaseIndicatorCategoryRef.setIndicatorCategoryId(kOldIdVNewIdMap.get(caseIndicatorCategoryRef.getIndicatorCategoryId()));
-            newCaseIndicatorCategoryRef.setIndicatorInstanceId(kOldIdVNewIdMap.get(caseIndicatorCategoryRef.getIndicatorInstanceId()));
-            newCaseIndicatorCategoryRef.setId(null);
-            newCaseIndicatorCategoryRefList.add(newCaseIndicatorCategoryRef);
+            caseIndicatorCategoryRef.setCaseIndicatorCategoryRefId(idGenerator.nextIdStr());
+            caseIndicatorCategoryRef.setIndicatorCategoryId(checkNullNewId(caseIndicatorCategoryRef.getIndicatorCategoryId(), kOldIdVNewIdMap));
+            caseIndicatorCategoryRef.setIndicatorInstanceId(checkNullNewId(caseIndicatorCategoryRef.getIndicatorInstanceId(), kOldIdVNewIdMap));
+            caseIndicatorCategoryRef.setId(null);
+            caseIndicatorCategoryRef.setDt(new Date());
         });
     }
 
     private void getNewCaseExpressionItemList(Set<CaseIndicatorExpressionItemEntity> caseExpressionItemList,
-                                              Set<CaseIndicatorExpressionItemEntity> newCaseExpressionItemList,
                                               Map<String, String> kOldIdVNewIdMap) {
+        if (checkNull(caseExpressionItemList, kOldIdVNewIdMap, "null")) {
+            return;
+        }
         caseExpressionItemList.forEach(caseExpressionItem -> {
-            CaseIndicatorExpressionItemEntity newCaseExpressionItem = new CaseIndicatorExpressionItemEntity();
-            BeanUtils.copyProperties(caseExpressionItem, newCaseExpressionItem);
-            newCaseExpressionItem.setCaseIndicatorExpressionItemId(kOldIdVNewIdMap.get(caseExpressionItem.getCaseIndicatorExpressionItemId()));
-            newCaseExpressionItem.setId(null);
-            newCaseExpressionItemList.add(newCaseExpressionItem);
+            caseExpressionItem.setCaseIndicatorExpressionItemId(checkNullNewId(caseExpressionItem.getCaseIndicatorExpressionItemId(), kOldIdVNewIdMap));
+            caseExpressionItem.setId(null);
+            caseExpressionItem.setDt(new Date());
         });
     }
 
     private void getNewCaseIndicatorExpressionList(List<CaseIndicatorExpressionEntity> caseIndicatorExpressionList,
-                                                   List<CaseIndicatorExpressionEntity> newCaseIndicatorExpressionList,
                                                    Map<String, String> kOldIdVNewIdMap) {
+        if (checkNull(caseIndicatorExpressionList, kOldIdVNewIdMap, "null")) {
+            return;
+        }
         caseIndicatorExpressionList.forEach(caseIndicatorExpression -> {
-            CaseIndicatorExpressionEntity newCaseIndicatorExpression = new CaseIndicatorExpressionEntity();
-            BeanUtils.copyProperties(caseIndicatorExpression, newCaseIndicatorExpression);
-            newCaseIndicatorExpression.setCaseIndicatorExpressionId(kOldIdVNewIdMap.get(caseIndicatorExpression.getCaseIndicatorExpressionId()));
-            newCaseIndicatorExpression.setCasePrincipalId(kOldIdVNewIdMap.get(caseIndicatorExpression.getCasePrincipalId()));
-            newCaseIndicatorExpression.setMaxIndicatorExpressionItemId(kOldIdVNewIdMap.get(caseIndicatorExpression.getMaxIndicatorExpressionItemId()));
-            newCaseIndicatorExpression.setMinIndicatorExpressionItemId(kOldIdVNewIdMap.get(caseIndicatorExpression.getMinIndicatorExpressionItemId()));
-            newCaseIndicatorExpression.setId(null);
-            newCaseIndicatorExpressionList.add(newCaseIndicatorExpression);
+            caseIndicatorExpression.setCaseIndicatorExpressionId(checkNullNewId(caseIndicatorExpression.getCaseIndicatorExpressionId(), kOldIdVNewIdMap));
+            caseIndicatorExpression.setCasePrincipalId(checkNullNewId(caseIndicatorExpression.getCasePrincipalId(), kOldIdVNewIdMap));
+            caseIndicatorExpression.setMaxIndicatorExpressionItemId(checkNullNewId(caseIndicatorExpression.getMaxIndicatorExpressionItemId(), kOldIdVNewIdMap));
+            caseIndicatorExpression.setMinIndicatorExpressionItemId(checkNullNewId(caseIndicatorExpression.getMinIndicatorExpressionItemId(), kOldIdVNewIdMap));
+            caseIndicatorExpression.setId(null);
+            caseIndicatorExpression.setDt(new Date());
         });
     }
 
     private void getNewCaseIndicatorExpressionRefList(List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefList,
-                                                      List<CaseIndicatorExpressionRefEntity> newCaseIndicatorExpressionRefList,
                                                       Map<String, String> kOldIdVNewIdMap) {
+        if (checkNull(caseIndicatorExpressionRefList, kOldIdVNewIdMap, "null")) {
+            return;
+        }
         caseIndicatorExpressionRefList.forEach(caseExpression -> {
-            CaseIndicatorExpressionRefEntity newCaseExpression = new CaseIndicatorExpressionRefEntity();
-            BeanUtils.copyProperties(caseExpression, newCaseExpression);
-            newCaseExpression.setCaseIndicatorExpressionRefId(idGenerator.nextIdStr());
-            newCaseExpression.setReasonId(kOldIdVNewIdMap.get(caseExpression.getReasonId()));
-            newCaseExpression.setId(null);
-            newCaseIndicatorExpressionRefList.add(newCaseExpression);
+            caseExpression.setCaseIndicatorExpressionRefId(idGenerator.nextIdStr());
+            caseExpression.setReasonId(checkNullNewId(caseExpression.getReasonId(), kOldIdVNewIdMap));
+            caseExpression.setId(null);
+            caseExpression.setDt(new Date());
         });
     }
 
     private void getNewCaseIndicatorRuleList(List<CaseIndicatorRuleEntity> caseIndicatorRuleList,
-                                             List<CaseIndicatorRuleEntity> newCaseIndicatorRuleList,
                                              Map<String, String> kOldIdVNewIdMap) {
+        if (checkNull(caseIndicatorRuleList, kOldIdVNewIdMap, "null")) {
+            return;
+        }
         caseIndicatorRuleList.forEach(caseIndicatorRule -> {
-            CaseIndicatorRuleEntity newCaseIndicatorRule = new CaseIndicatorRuleEntity();
-            BeanUtils.copyProperties(caseIndicatorRule, newCaseIndicatorRule);
-            newCaseIndicatorRule.setCaseIndicatorRuleId(idGenerator.nextIdStr());
-            newCaseIndicatorRule.setVariableId(kOldIdVNewIdMap.get(caseIndicatorRule.getVariableId()));
-            newCaseIndicatorRule.setId(null);
-            newCaseIndicatorRuleList.add(newCaseIndicatorRule);
+            caseIndicatorRule.setCaseIndicatorRuleId(idGenerator.nextIdStr());
+            caseIndicatorRule.setVariableId(checkNullNewId(caseIndicatorRule.getVariableId(), kOldIdVNewIdMap));
+            caseIndicatorRule.setId(null);
+            caseIndicatorRule.setDt(new Date());
         });
 
     }
 
     private void getNewCaseIndicatorInstanceList(List<CaseIndicatorInstanceEntity> caseIndicatorInstanceList,
-                                                 List<CaseIndicatorInstanceEntity> newCaseIndicatorInstanceList,
-                                                 String newAccount, Map<String, String> kOldIdVNewIdMap) {
+                                                 String newAccountId, Map<String, String> kOldIdVNewIdMap) {
+        if (checkNull(caseIndicatorInstanceList, kOldIdVNewIdMap, newAccountId)) {
+            return;
+        }
         caseIndicatorInstanceList.forEach(caseIndicatorInstance -> {
-            CaseIndicatorInstanceEntity newCaseIndicatorInstance = new CaseIndicatorInstanceEntity();
-            BeanUtils.copyProperties(caseIndicatorInstance, newCaseIndicatorInstance);
-            newCaseIndicatorInstance.setCaseIndicatorInstanceId(kOldIdVNewIdMap.get(caseIndicatorInstance.getCaseIndicatorInstanceId()));
-            newCaseIndicatorInstance.setIndicatorCategoryId(kOldIdVNewIdMap.get(caseIndicatorInstance.getIndicatorCategoryId()));
-            newCaseIndicatorInstance.setPrincipalId(newAccount);
-            newCaseIndicatorInstance.setId(null);
-            newCaseIndicatorInstanceList.add(newCaseIndicatorInstance);
+            caseIndicatorInstance.setCaseIndicatorInstanceId(checkNullNewId(caseIndicatorInstance.getCaseIndicatorInstanceId(), kOldIdVNewIdMap));
+            caseIndicatorInstance.setIndicatorCategoryId(checkNullNewId(caseIndicatorInstance.getIndicatorCategoryId(), kOldIdVNewIdMap));
+            caseIndicatorInstance.setPrincipalId(newAccountId);
+            caseIndicatorInstance.setId(null);
+            caseIndicatorInstance.setDt(new Date());
         });
     }
 
     private void getNewCaseIndicatorCategoryEntityList(List<CaseIndicatorCategoryEntity> caseIndicatorCategoryEntityList,
-                                                       List<CaseIndicatorCategoryEntity> newCaseIndicatorCategoryEntityList,
                                                        Map<String, String> kOldIdVNewIdMap) {
+        if (checkNull(caseIndicatorCategoryEntityList, kOldIdVNewIdMap, "null")) {
+            return;
+        }
         caseIndicatorCategoryEntityList.forEach(caseIndicatorCategory -> {
-            CaseIndicatorCategoryEntity newCaseIndicatorCategory = new CaseIndicatorCategoryEntity();
-            BeanUtils.copyProperties(caseIndicatorCategory, newCaseIndicatorCategory);
-            newCaseIndicatorCategory.setCaseIndicatorCategoryId(kOldIdVNewIdMap.get(caseIndicatorCategory.getCaseIndicatorCategoryId()));
-            newCaseIndicatorCategory.setId(null);
-            newCaseIndicatorCategoryEntityList.add(newCaseIndicatorCategory);
+            caseIndicatorCategory.setCaseIndicatorCategoryId(checkNullNewId(caseIndicatorCategory.getCaseIndicatorCategoryId(), kOldIdVNewIdMap));
+            caseIndicatorCategory.setId(null);
+            caseIndicatorCategory.setDt(new Date());
         });
     }
 
-    private void gitNewCasPrincipalRefList(List<CaseIndicatorCategoryPrincipalRefEntity> casPrincipalRefList,
-                                           List<CaseIndicatorCategoryPrincipalRefEntity> newCasPrincipalRefList,
-                                           String newAccount, Map<String, String> kOldIdVNewIdMap) {
-        casPrincipalRefList.forEach(casPrincipalRef -> {
-            CaseIndicatorCategoryPrincipalRefEntity newCasPrincipalRef = new CaseIndicatorCategoryPrincipalRefEntity();
-            BeanUtils.copyProperties(casPrincipalRef, newCasPrincipalRef);
-            newCasPrincipalRef.setPrincipalId(newAccount);
-            newCasPrincipalRef.setIndicatorCategoryId(kOldIdVNewIdMap.get(casPrincipalRef.getIndicatorCategoryId()));
-            newCasPrincipalRef.setId(null);
-            newCasPrincipalRefList.add(newCasPrincipalRef);
+    private void gitNewCasPrincipalRefList(List<CaseIndicatorCategoryPrincipalRefEntity> casePrincipalRefList,
+                                           String newAccountId, Map<String, String> kOldIdVNewIdMap) {
+        if (checkNull(casePrincipalRefList,  kOldIdVNewIdMap, newAccountId)) {
+            return;
+        }
+        casePrincipalRefList.forEach(casePrincipalRef -> {
+            casePrincipalRef.setPrincipalId(newAccountId);
+            casePrincipalRef.setIndicatorCategoryId(checkNullNewId(casePrincipalRef.getIndicatorCategoryId(), kOldIdVNewIdMap));
+            casePrincipalRef.setId(null);
+            casePrincipalRef.setDt(new Date());
         });
+    }
+
+    /**
+     * is null return false
+     * else return true
+     */
+    private boolean checkNull(Object oldList, Map<String, String> kOldIdVNewIdMap,
+                              String newAccount) {
+        return Objects.isNull(oldList) || Objects.isNull(kOldIdVNewIdMap) || StringUtils.isEmpty(newAccount);
+    }
+
+    /**
+     * id is blank return id
+     * else return newId
+     */
+    public static String checkNullNewId(String id, Map<String, String> kOldIdVNewIdMap) {
+        if (StringUtils.isBlank(id)||"0".equals(id)) {
+            return id;
+        }
+        return kOldIdVNewIdMap.get(id);
     }
 
     /***
@@ -497,7 +495,7 @@ public class CaseIndicatorInstanceExtBiz {
         caseIndicatorExpressionService.saveOrUpdateBatch(caseIndicatorExpressionEntityList);
         caseIndicatorExpressionItemService.saveOrUpdateBatch(caseIndicatorExpressionItemEntityList);
         caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(caseIndicatorExpressionInfluenceEntityList);
-        //TODO  保存
+
     }
 
     public void populateAllCaseIndicatorExpressionEntityList(
