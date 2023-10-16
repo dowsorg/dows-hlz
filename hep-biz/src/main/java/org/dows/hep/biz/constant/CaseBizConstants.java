@@ -15,7 +15,7 @@ public class CaseBizConstants {
 
     public final static String ORG_PERSON = "机构人物";
 
-    public final static String PERSON_SUFFIX = "_副本";
+    public final static String NAME_SUFFIX = "_副本";
 
 
 }

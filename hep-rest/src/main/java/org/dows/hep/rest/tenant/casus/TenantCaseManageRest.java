@@ -14,10 +14,12 @@ import org.dows.hep.api.tenant.casus.response.CaseInstancePageResponse;
 import org.dows.hep.api.tenant.casus.response.CaseInstanceResponse;
 import org.dows.hep.biz.tenant.casus.TenantCaseBaseBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseManageBiz;
+import org.dows.hep.biz.tenant.casus.TenantCaseManageExtBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
 * @description project descr:案例:案例管理
@@ -32,6 +34,7 @@ import java.util.List;
 public class TenantCaseManageRest {
     private final TenantCaseManageBiz tenantCaseManageBiz;
     private final TenantCaseBaseBiz baseBiz;
+    private final TenantCaseManageExtBiz tenantCaseManageExtBiz;
 
     /**
     * 创建和更新案例
@@ -55,8 +58,9 @@ public class TenantCaseManageRest {
     */
     @Operation(summary = "复制")
     @PostMapping("v1/tenantCasus/caseManage/copyCaseInstance")
-    public String copyCaseInstance(@RequestBody CaseInstanceCopyRequest request) {
-        return tenantCaseManageBiz.copyCaseInstance(request);
+    public String copyCaseInstance(@RequestBody CaseInstanceCopyRequest request) throws ExecutionException, InterruptedException {
+//        return tenantCaseManageBiz.copyCaseInstance(request);
+        return tenantCaseManageExtBiz.duplicateCaseInstance(request);
     }
 
     /**
