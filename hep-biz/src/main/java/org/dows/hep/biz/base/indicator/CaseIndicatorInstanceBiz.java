@@ -1,6 +1,7 @@
 package org.dows.hep.biz.base.indicator;
 
 import cn.hutool.core.lang.Assert;
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.IndicatorInstanceException;
 import org.dows.hep.api.exception.RsCaseIndicatorInstanceBizException;
 import org.dows.hep.api.tenant.casus.request.UpdateIndicatorValueRequest;
+import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -62,6 +64,8 @@ public class CaseIndicatorInstanceBiz {
     private final RsCaseIndicatorInstanceBiz rsCaseIndicatorInstanceBiz;
     private final RedissonClient redissonClient;
     private final RsCaseCalculateBiz rsCaseCalculateBiz;
+
+    private final XAccountInstanceApi xAccountInstanceApi;
     public static CaseIndicatorInstanceResponseRs caseIndicatorInstance2ResponseRs(
             CaseIndicatorInstanceEntity caseIndicatorInstanceEntity,
             List<CaseIndicatorExpressionResponseRs> caseIndicatorExpressionResponseRsList,
@@ -753,7 +757,8 @@ public class CaseIndicatorInstanceBiz {
         return update;
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    //@Transactional(rollbackFor = Exception.class)
+    @DSTransactional
     public void createOrUpdateRs(CreateOrUpdateCaseIndicatorInstanceRequestRs createOrUpdateCaseIndicatorInstanceRequestRs) throws InterruptedException {
         /* runsix:param */
         String accountId = createOrUpdateCaseIndicatorInstanceRequestRs.getAccountId();
@@ -870,6 +875,8 @@ public class CaseIndicatorInstanceBiz {
                 .appId(appId)
                 .accountId(accountId)
                 .build());
+            xAccountInstanceApi.updateActountDt(accountId,new Date());
+
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         } finally {
