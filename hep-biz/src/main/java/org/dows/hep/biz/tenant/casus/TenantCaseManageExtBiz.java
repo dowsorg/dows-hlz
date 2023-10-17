@@ -85,7 +85,7 @@ public class TenantCaseManageExtBiz {
     public String duplicateCaseInstance(CaseInstanceCopyRequest request) throws ExecutionException, InterruptedException {
         //需要复制的案例id
         String oriCaseInstanceId = request.getOriCaseInstanceId();
-        String targetCaseInstanceName = request.getTargetCaseInstanceName() + NAME_SUFFIX;
+        String targetCaseInstanceName = request.getTargetCaseInstanceName() ;
         String appId = request.getAppId();
         if (StrUtil.isBlank(oriCaseInstanceId) || StrUtil.isBlank(targetCaseInstanceName)) {
             throw new BizException(CaseESCEnum.DATA_NULL);
@@ -159,7 +159,8 @@ public class TenantCaseManageExtBiz {
             List<CasePersonEntity> casePersonEntityList = kCaseOrgIdVPerson.get(caseOrgId);
             casePersonEntityList.forEach(casePerson -> {
                 String oldAccountId = casePerson.getAccountId();
-                PersonInstanceResponse personInstanceResponse = personManageExtBiz.duplicatePerson(oldAccountId, ORG_PERSON);
+                PersonInstanceResponse personInstanceResponse = null;
+                personInstanceResponse = personManageExtBiz.duplicatePerson(oldAccountId, ORG_PERSON);
                 if (personInstanceResponse == null) {
                     throw new BizException("复制人物异常");
                 }
@@ -632,6 +633,9 @@ public class TenantCaseManageExtBiz {
     private CaseInstanceEntity copyCaseInstance0(String oriCaseInstanceId, String caseInstanceName) {
         // get ori
         CaseInstanceEntity oriEntity = getById(oriCaseInstanceId);
+        if (StringUtils.isBlank(caseInstanceName)){
+            caseInstanceName =oriEntity.getCaseName()+ NAME_SUFFIX;
+        }
         // copy
         CaseInstanceEntity newEntity = BeanUtil.copyProperties(oriEntity, CaseInstanceEntity.class);
         newEntity.setId(null);

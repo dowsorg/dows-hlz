@@ -1,6 +1,7 @@
 package org.dows.hep.api.tenant.casus.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +19,7 @@ public class CaseInstanceCopyRequest {
     @Schema(title = "目标案例名称")
     private String targetCaseInstanceName;
 
+    @NotNull(message = "是否复制案例人物[isCopyPerson]不能为空")
     @Schema(title = "是否复制案例人物")
     private Boolean isCopyPerson;
 }
