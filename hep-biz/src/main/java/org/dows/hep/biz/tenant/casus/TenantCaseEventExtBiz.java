@@ -16,6 +16,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static org.dows.hep.biz.base.indicator.CaseIndicatorInstanceExtBiz.checkNullNewId;
+
 /**
  * 人物突发事件复制
  *
@@ -29,48 +31,53 @@ public class TenantCaseEventExtBiz {
     private final CaseEventActionDao caseEventActionDao;
     private final RsUtilBiz rsUtilBiz;
     private final IdGenerator idGenerator;
+
     @Transactional(rollbackFor = Exception.class)
-    public void duplicateCaseEventForPerson(String appId, String oldAccountId, String newAccountId, String personName) throws ExecutionException, InterruptedException {
+    public Map<String, String> duplicateCaseEventForPerson(String appId, String oldAccountId, String newAccountId, String personName) throws ExecutionException, InterruptedException {
         List<CaseEventEntity> caseEventList = caseEventDao.getCaseEventsByPersonId(appId, oldAccountId);
-        if (CollectionUtils.isEmpty(caseEventList)){
-            return;
-        }
-
-        Set<String> caseEventId = caseEventList.stream().map(CaseEventEntity::getCaseEventId).collect(Collectors.toSet());
-        List<CaseEventActionEntity> caseEventActionEntityList = caseEventActionDao.getByEventIds(List.copyOf(caseEventId));
-
-        //生成新的id
         Map<String, String> kOldIdVNewIdMap = new HashMap<>();
+
+        if (CollectionUtils.isEmpty(caseEventList)) {
+            return kOldIdVNewIdMap;
+        }
+        Set<String> reasonId = new HashSet<>();
+        Set<String> caseEventIdSet = caseEventList.stream().map(CaseEventEntity::getCaseEventId).collect(Collectors.toSet());
+
+        List<CaseEventActionEntity> caseEventActionEntityList = caseEventActionDao.getByEventIds(List.copyOf(caseEventIdSet));
+
+        Set<String> caseEventActionIdSet = caseEventActionEntityList.stream().map(CaseEventActionEntity::getCaseEventActionId).collect(Collectors.toSet());
+        reasonId.addAll(caseEventIdSet);
+        reasonId.addAll(caseEventActionIdSet);
+        //生成新的id
+
         CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() -> {
-            rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, caseEventId);
+            rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, reasonId);
         });
         cfPopulateKOldIdVNewIdMap.get();
 
         CompletableFuture<Void> copyCaseEvent = CompletableFuture.runAsync(() -> {
             caseEventList.forEach(caseEventEntity -> {
-                caseEventEntity.setCaseEventId(kOldIdVNewIdMap.get(caseEventEntity.getCaseEventId()));
+                caseEventEntity.setCaseEventId(checkNullNewId(caseEventEntity.getCaseEventId(), kOldIdVNewIdMap));
                 caseEventEntity.setPersonId(newAccountId);
                 caseEventEntity.setPersonName(personName);
                 caseEventEntity.setId(null);
                 caseEventEntity.setDt(new Date());
             });
         });
-        copyCaseEvent.get();
 
         CompletableFuture<Void> copyCaseEventAction = CompletableFuture.runAsync(() -> {
             caseEventActionEntityList.forEach(caseEventAction -> {
-                caseEventAction.setCaseEventActionId(idGenerator.nextIdStr());
-                caseEventAction.setCaseEventId(kOldIdVNewIdMap.get(caseEventAction.getCaseEventId()));
+                caseEventAction.setCaseEventActionId(checkNullNewId(caseEventAction.getCaseEventActionId(), kOldIdVNewIdMap));
+                caseEventAction.setCaseEventId(checkNullNewId(caseEventAction.getCaseEventId(), kOldIdVNewIdMap));
                 caseEventAction.setId(null);
                 caseEventAction.setDt(new Date());
             });
         });
-        copyCaseEventAction.get();
+        CompletableFuture.allOf(copyCaseEvent, copyCaseEventAction).get();
 
-        caseEventDao.tranSaveBatch(caseEventList,caseEventActionEntityList,null,null,null);
-
+        caseEventDao.tranSaveBatch(caseEventList, caseEventActionEntityList, null, null, null);
+        return kOldIdVNewIdMap;
     }
-
 
 
 }
