@@ -1,7 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +9,11 @@ import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorCategoryResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponse;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponseRs;
-import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthGuidanceResponseRs;
 import org.dows.hep.api.enums.EnumESC;
 import org.dows.hep.api.exception.IndicatorJudgeHealthGuidanceException;
 import org.dows.hep.biz.util.RsPageUtil;
-import org.dows.hep.entity.*;
+import org.dows.hep.entity.IndicatorCategoryEntity;
+import org.dows.hep.entity.IndicatorFuncEntity;
 import org.dows.hep.entity.IndicatorJudgeHealthGuidanceEntity;
 import org.dows.hep.service.IndicatorCategoryService;
 import org.dows.hep.service.IndicatorFuncService;
@@ -28,7 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
-* @description project descr:指标:判断指标健康指导
+* @description project descr:指标:判断指标-健康指导
 *
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34

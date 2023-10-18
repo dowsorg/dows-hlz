@@ -159,9 +159,8 @@ public class TenantCaseManageExtBiz {
             List<CasePersonEntity> casePersonEntityList = kCaseOrgIdVPerson.get(caseOrgId);
             casePersonEntityList.forEach(casePerson -> {
                 String oldAccountId = casePerson.getAccountId();
-                PersonInstanceResponse personInstanceResponse = null;
-                personInstanceResponse = personManageExtBiz.duplicatePerson(oldAccountId, ORG_PERSON);
-                if (personInstanceResponse == null) {
+                PersonInstanceResponse personInstanceResponse = personManageExtBiz.duplicatePerson(oldAccountId, ORG_PERSON);
+                if (personInstanceResponse == null || StringUtils.isEmpty(personInstanceResponse.getAccountId())) {
                     throw new BizException("复制人物异常");
                 }
                 String newAccountId = personInstanceResponse.getAccountId();

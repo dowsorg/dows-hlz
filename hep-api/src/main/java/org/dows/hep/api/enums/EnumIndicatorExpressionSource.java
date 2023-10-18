@@ -27,6 +27,7 @@ public enum EnumIndicatorExpressionSource {
   LABEL_MANAGEMENT(10, "标签管理"),
   CROWDS(11, "人群类型"),
   RISK_MODEL(12, "死亡模型"),
+  INDICATOR_OPERATOR_REPORT_TWO_LEVEL(13, "二级类-有报告"),
   ;
 
   private final Integer source;

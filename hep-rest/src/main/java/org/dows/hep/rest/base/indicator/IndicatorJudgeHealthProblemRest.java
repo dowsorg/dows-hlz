@@ -4,10 +4,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.*;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorJudgeHealthProblemRequestRs;
+import org.dows.hep.api.base.indicator.request.CreateOrUpdateIndicatorJudgeHealthProblemRequestRsV2;
 import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponseRs;
+import org.dows.hep.api.base.indicator.response.IndicatorJudgeHealthProblemResponseRsV2;
 import org.dows.hep.api.constant.RsPageConstant;
 import org.dows.hep.biz.base.indicator.IndicatorJudgeHealthProblemBiz;
+import org.dows.hep.biz.base.indicator.IndicatorJudgeHealthProblemBizV2;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +27,7 @@ import java.util.List;
 @Tag(name = "判断指标健康问题", description = "判断指标健康问题")
 public class IndicatorJudgeHealthProblemRest {
     private final IndicatorJudgeHealthProblemBiz indicatorJudgeHealthProblemBiz;
-
+    private final IndicatorJudgeHealthProblemBizV2 indicatorJudgeHealthProblemBizV2;
     @Operation(summary = "Rs创建或保存查看指标健康问题类")
     @PostMapping("v1/baseIndicator/indicatorJudgeHealthProblem/createOrUpdateRs")
     public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorJudgeHealthProblemRequestRs createOrUpdateIndicatorJudgeHealthProblemRequestRs) {
@@ -44,6 +47,33 @@ public class IndicatorJudgeHealthProblemRest {
         @RequestParam Integer status) {
         indicatorJudgeHealthProblemBiz.updateStatusRs(indicatorJudgeHealthProblemId, status);
     }
+    @Operation(summary = "V2Rs创建或保存查看指标健康问题类")
+    @PostMapping("v2/baseIndicator/indicatorJudgeHealthProblem/createOrUpdateRs")
+    public void createOrUpdateRs(@RequestBody @Validated CreateOrUpdateIndicatorJudgeHealthProblemRequestRsV2 createOrUpdateIndicatorJudgeHealthProblemRequestRsV2) {
+        indicatorJudgeHealthProblemBizV2.createOrUpdateRs(createOrUpdateIndicatorJudgeHealthProblemRequestRsV2);
+    }
+
+    @Operation(summary = "V2Rs获取查看指标健康问题类")
+    @GetMapping("v2/baseIndicator/indicatorJudgeHealthProblem/getRs")
+    public IndicatorJudgeHealthProblemResponseRsV2 getRsV2(@RequestParam @Validated String indicatorJudgeHealthProblemId) {
+        return indicatorJudgeHealthProblemBizV2.getRs(indicatorJudgeHealthProblemId);
+    }
+
+    @Operation(summary = "V2Rs分页筛选查看指标健康问题类")
+    @GetMapping("v2/baseIndicator/indicatorJudgeHealthProblem/pageRs")
+    public Page<IndicatorJudgeHealthProblemResponseRsV2> pageRsV2(
+            @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_NO) Long pageNo,
+            @RequestParam(required = false, defaultValue = RsPageConstant.PAGE_SIZE) Long pageSize,
+            @RequestParam(required = false, defaultValue = RsPageConstant.ORDER) String order,
+            @RequestParam(required = false, defaultValue = RsPageConstant.ASC) Boolean asc,
+            @RequestParam(required = false) String appId,
+            @RequestParam(required = false) String indicatorFuncId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String indicatorCategoryIdList,
+            @RequestParam(required = false) Integer status) {
+        return indicatorJudgeHealthProblemBizV2.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name, indicatorCategoryIdList,status);
+    }
+
 
     @Operation(summary = "Rs获取查看指标健康问题类")
     @GetMapping("v1/baseIndicator/indicatorJudgeHealthProblem/getRs")
@@ -65,6 +95,8 @@ public class IndicatorJudgeHealthProblemRest {
         @RequestParam(required = false) Integer status) {
         return indicatorJudgeHealthProblemBiz.pageRs(pageNo,pageSize,order,asc, appId,indicatorFuncId,name, indicatorCategoryIdList,status);
     }
+
+
 
 //    /**
 //    * 创建判断指标健康问题
