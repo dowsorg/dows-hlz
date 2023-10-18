@@ -13,6 +13,7 @@ import org.dows.hep.api.exception.CaseIndicatorExpressionBizException;
 import org.dows.hep.api.exception.CaseIndicatorExpressionException;
 import org.dows.hep.api.exception.IndicatorExpressionException;
 import org.dows.hep.biz.eval.EvalCaseHealthIndexBiz;
+import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -54,6 +55,8 @@ public class CaseIndicatorExpressionBiz {
   private final RsCaseIndicatorInstanceBiz rsCaseIndicatorInstanceBiz;
 
   private final EvalCaseHealthIndexBiz evalCaseHealthIndexBiz;
+
+  private final XAccountInstanceApi xAccountInstanceApi;
 
   public CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemResponseRs2Case(
       String caseIndicatorExpressionItemId,
@@ -495,6 +498,7 @@ public class CaseIndicatorExpressionBiz {
             .appId(appId)
             .accountId(accountId)
             .build());
+    xAccountInstanceApi.updateAccountDt(accountId,new Date());
     return caseIndicatorExpressionEntityAtomicReference.get().getCaseIndicatorExpressionId();
   }
 
