@@ -107,7 +107,7 @@ public class IndicatorJudgeHealthProblemBizV2 {
                         .builder()
                         .reasonId(indicatorJudgeHealthProblemId)
                         .appId(appId)
-                        .source(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR.getSource())
+                        .source(EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_THREE_LEVEL.getSource())
                         .indicatorExpressionIdList(indicatorExpressionIdList)
                         .build());
     }
