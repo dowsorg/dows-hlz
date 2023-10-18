@@ -883,7 +883,7 @@ public class CaseIndicatorInstanceBiz {
                     .appId(appId)
                     .accountId(accountId)
                     .build());
-            xAccountInstanceApi.updateActountDt(accountId,new Date());
+            xAccountInstanceApi.updateAccountDt(accountId,new Date());
 
         } finally {
             lock.unlock();
