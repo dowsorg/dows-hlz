@@ -14,6 +14,7 @@ import org.dows.hep.api.exception.RsExperimentIndicatorExpressionBizException;
 import org.dows.hep.api.exception.RsIndicatorExpressionException;
 import org.dows.hep.api.exception.RsUtilBizException;
 import org.dows.hep.api.tenant.experiment.request.ExperimentSetting;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentSettingEntity;
 import org.dows.hep.service.ExperimentSettingService;
 import org.dows.sequence.api.IdGenerator;
@@ -287,6 +288,9 @@ public class RsUtilBiz {
     String conditionValList = rsIndicatorExpressionCheckConditionRequest.getConditionValList();
     this.checkSource(source);
     this.checkConditionNameAndValSize(conditionNameList, conditionValList);
+    if(ShareUtil.XObject.notEmpty(kIndicatorInstanceIdVValMap)){
+      kIndicatorInstanceIdVValMap.put(EnumString.INPUT_GOAL.getStr(), "1");
+    }
     checkConditionMustBeBoolean(kIndicatorInstanceIdVValMap, field, conditionExpression, conditionNameList, conditionValList);
     return checkConditionResult;
   }
@@ -443,6 +447,9 @@ public class RsUtilBiz {
     }
     checkResultNameAndValSize(resultNameList, resultValList);
     checkResultCannotExistJudgeOperator(resultExpression);
+    if(ShareUtil.XObject.notEmpty(kIndicatorInstanceIdVValMap)){
+      kIndicatorInstanceIdVValMap.put(EnumString.INPUT_GOAL.getStr(), "1");
+    }
     checkResultParse(kIndicatorInstanceIdVValMap, field, resultExpression, resultNameList, resultValList);
     return checkConditionResult;
   }
