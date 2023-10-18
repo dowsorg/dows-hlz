@@ -1434,7 +1434,9 @@ public class IndicatorExpressionBiz{
       /* runsix: 2.1 check indicatorExpressionId */
       CompletableFuture<Void> cfPopulateIndicatorExpression = CompletableFuture.runAsync(() -> rsIndicatorExpressionBiz.populateIndicatorExpressionEntity(indicatorExpressionEntityAtomicReference, indicatorExpressionId));
       cfPopulateIndicatorExpression.get();
+      //指标公式实体
       IndicatorExpressionEntity indicatorExpressionEntity = indicatorExpressionEntityAtomicReference.get();
+      //公式类型
       Integer dbType = null;
       /* runsix:2.2 populate typeChangeAtomicBoolean  */
       if (Objects.nonNull(indicatorExpressionEntity)) {
