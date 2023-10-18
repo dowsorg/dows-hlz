@@ -5,11 +5,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dows.hep.api.base.indicator.request.*;
-import org.dows.hep.api.base.indicator.response.*;
+import org.dows.hep.api.base.indicator.response.CaseIndicatorCategoryResponse;
+import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionItemResponseRs;
+import org.dows.hep.api.base.indicator.response.CaseIndicatorExpressionResponseRs;
 import org.dows.hep.api.enums.*;
 import org.dows.hep.api.exception.CaseIndicatorExpressionBizException;
 import org.dows.hep.api.exception.CaseIndicatorExpressionException;
 import org.dows.hep.api.exception.IndicatorExpressionException;
+import org.dows.hep.biz.eval.EvalCaseHealthIndexBiz;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
@@ -49,6 +52,8 @@ public class CaseIndicatorExpressionBiz {
   private final CaseIndicatorExpressionItemService caseIndicatorExpressionItemService;
   private final CaseIndicatorExpressionInfluenceService caseIndicatorExpressionInfluenceService;
   private final RsCaseIndicatorInstanceBiz rsCaseIndicatorInstanceBiz;
+
+  private final EvalCaseHealthIndexBiz evalCaseHealthIndexBiz;
 
   public CaseIndicatorExpressionItemEntity caseIndicatorExpressionItemResponseRs2Case(
       String caseIndicatorExpressionItemId,
@@ -485,6 +490,11 @@ public class CaseIndicatorExpressionBiz {
     } finally {
       lock.unlock();
     }
+    evalCaseHealthIndexBiz.evalCasePersonHealthIndex(CaseRsCalculateHealthScoreRequestRs
+            .builder()
+            .appId(appId)
+            .accountId(accountId)
+            .build());
     return caseIndicatorExpressionEntityAtomicReference.get().getCaseIndicatorExpressionId();
   }
 
