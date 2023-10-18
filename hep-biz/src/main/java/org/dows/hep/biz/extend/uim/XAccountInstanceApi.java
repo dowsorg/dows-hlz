@@ -75,7 +75,7 @@ public class XAccountInstanceApi {
 
     }
 
-    public boolean updateActountDt(String accountId, Date date){
+    public boolean updateAccountDt(String accountId, Date date){
         return accountInstanceService.lambdaUpdate()
                 .eq(AccountInstance::getAccountId, accountId)
                 .set(AccountInstance::getDt, date)
