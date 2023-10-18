@@ -86,7 +86,7 @@ public class PersonManageRest {
     @Operation(summary = "复制人物")
     @PostMapping("v1/basePerson/personManage/copyPerson")
     public PersonInstanceResponse copyPerson(@RequestParam @Validated String accountId,
-                                             @RequestParam @Validated String source) {
+                                             @RequestParam @Validated String source) throws ExecutionException, InterruptedException {
 //        return personManageBiz.copyPerson(accountId,source);
         return personManageExtBiz.duplicatePerson(accountId,source);
     }

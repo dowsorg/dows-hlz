@@ -44,7 +44,8 @@ public class CaseIndicatorInstanceExtBiz {
      * 复制到新的人物上
      */
     @Transactional(rollbackFor = Exception.class)
-    public void duplicatePersonIndicator(String appId, String personId, String newAccountId) throws ExecutionException, InterruptedException {
+    public void duplicatePersonIndicator(String appId, String personId, String newAccountId, Map<String, String> kOldReasonIdVNewReasonIdMap) throws ExecutionException, InterruptedException {
+        long startTime = System.currentTimeMillis();
         List<CaseIndicatorCategoryPrincipalRefEntity> casePrincipalRefList = caseIndicatorCategoryPrincipalRefService.lambdaQuery()
                 .eq(CaseIndicatorCategoryPrincipalRefEntity::getAppId, appId)
                 .eq(CaseIndicatorCategoryPrincipalRefEntity::getPrincipalId, personId)
@@ -53,20 +54,28 @@ public class CaseIndicatorInstanceExtBiz {
         Set<String> indicatorCategoryIdSet = casePrincipalRefList.stream()
                 .map(CaseIndicatorCategoryPrincipalRefEntity::getIndicatorCategoryId)
                 .collect(Collectors.toSet());
+
         if (CollectionUtils.isEmpty(indicatorCategoryIdSet)) {
             return;
         }
         //案例指标目录
-        List<CaseIndicatorCategoryEntity> caseIndicatorCategoryEntityList = caseIndicatorCategoryService.lambdaQuery()
-                .eq(CaseIndicatorCategoryEntity::getAppId, appId)
-                .in(CaseIndicatorCategoryEntity::getCaseIndicatorCategoryId, indicatorCategoryIdSet)
-                .orderByAsc(CaseIndicatorCategoryEntity::getSeq)
-                .list();
+        List<CaseIndicatorCategoryEntity> caseIndicatorCategoryEntityList = new ArrayList<>();
+        CompletableFuture<Void> queryCaseIndicatorCategoryListCF = CompletableFuture.runAsync(() -> {
+            caseIndicatorCategoryEntityList.addAll(caseIndicatorCategoryService.lambdaQuery()
+                    .eq(CaseIndicatorCategoryEntity::getAppId, appId)
+                    .in(CaseIndicatorCategoryEntity::getCaseIndicatorCategoryId, indicatorCategoryIdSet)
+                    .orderByAsc(CaseIndicatorCategoryEntity::getSeq)
+                    .list());
+        });
         //案例指标实例
-        List<CaseIndicatorInstanceEntity> caseIndicatorInstanceList = caseIndicatorInstanceService.lambdaQuery()
-                .eq(CaseIndicatorInstanceEntity::getAppId, appId)
-                .in(CaseIndicatorInstanceEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
-                .list();
+        List<CaseIndicatorInstanceEntity> caseIndicatorInstanceList = new ArrayList<>();
+        CompletableFuture<Void> queryCaseIndicatorInstanceListCF = CompletableFuture.runAsync(() -> {
+            caseIndicatorInstanceList.addAll(caseIndicatorInstanceService.lambdaQuery()
+                    .eq(CaseIndicatorInstanceEntity::getAppId, appId)
+                    .in(CaseIndicatorInstanceEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+                    .list());
+        });
+        CompletableFuture.allOf(queryCaseIndicatorCategoryListCF, queryCaseIndicatorInstanceListCF).get();
         // 案例指标实例id
         Set<String> caseIndicatorInstanceIdSet = caseIndicatorInstanceList.stream()
                 .map(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId)
@@ -74,17 +83,36 @@ public class CaseIndicatorInstanceExtBiz {
         if (CollectionUtils.isEmpty(caseIndicatorInstanceIdSet)) {
             return;
         }
+        //todo 插入一下突发事件 id与指标公式关系
+        //突发事件指标公式关联
+        if (!CollectionUtils.isEmpty(kOldReasonIdVNewReasonIdMap)) {
+            caseIndicatorInstanceIdSet.addAll(kOldReasonIdVNewReasonIdMap.keySet());
+        }
+
         //案例指标规则
-        List<CaseIndicatorRuleEntity> caseIndicatorRuleList = caseIndicatorRuleService.lambdaQuery()
-                .eq(CaseIndicatorRuleEntity::getAppId, appId)
-                .in(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceIdSet)
-                .list();
+        List<CaseIndicatorRuleEntity> caseIndicatorRuleList = new ArrayList<>();
+        CompletableFuture<Void> queryCaseIndicatorRuleListCF = CompletableFuture.runAsync(() -> {
+            caseIndicatorRuleList.addAll(caseIndicatorRuleService.lambdaQuery()
+                    .eq(CaseIndicatorRuleEntity::getAppId, appId)
+                    .in(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceIdSet)
+                    .list());
+        });
+
         //案例指标公式关联
-        List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefList = caseIndicatorExpressionRefService.lambdaQuery()
-                .eq(CaseIndicatorExpressionRefEntity::getAppId, appId)
-                .in(CaseIndicatorExpressionRefEntity::getReasonId, caseIndicatorInstanceIdSet)
-                .list();
-        Set<String> indicatorExpressionIdSet = caseIndicatorExpressionRefList.stream().map(CaseIndicatorExpressionRefEntity::getIndicatorExpressionId).collect(Collectors.toSet());
+        List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefList = new ArrayList<>();
+        CompletableFuture<Void> queryCaseIndicatorExpressionRefListCF = CompletableFuture.runAsync(() -> {
+            caseIndicatorExpressionRefList.addAll(caseIndicatorExpressionRefService.lambdaQuery()
+                    .eq(CaseIndicatorExpressionRefEntity::getAppId, appId)
+                    .in(CaseIndicatorExpressionRefEntity::getReasonId, caseIndicatorInstanceIdSet)
+                    .list());
+        });
+        CompletableFuture.allOf(queryCaseIndicatorRuleListCF, queryCaseIndicatorExpressionRefListCF).get();
+
+        //指标公式id
+        Set<String> indicatorExpressionIdSet = caseIndicatorExpressionRefList.stream()
+                .map(CaseIndicatorExpressionRefEntity::getIndicatorExpressionId)
+                .collect(Collectors.toSet());
+
         //案例指标公式
         List<CaseIndicatorExpressionEntity> caseIndicatorExpressionList = caseIndicatorExpressionService.lambdaQuery()
                 .eq(CaseIndicatorExpressionEntity::getAppId, appId)
@@ -105,19 +133,29 @@ public class CaseIndicatorInstanceExtBiz {
         } else {
             caseExpressionItemList = new HashSet<>();
         }
-        //案例指标 目录与实例 关系
-        List<CaseIndicatorCategoryRefEntity> caseIndicatorCategoryRefList = caseIndicatorCategoryRefService.lambdaQuery()
-                .eq(CaseIndicatorCategoryRefEntity::getAppId, appId)
-                .in(CaseIndicatorCategoryRefEntity::getIndicatorInstanceId, caseIndicatorInstanceIdSet)
-                .in(CaseIndicatorCategoryRefEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
-                .list();
-        //案例指标影响
-        List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorInfluenceList = caseIndicatorExpressionInfluenceService.lambdaQuery()
-                .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorInstanceIdSet)
-                .list();
 
-        Set<String> allOldIdSet = new HashSet<>();
-        allOldIdSet.addAll(indicatorCategoryIdSet);
+        //案例指标 目录与实例 关系
+        List<CaseIndicatorCategoryRefEntity> caseIndicatorCategoryRefList = new ArrayList<>();
+        CompletableFuture<Void> queryCaseIndicatorCategoryRefListCF = CompletableFuture.runAsync(() -> {
+            caseIndicatorCategoryRefList.addAll(caseIndicatorCategoryRefService.lambdaQuery()
+                    .eq(CaseIndicatorCategoryRefEntity::getAppId, appId)
+                    .in(CaseIndicatorCategoryRefEntity::getIndicatorInstanceId, caseIndicatorInstanceIdSet)
+                    .in(CaseIndicatorCategoryRefEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+                    .list());
+        });
+        //案例指标影响
+        List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorInfluenceList = new ArrayList<>();
+        CompletableFuture<Void> queryCaseIndicatorInfluenceListCF = CompletableFuture.runAsync(() -> {
+            caseIndicatorInfluenceList.addAll(caseIndicatorExpressionInfluenceService.lambdaQuery()
+                    .in(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorInstanceIdSet)
+                    .list());
+        });
+        CompletableFuture.allOf(queryCaseIndicatorCategoryRefListCF, queryCaseIndicatorInfluenceListCF).get();
+
+        Set<String> allOldIdSet = new HashSet<>(indicatorCategoryIdSet);
+        if (!CollectionUtils.isEmpty(kOldReasonIdVNewReasonIdMap)) {
+            caseIndicatorInstanceIdSet.removeAll(kOldReasonIdVNewReasonIdMap.keySet());
+        }
         allOldIdSet.addAll(caseIndicatorInstanceIdSet);
         allOldIdSet.addAll(indicatorExpressionIdSet);
         allOldIdSet.addAll(caseIndicatorExperssionItemIdSet);
@@ -127,53 +165,54 @@ public class CaseIndicatorInstanceExtBiz {
         CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
                 rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
         cfPopulateKOldIdVNewIdMap.get();
+        kOldIdVNewIdMap.putAll(kOldReasonIdVNewReasonIdMap);
+        CompletableFuture<Void> gitNewCasPrincipalRefFuture = CompletableFuture.runAsync(() -> {
+            gitNewCasPrincipalRefList(casePrincipalRefList, newAccountId, kOldIdVNewIdMap);
+            caseIndicatorCategoryPrincipalRefService.saveOrUpdateBatch(casePrincipalRefList);
+        });
 
-        CompletableFuture<Void> gitNewCasPrincipalRefList = CompletableFuture.runAsync(() ->
-                gitNewCasPrincipalRefList(casePrincipalRefList, newAccountId, kOldIdVNewIdMap));
-        gitNewCasPrincipalRefList.get();
+        CompletableFuture<Void> getNewCaseIndicatorCategoryEntityFuture = CompletableFuture.runAsync(() -> {
+            getNewCaseIndicatorCategoryEntityList(caseIndicatorCategoryEntityList, kOldIdVNewIdMap);
+            caseIndicatorCategoryService.saveOrUpdateBatch(caseIndicatorCategoryEntityList);
+        });
 
-        CompletableFuture<Void> getNewCaseIndicatorCategoryEntityList = CompletableFuture.runAsync(() ->
-                getNewCaseIndicatorCategoryEntityList(caseIndicatorCategoryEntityList, kOldIdVNewIdMap));
-        getNewCaseIndicatorCategoryEntityList.get();
+        CompletableFuture<Void> getNewCaseIndicatorInstanceFuture = CompletableFuture.runAsync(() -> {
+            getNewCaseIndicatorInstanceList(caseIndicatorInstanceList, newAccountId, kOldIdVNewIdMap);
+            caseIndicatorInstanceService.saveOrUpdateBatch(caseIndicatorInstanceList);
+        });
 
-        CompletableFuture<Void> getNewCaseIndicatorInstanceList = CompletableFuture.runAsync(() ->
-                getNewCaseIndicatorInstanceList(caseIndicatorInstanceList, newAccountId, kOldIdVNewIdMap));
-        getNewCaseIndicatorInstanceList.get();
+        CompletableFuture<Void> getNewCaseIndicatorRuleFuture = CompletableFuture.runAsync(() -> {
+            getNewCaseIndicatorRuleList(caseIndicatorRuleList, kOldIdVNewIdMap);
+            caseIndicatorRuleService.saveOrUpdateBatch(caseIndicatorRuleList);
+        });
 
-        CompletableFuture<Void> getNewCaseIndicatorRuleList = CompletableFuture.runAsync(() ->
-                getNewCaseIndicatorRuleList(caseIndicatorRuleList, kOldIdVNewIdMap));
-        getNewCaseIndicatorRuleList.get();
+        CompletableFuture<Void> getNewCaseIndicatorExpressionRefFuture = CompletableFuture.runAsync(() -> {
+            getNewCaseIndicatorExpressionRefList(caseIndicatorExpressionRefList, kOldIdVNewIdMap);
+            caseIndicatorExpressionRefService.saveOrUpdateBatch(caseIndicatorExpressionRefList);
+        });
 
-        CompletableFuture<Void> getNewCaseIndicatorExpressionRefList = CompletableFuture.runAsync(() ->
-                getNewCaseIndicatorExpressionRefList(caseIndicatorExpressionRefList, kOldIdVNewIdMap));
-        getNewCaseIndicatorExpressionRefList.get();
+        CompletableFuture<Void> getNewCaseIndicatorExpressionFuture = CompletableFuture.runAsync(() -> {
+            getNewCaseIndicatorExpressionList(caseIndicatorExpressionList, kOldIdVNewIdMap);
+            caseIndicatorExpressionService.saveOrUpdateBatch(caseIndicatorExpressionList);
+        });
 
-        CompletableFuture<Void> getNewCaseIndicatorExpressionList = CompletableFuture.runAsync(() ->
-                getNewCaseIndicatorExpressionList(caseIndicatorExpressionList, kOldIdVNewIdMap));
-        getNewCaseIndicatorExpressionList.get();
+        CompletableFuture<Void> getNewCaseExpressionItemFuture = CompletableFuture.runAsync(() -> {
+            getNewCaseExpressionItemList(caseExpressionItemList, kOldIdVNewIdMap);
+            caseIndicatorExpressionItemService.saveOrUpdateBatch(caseExpressionItemList);
+        });
 
-        CompletableFuture<Void> getNewCaseExpressionItemList = CompletableFuture.runAsync(() ->
-                getNewCaseExpressionItemList(caseExpressionItemList, kOldIdVNewIdMap));
-        getNewCaseExpressionItemList.get();
+        CompletableFuture<Void> getNewCaseIndicatorCategoryRefFuture = CompletableFuture.runAsync(() -> {
+            getNewCaseIndicatorCategoryRefList(new HashSet<>(caseIndicatorCategoryRefList), kOldIdVNewIdMap);
+            caseIndicatorCategoryRefService.saveOrUpdateBatch(caseIndicatorCategoryRefList);
+        });
 
-        CompletableFuture<Void> getNewCaseIndicatorCategoryRefList = CompletableFuture.runAsync(() ->
-                getNewCaseIndicatorCategoryRefList(new HashSet<>(caseIndicatorCategoryRefList), kOldIdVNewIdMap));
-        getNewCaseIndicatorCategoryRefList.get();
-
-        CompletableFuture<Void> getNewCaseIndicatorInfluenceList = CompletableFuture.runAsync(() ->
-                getNewCaseIndicatorInfluenceList(caseIndicatorInfluenceList, kOldIdVNewIdMap));
-        getNewCaseIndicatorInfluenceList.get();
-
-        //save
-        caseIndicatorCategoryPrincipalRefService.saveOrUpdateBatch(casePrincipalRefList);
-        caseIndicatorCategoryService.saveOrUpdateBatch(caseIndicatorCategoryEntityList);
-        caseIndicatorInstanceService.saveOrUpdateBatch(caseIndicatorInstanceList);
-        caseIndicatorCategoryRefService.saveOrUpdateBatch(caseIndicatorCategoryRefList);
-        caseIndicatorRuleService.saveOrUpdateBatch(caseIndicatorRuleList);
-        caseIndicatorExpressionRefService.saveOrUpdateBatch(caseIndicatorExpressionRefList);
-        caseIndicatorExpressionService.saveOrUpdateBatch(caseIndicatorExpressionList);
-        caseIndicatorExpressionItemService.saveOrUpdateBatch(caseExpressionItemList);
-        caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(caseIndicatorInfluenceList);
+        CompletableFuture<Void> getNewCaseIndicatorInfluenceFuture = CompletableFuture.runAsync(() -> {
+            getNewCaseIndicatorInfluenceList(caseIndicatorInfluenceList, kOldIdVNewIdMap);
+            caseIndicatorExpressionInfluenceService.saveOrUpdateBatch(caseIndicatorInfluenceList);
+        });
+        CompletableFuture.allOf(gitNewCasPrincipalRefFuture, getNewCaseIndicatorCategoryEntityFuture, getNewCaseIndicatorInstanceFuture,
+                getNewCaseIndicatorRuleFuture, getNewCaseIndicatorExpressionRefFuture, getNewCaseIndicatorExpressionFuture,
+                getNewCaseExpressionItemFuture, getNewCaseIndicatorCategoryRefFuture, getNewCaseIndicatorInfluenceFuture).get();
     }
 
     private void getNewCaseIndicatorInfluenceList(List<CaseIndicatorExpressionInfluenceEntity> caseIndicatorInfluenceList,
@@ -308,6 +347,7 @@ public class CaseIndicatorInstanceExtBiz {
     private boolean checkNullObject(Object oldList, Map<String, String> kOldIdVNewIdMap) {
         return Objects.isNull(oldList) || Objects.isNull(kOldIdVNewIdMap);
     }
+
     private boolean checkNullObject(Object oldList, Map<String, String> kOldIdVNewIdMap,
                                     String newAccount) {
         return StringUtils.isEmpty(newAccount) || checkNullObject(oldList, kOldIdVNewIdMap);

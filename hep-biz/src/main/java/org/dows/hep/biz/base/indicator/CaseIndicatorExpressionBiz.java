@@ -146,6 +146,7 @@ public class CaseIndicatorExpressionBiz {
     Map<String, List<CaseIndicatorExpressionItemEntity>> kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
     Set<String> maxAndMinIndicatorExpressionItemIdSet = new HashSet<>();
     Map<String, CaseIndicatorExpressionItemResponseRs> kIndicatorExpressionItemIdVIndicatorExpressionItemResponseRsMap = new HashMap<>();
+    //案例指标实例id
     Set<String> principalIdSet = new HashSet<>();
     if (!indicatorExpressionIdSet.isEmpty()) {
       caseIndicatorExpressionService.lambdaQuery()
