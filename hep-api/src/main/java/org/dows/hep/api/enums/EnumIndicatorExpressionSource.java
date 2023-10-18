@@ -32,6 +32,7 @@ public enum EnumIndicatorExpressionSource {
   INDICATOR_JUDGE_REFINDICATOR(22,"判断指标-关联指标"),
   INDICATOR_JUDGE_GOAL_CHECKRULE(23,"管理目标-判断规则"),
   INDICATOR_JUDGE_GOAL_REFINDICATOR(24,"管理目标-关联指标"),
+  INDICATOR_OPERATOR_REPORT_TWO_LEVEL(13, "二级类-有报告"),
   ;
 
   private final Integer source;
