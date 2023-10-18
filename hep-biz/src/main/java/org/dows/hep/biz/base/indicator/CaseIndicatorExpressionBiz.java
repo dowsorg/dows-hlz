@@ -1,5 +1,6 @@
 package org.dows.hep.biz.base.indicator;
 
+import com.baomidou.dynamic.datasource.annotation.DSTransactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -263,7 +264,7 @@ public class CaseIndicatorExpressionBiz {
     });
   }
 
-  @Transactional(rollbackFor = Exception.class)
+  @DSTransactional
   public String v2CreateOrUpdate(CaseCreateOrUpdateIndicatorExpressionRequestRs caseCreateOrUpdateIndicatorExpressionRequestRs) throws InterruptedException, ExecutionException {
     /* runsix:param */
     AtomicReference<CaseIndicatorExpressionEntity> caseIndicatorExpressionEntityAtomicReference = new AtomicReference<>();
