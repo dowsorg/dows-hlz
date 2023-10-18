@@ -194,7 +194,6 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
         reasonIds.forEach(reasonId->{
             rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(personId,reasonId,source.getSource()),k->List.of(new SpelInput(source).setReasonId(reasonId)));
         });
-        inputs.clear();
         mapReasons.clear();;
         return inputs;
     }

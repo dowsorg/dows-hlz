@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 public interface ISpelExecute extends ISpelCheck, ISpelEval {
 
     SpelInput getInput();
-    default ISpelExecute preExecute(Consumer<SpelInput> func){
+    default ISpelExecute prepare(Consumer<SpelInput> func){
         func.accept(getInput());
         return this;
     }

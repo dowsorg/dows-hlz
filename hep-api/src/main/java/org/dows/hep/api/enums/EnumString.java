@@ -24,6 +24,7 @@ public enum EnumString {
   INDICATOR_EXPRESSION_INPUT("@", "用户输入量第一个字符"),
   INDICATOR_EXPRESSION_LIST_SPLIT(",", "列表分割符"),
   PERIOD_FIRST("1", "实验第一期"),
+  INPUT_GOAL("input_goal","管理目标-输入值")
 
   ;
   private final String str;

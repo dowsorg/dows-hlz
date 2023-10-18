@@ -16,6 +16,7 @@ import org.dows.hep.api.exception.ExperimentException;
 import org.dows.hep.api.exception.IndicatorInstanceException;
 import org.dows.hep.api.exception.RsCaseIndicatorInstanceBizException;
 import org.dows.hep.api.tenant.casus.request.UpdateIndicatorValueRequest;
+import org.dows.hep.biz.eval.EvalCaseHealthIndexBiz;
 import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.util.RedissonUtil;
 import org.dows.hep.entity.*;
@@ -64,6 +65,8 @@ public class CaseIndicatorInstanceBiz {
     private final RsCaseIndicatorInstanceBiz rsCaseIndicatorInstanceBiz;
     private final RedissonClient redissonClient;
     private final RsCaseCalculateBiz rsCaseCalculateBiz;
+
+    private final EvalCaseHealthIndexBiz evalCaseHealthIndexBiz;
 
     private final XAccountInstanceApi xAccountInstanceApi;
     public static CaseIndicatorInstanceResponseRs caseIndicatorInstance2ResponseRs(
@@ -870,15 +873,18 @@ public class CaseIndicatorInstanceBiz {
             if (Objects.nonNull(caseIndicatorRuleEntityAR.get())) {caseIndicatorRuleService.saveOrUpdate(caseIndicatorRuleEntityAR.get());}
             if (Objects.nonNull(caseIndicatorExpressionInfluenceEntityAR.get())) {caseIndicatorExpressionInfluenceService.saveOrUpdate(caseIndicatorExpressionInfluenceEntityAR.get());}
             /* runsix:重新计算健康指数 */
-            rsCaseCalculateBiz.caseRsCalculateHealthScore(CaseRsCalculateHealthScoreRequestRs
+            /*rsCaseCalculateBiz.caseRsCalculateHealthScore(CaseRsCalculateHealthScoreRequestRs
                 .builder()
                 .appId(appId)
                 .accountId(accountId)
-                .build());
+                .build());*/
+            evalCaseHealthIndexBiz.evalCasePersonHealthIndex(CaseRsCalculateHealthScoreRequestRs
+                    .builder()
+                    .appId(appId)
+                    .accountId(accountId)
+                    .build());
             xAccountInstanceApi.updateActountDt(accountId,new Date());
 
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
         } finally {
             lock.unlock();
         }

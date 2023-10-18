@@ -204,7 +204,8 @@ public class RsUtilBiz {
   }
 
   private void databaseCheckConditionMustBeBoolean(Map<String, String> kIndicatorInstanceIdVValMap, String conditionExpression, List<String> conditionNameSplitList, List<String> conditionValSplitList) {
-    StandardEvaluationContext context = new StandardEvaluationContext();
+    //StandardEvaluationContext context = new StandardEvaluationContext();
+    StandardEvaluationContext context= getCheckEvalContext();
     for (int i = 0; i <= conditionNameSplitList.size()-1; i++) {
       String indicatorInstanceId = conditionValSplitList.get(i);
       String val = kIndicatorInstanceIdVValMap.get(indicatorInstanceId);
@@ -229,7 +230,8 @@ public class RsUtilBiz {
   }
 
   private void caseCheckConditionMustBeBoolean(Map<String, String> kCaseIndicatorInstanceIdVValMap, String conditionExpression, List<String> conditionNameSplitList, List<String> conditionValSplitList) {
-    StandardEvaluationContext context = new StandardEvaluationContext();
+    //StandardEvaluationContext context = new StandardEvaluationContext();
+    StandardEvaluationContext context= getCheckEvalContext();
     for (int i = 0; i <= conditionNameSplitList.size()-1; i++) {
       String indicatorInstanceId = conditionValSplitList.get(i);
       String val = kCaseIndicatorInstanceIdVValMap.get(indicatorInstanceId);
@@ -326,7 +328,8 @@ public class RsUtilBiz {
 
   private void databaseCheckResultParse(Map<String, String> kIndicatorInstanceIdVValMap, String resultExpression, List<String> resultNameSplitList, List<String> resultValSplitList) {
     try {
-      StandardEvaluationContext context = new StandardEvaluationContext();
+      //StandardEvaluationContext context = new StandardEvaluationContext();
+      StandardEvaluationContext context= getCheckEvalContext();
       for (int i = 0; i <= resultNameSplitList.size()-1; i++) {
         String indicatorInstanceId = resultValSplitList.get(i);
         String val = kIndicatorInstanceIdVValMap.get(indicatorInstanceId);
@@ -351,7 +354,8 @@ public class RsUtilBiz {
 
   private void caseCheckResultParse(Map<String, String> kCaseIndicatorInstanceIdVValMap, String resultExpression, List<String> resultNameSplitList, List<String> resultValSplitList) {
     try {
-      StandardEvaluationContext context = new StandardEvaluationContext();
+      //StandardEvaluationContext context = new StandardEvaluationContext();
+      StandardEvaluationContext context= getCheckEvalContext();
       for (int i = 0; i <= resultNameSplitList.size()-1; i++) {
         String caseIndicatorInstanceId = resultValSplitList.get(i);
         String val = kCaseIndicatorInstanceIdVValMap.get(caseIndicatorInstanceId);
@@ -613,5 +617,11 @@ public class RsUtilBiz {
     } else {
       return String.format("%s:%s%s", instanceName, currentVal, unit);
     }
+  }
+
+  private static StandardEvaluationContext getCheckEvalContext(){
+    StandardEvaluationContext context= new StandardEvaluationContext();
+    context.setVariable(EnumString.INPUT_GOAL.getStr(), new BigDecimal("1"));
+    return context;
   }
 }
