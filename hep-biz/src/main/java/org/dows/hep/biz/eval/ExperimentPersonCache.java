@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.dows.hep.biz.constant.ConstantParameters.APPId;
+import static org.dows.hep.biz.constant.CaseBizConstants.APPId;
 
 /**
  * @author : wuzl

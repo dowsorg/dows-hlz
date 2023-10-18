@@ -23,11 +23,12 @@ import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static org.dows.hep.biz.base.org.OrgBiz.createCode;
 import static org.dows.hep.biz.base.person.PersonManageBiz.randomWord;
-import static org.dows.hep.biz.constant.ConstantParameters.*;
+import static org.dows.hep.biz.constant.CaseBizConstants.*;
 
 /**
  * TODO:
@@ -50,19 +51,17 @@ public class PersonManageExtBiz {
 
     /**
      * 案例机构人物复制
+     * 返回机构人物新id
      */
     @DSTransactional
     public String duplicateCaseOrgPerson(String caseOrgId, String caseInstanceId, String accountId) {
-        long startTime = System.currentTimeMillis();
         PersonInstanceResponse personInstanceResponse = duplicatePerson(accountId, ORG_PERSON);
         if (personInstanceResponse == null) {
             throw new BizException("复制人物异常");
         }
-        String newAccount = personInstanceResponse.getAccountId();
-        String date = orgBiz.addPersonToCaseOrg(newAccount, caseInstanceId, caseOrgId, APPId);
-        long endTime = System.currentTimeMillis();
-        long useTime = endTime - startTime;
-        return date;
+        String newAccountId = personInstanceResponse.getAccountId();
+        orgBiz.addPersonToCaseOrg(newAccountId, caseInstanceId, caseOrgId, APPId);
+        return newAccountId;
     }
 
     /**
@@ -81,7 +80,7 @@ public class PersonManageExtBiz {
         UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(oldUserId);
         UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
         BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId"});
-        userInstanceRequest.setName(userInstanceRequest.getName() + PERSON_SUFFIX);
+        userInstanceRequest.setName(userInstanceRequest.getName() + NAME_SUFFIX);
         String newUserid = userInstanceApi.insertUserInstance(userInstanceRequest);
         UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(oldUserId);
         UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
@@ -111,12 +110,12 @@ public class PersonManageExtBiz {
                 .tentantId(accountInstanceResponse.getTenantId()).build();
         this.accountUserApi.createAccountUser(accountUserRequest);
 
-
         try {
-            //6、复制指标
-            caseIndicatorInstanceExtBiz.copyPersonIndicator(APPId, accountId, newAccountId);
-            //7.复制突发事件
-            tenantCaseEventExtBiz.copyCaseEventForPerson(APPId, accountId, newAccountId, userInstanceRequest.getName());
+            //6.先复制突发事件，返回突发事件关联指标公式id
+            Map<String, String> kOldReasonIdVNewReasonIdMap = tenantCaseEventExtBiz.duplicateCaseEventForPerson(APPId, accountId, newAccountId, userInstanceRequest.getName());
+            //7、再复制指标并关联事件公式
+            caseIndicatorInstanceExtBiz.duplicatePersonIndicator(APPId, accountId, newAccountId, kOldReasonIdVNewReasonIdMap);
+
         } catch (ExecutionException | InterruptedException e) {
             throw new BizException("复制人物指标或者突发事件异常");
         }

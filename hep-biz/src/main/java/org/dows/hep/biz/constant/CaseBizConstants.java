@@ -5,7 +5,7 @@ package org.dows.hep.biz.constant;
  *
  * @description: lifel 2023/10/10
  */
-public class ConstantParameters {
+public class CaseBizConstants {
 
     /**
      * 系统代号
@@ -15,7 +15,7 @@ public class ConstantParameters {
 
     public final static String ORG_PERSON = "机构人物";
 
-    public final static String PERSON_SUFFIX = "_副本";
+    public final static String NAME_SUFFIX = "_副本";
 
 
 }
