@@ -114,6 +114,7 @@ public class ExperimentJudgeBiz {
                 .checkExperimentPerson()
                 .checkExperimentOrgId()
                 .checkExperimentInstanceId();
+        reqOperateFunc.setExperimentOrgId(validator.getExperimentOrgId());
         if(checkIndicatorFunc){
             validator.checkIndicatorFunc();
         }
