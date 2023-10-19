@@ -105,12 +105,12 @@ public class TenantCaseManageExtBiz {
             log.error("TenantCaseManageExtBiz.duplicateCaseInstance duplicateCaseScheme error");
             throw new RuntimeException(e);
         }
-        //  copy case-org  oldOrgId<-> newOrgId
-        Map<String, String> kCaseOldOrgIdVNewCaseOrgIdMap = duplicateCaseOrgList(oriCaseInstanceId, newCaseInstanceId, request.getIsCopyPerson(), appId);
+        //  copy case-org  oldCaseOrgId<-> newCaseOrgId
+        Map<String, String> kOldCaseOrgIdVNewCaseOrgIdMap = duplicateCaseOrgList(oriCaseInstanceId, newCaseInstanceId, request.getIsCopyPerson(), appId);
         // copy case-notice
         caseNoticeBiz.copyCaseNotice(oriCaseInstanceId, caseInstanceEntity);
         //  copy case-questionnaire
-        duplicateCaseQuestionnaire(oriCaseInstanceId, newCaseInstanceId, kCaseOldOrgIdVNewCaseOrgIdMap);
+        duplicateCaseQuestionnaire(oriCaseInstanceId, newCaseInstanceId, kOldCaseOrgIdVNewCaseOrgIdMap);
 
         return newCaseInstanceId;
     }
@@ -120,7 +120,7 @@ public class TenantCaseManageExtBiz {
      * kOldIdVNewIdMap：机构id和新机构id对应
      */
     private void duplicateCaseQuestionnaire(String oriCaseInstanceId, String newCaseInstanceId,
-                                            Map<String, String> kCaseOldOrgIdVNewCaseOrgIdMap) throws ExecutionException, InterruptedException {
+                                            Map<String, String> kOldCaseOrgIdVNewCaseOrgIdMap) throws ExecutionException, InterruptedException {
         //案例知识答题分配方式设置
         CaseSettingEntity caseSetting = getCaseSetting(oriCaseInstanceId);
         if (Objects.isNull(caseSetting)) {
@@ -157,7 +157,7 @@ public class TenantCaseManageExtBiz {
         CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
                 rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
         cfPopulateKOldIdVNewIdMap.get();
-        kOldIdVNewIdMap.putAll(kCaseOldOrgIdVNewCaseOrgIdMap);
+        kOldIdVNewIdMap.putAll(kOldCaseOrgIdVNewCaseOrgIdMap);
 
         CompletableFuture<Void> getQuestionOptionsListCF = CompletableFuture.runAsync(() -> {
             getQuestionOptionsList(questionOptionsList, kOldIdVNewIdMap);
@@ -303,7 +303,7 @@ public class TenantCaseManageExtBiz {
         });
 
         //保存案例机构
-        Map<String ,String > kCaseOldOrgIdVNewCaseOrgIdMap = getCaseOrgList(caseOrgList, newCaseInstanceId, kOldIdVNewIdMap, kOldOrgIdVNewOrgIdMap);
+        Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap = getCaseOrgList(caseOrgList, newCaseInstanceId, kOldIdVNewIdMap, kOldOrgIdVNewOrgIdMap);
         caseOrgService.saveOrUpdateBatch(caseOrgList);
 
         //复制案例机构人物
@@ -327,7 +327,7 @@ public class TenantCaseManageExtBiz {
         });
 
         CompletableFuture.allOf(getCaseOrgFeeListCF, getCaseOrgModuleListCF, getCaseOrgModuleFuncRefListCF).get();
-        return kCaseOldOrgIdVNewCaseOrgIdMap;
+        return kOldCaseOrgIdVNewCaseOrgIdMap;
     }
 
     /**
@@ -483,19 +483,19 @@ public class TenantCaseManageExtBiz {
     private Map<String ,String > getCaseOrgList(List<CaseOrgEntity> caseOrgList, String newCaseInstanceId,
                                 Map<String, String> kOldIdVNewIdMap, Map<String, String> kOldOrgIdVNewOrgIdMap
     ) {
-        Map<String ,String > kCaseOldOrgIdVNewCaseOrgIdMap = new HashMap<>();
+        Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap = new HashMap<>();
         if (checkNull(caseOrgList, kOldIdVNewIdMap, newCaseInstanceId)) {
-            return kCaseOldOrgIdVNewCaseOrgIdMap;
+            return kOldCaseOrgIdVNewCaseOrgIdMap;
         }
         caseOrgList.forEach(caseOrg -> {
-            kCaseOldOrgIdVNewCaseOrgIdMap.put(caseOrg.getCaseOrgId(),checkNullNewId(caseOrg.getCaseOrgId(), kOldIdVNewIdMap));
+            kOldCaseOrgIdVNewCaseOrgIdMap.put(caseOrg.getCaseOrgId(),checkNullNewId(caseOrg.getCaseOrgId(), kOldIdVNewIdMap));
             caseOrg.setCaseOrgId(checkNullNewId(caseOrg.getCaseOrgId(), kOldIdVNewIdMap));
             caseOrg.setCaseInstanceId(newCaseInstanceId);
             caseOrg.setOrgId(checkNullNewId(caseOrg.getOrgId(), kOldOrgIdVNewOrgIdMap));
             caseOrg.setId(null);
             caseOrg.setDt(new Date());
         });
-        return kCaseOldOrgIdVNewCaseOrgIdMap;
+        return kOldCaseOrgIdVNewCaseOrgIdMap;
     }
 
     private void getCaseOrgQuestionnaireList(List<CaseOrgQuestionnaireEntity> caseOrgQuestionnaireList,
