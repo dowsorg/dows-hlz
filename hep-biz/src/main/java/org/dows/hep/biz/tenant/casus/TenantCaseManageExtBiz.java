@@ -106,11 +106,11 @@ public class TenantCaseManageExtBiz {
             throw new RuntimeException(e);
         }
         //  copy case-org  oldOrgId<-> newOrgId
-        Map<String, String> kOldIdVNewIdMap = duplicateCaseOrgList(oriCaseInstanceId, newCaseInstanceId, request.getIsCopyPerson(), appId);
+        Map<String, String> kCaseOldOrgIdVNewCaseOrgIdMap = duplicateCaseOrgList(oriCaseInstanceId, newCaseInstanceId, request.getIsCopyPerson(), appId);
         // copy case-notice
         caseNoticeBiz.copyCaseNotice(oriCaseInstanceId, caseInstanceEntity);
         //  copy case-questionnaire
-        duplicateCaseQuestionnaire(oriCaseInstanceId, newCaseInstanceId, kOldIdVNewIdMap);
+        duplicateCaseQuestionnaire(oriCaseInstanceId, newCaseInstanceId, kCaseOldOrgIdVNewCaseOrgIdMap);
 
         return newCaseInstanceId;
     }
@@ -120,15 +120,17 @@ public class TenantCaseManageExtBiz {
      * kOldIdVNewIdMap：机构id和新机构id对应
      */
     private void duplicateCaseQuestionnaire(String oriCaseInstanceId, String newCaseInstanceId,
-                                            Map<String, String> kOldOrgIdVNewOrgIdMap) throws ExecutionException, InterruptedException {
+                                            Map<String, String> kCaseOldOrgIdVNewCaseOrgIdMap) throws ExecutionException, InterruptedException {
         //案例知识答题分配方式设置
         CaseSettingEntity caseSetting = getCaseSetting(oriCaseInstanceId);
         if (Objects.isNull(caseSetting)) {
             return;
         }
+        Set<String> allOldIdSet = new HashSet<>();
         //试卷
         List<CaseQuestionnaireEntity> caseQuestionnaireList = getCaseQuestionnaire(oriCaseInstanceId);
         Set<String> questionSectionIdSet = caseQuestionnaireList.stream().map(CaseQuestionnaireEntity::getQuestionSectionId).collect(Collectors.toSet());
+        Set<String> questionnaireIdSet = caseQuestionnaireList.stream().map(CaseQuestionnaireEntity::getCaseQuestionnaireId).collect(Collectors.toSet());
 
         //试卷选中的题目
         List<QuestionSectionItemEntity> questionSectionItemList = getQuestionItemByQuestionSectionId(questionSectionIdSet);
@@ -147,13 +149,15 @@ public class TenantCaseManageExtBiz {
         //试卷与机构分配关系
         List<CaseOrgQuestionnaireEntity> caseOrgQuestionnaireList = getCaseOrgQuestionnaire(oriCaseInstanceId);
 
-        questionInstanceIdSet.addAll(questionSectionIdSet);
-        questionInstanceIdSet.addAll(questionOptionsIdSet);
+        allOldIdSet.addAll(questionnaireIdSet);
+        allOldIdSet.addAll(questionSectionIdSet);
+        allOldIdSet.addAll(questionOptionsIdSet);
+        allOldIdSet.addAll(questionInstanceIdSet);
         Map<String, String> kOldIdVNewIdMap = new HashMap<>();
         CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
-                rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, questionInstanceIdSet));
+                rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
         cfPopulateKOldIdVNewIdMap.get();
-        kOldIdVNewIdMap.putAll(kOldOrgIdVNewOrgIdMap);
+        kOldIdVNewIdMap.putAll(kCaseOldOrgIdVNewCaseOrgIdMap);
 
         CompletableFuture<Void> getQuestionOptionsListCF = CompletableFuture.runAsync(() -> {
             getQuestionOptionsList(questionOptionsList, kOldIdVNewIdMap);
@@ -193,8 +197,6 @@ public class TenantCaseManageExtBiz {
         caseSetting.setCaseSettingId(idGenerator.nextIdStr());
         caseSetting.setCaseInstanceId(newCaseInstanceId);
         caseSettingService.save(caseSetting);
-
-
     }
 
     /**
@@ -301,7 +303,7 @@ public class TenantCaseManageExtBiz {
         });
 
         //保存案例机构
-        getCaseOrgList(caseOrgList, newCaseInstanceId, kOldIdVNewIdMap, kOldOrgIdVNewOrgIdMap);
+        Map<String ,String > kCaseOldOrgIdVNewCaseOrgIdMap = getCaseOrgList(caseOrgList, newCaseInstanceId, kOldIdVNewIdMap, kOldOrgIdVNewOrgIdMap);
         caseOrgService.saveOrUpdateBatch(caseOrgList);
 
         //复制案例机构人物
@@ -325,7 +327,7 @@ public class TenantCaseManageExtBiz {
         });
 
         CompletableFuture.allOf(getCaseOrgFeeListCF, getCaseOrgModuleListCF, getCaseOrgModuleFuncRefListCF).get();
-        return kOldOrgIdVNewOrgIdMap;
+        return kCaseOldOrgIdVNewCaseOrgIdMap;
     }
 
     /**
@@ -478,19 +480,22 @@ public class TenantCaseManageExtBiz {
         });
     }
 
-    private void getCaseOrgList(List<CaseOrgEntity> caseOrgList, String newCaseInstanceId,
+    private Map<String ,String > getCaseOrgList(List<CaseOrgEntity> caseOrgList, String newCaseInstanceId,
                                 Map<String, String> kOldIdVNewIdMap, Map<String, String> kOldOrgIdVNewOrgIdMap
     ) {
+        Map<String ,String > kCaseOldOrgIdVNewCaseOrgIdMap = new HashMap<>();
         if (checkNull(caseOrgList, kOldIdVNewIdMap, newCaseInstanceId)) {
-            return;
+            return kCaseOldOrgIdVNewCaseOrgIdMap;
         }
         caseOrgList.forEach(caseOrg -> {
+            kCaseOldOrgIdVNewCaseOrgIdMap.put(caseOrg.getCaseOrgId(),checkNullNewId(caseOrg.getCaseOrgId(), kOldIdVNewIdMap));
             caseOrg.setCaseOrgId(checkNullNewId(caseOrg.getCaseOrgId(), kOldIdVNewIdMap));
             caseOrg.setCaseInstanceId(newCaseInstanceId);
             caseOrg.setOrgId(checkNullNewId(caseOrg.getOrgId(), kOldOrgIdVNewOrgIdMap));
             caseOrg.setId(null);
             caseOrg.setDt(new Date());
         });
+        return kCaseOldOrgIdVNewCaseOrgIdMap;
     }
 
     private void getCaseOrgQuestionnaireList(List<CaseOrgQuestionnaireEntity> caseOrgQuestionnaireList,
@@ -516,7 +521,7 @@ public class TenantCaseManageExtBiz {
         caseQuestionnaireList.forEach(caseQuestionnaire -> {
             caseQuestionnaire.setId(null);
             caseQuestionnaire.setDt(new Date());
-            caseQuestionnaire.setCaseQuestionnaireId(baseBiz.getIdStr());
+            caseQuestionnaire.setCaseQuestionnaireId(checkNullNewId(caseQuestionnaire.getCaseQuestionnaireId(), kOldIdVNewIdMap));
             caseQuestionnaire.setCaseInstanceId(newCaseInstanceId);
             caseQuestionnaire.setQuestionSectionId(checkNullNewId(caseQuestionnaire.getQuestionSectionId(), kOldIdVNewIdMap));
         });

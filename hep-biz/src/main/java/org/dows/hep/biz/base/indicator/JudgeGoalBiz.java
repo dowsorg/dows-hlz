@@ -79,7 +79,7 @@ public class JudgeGoalBiz {
             if (ShareUtil.XObject.isEmpty(saveJudgeGoal.getJudgeRuleExpresssions())) {
                 return true;
             }
-            return indicatorExpressionRefDao.tranUpdateReasonId(saveJudgeGoal.getIndicatorJudgeGoalId(), saveJudgeGoal.getJudgeRuleExpresssions());
+            return indicatorExpressionRefDao.tranUpdateReasonId(row.getIndicatorJudgeGoalId(), saveJudgeGoal.getJudgeRuleExpresssions());
         });
     }
 
