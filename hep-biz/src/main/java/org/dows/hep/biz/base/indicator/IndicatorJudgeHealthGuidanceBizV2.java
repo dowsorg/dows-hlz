@@ -75,9 +75,10 @@ public class IndicatorJudgeHealthGuidanceBizV2 {
         String indicatorJudgeHealthGuidanceId = createOrUpdateIndicatorJudgeHealthGuidanceRequestRs.getIndicatorJudgeHealthGuidanceId();
         BigDecimal point = BigDecimal.valueOf(createOrUpdateIndicatorJudgeHealthGuidanceRequestRs.getPoint());
         if (StringUtils.isBlank(indicatorJudgeHealthGuidanceId)) {
+            indicatorJudgeHealthGuidanceId = idGenerator.nextIdStr();
             indicatorJudgeHealthGuidanceEntity = IndicatorJudgeHealthGuidanceEntity
                     .builder()
-                    .indicatorJudgeHealthGuidanceId(idGenerator.nextIdStr())
+                    .indicatorJudgeHealthGuidanceId(indicatorJudgeHealthGuidanceId)
                     .appId(appId)
                     .indicatorFuncId(indicatorFuncId)
                     .name(createOrUpdateIndicatorJudgeHealthGuidanceRequestRs.getName())
@@ -87,12 +88,13 @@ public class IndicatorJudgeHealthGuidanceBizV2 {
                     .status(createOrUpdateIndicatorJudgeHealthGuidanceRequestRs.getStatus())
                     .build();
         } else {
+            String finalIndicatorJudgeHealthGuidanceId = indicatorJudgeHealthGuidanceId;
             indicatorJudgeHealthGuidanceEntity = indicatorJudgeHealthGuidanceService.lambdaQuery()
                     .eq(IndicatorJudgeHealthGuidanceEntity::getAppId, appId)
                     .eq(IndicatorJudgeHealthGuidanceEntity::getIndicatorJudgeHealthGuidanceId, indicatorJudgeHealthGuidanceId)
                     .oneOpt()
                     .orElseThrow(() -> {
-                        log.warn("method IndicatorJudgeHealthGuidanceBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeHealthGuidanceRequestRs indicatorJudgeHealthGuidanceId:{} is illegal", indicatorJudgeHealthGuidanceId);
+                        log.warn("method IndicatorJudgeHealthGuidanceBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeHealthGuidanceRequestRs indicatorJudgeHealthGuidanceId:{} is illegal", finalIndicatorJudgeHealthGuidanceId);
                         return new IndicatorJudgeHealthGuidanceException(EnumESC.VALIDATE_EXCEPTION);
                     });
             indicatorJudgeHealthGuidanceEntity.setName(createOrUpdateIndicatorJudgeHealthGuidanceRequestRs.getName());
