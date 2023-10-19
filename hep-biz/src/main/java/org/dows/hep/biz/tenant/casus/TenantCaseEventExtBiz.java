@@ -35,8 +35,8 @@ public class TenantCaseEventExtBiz {
     @Transactional(rollbackFor = Exception.class)
     public Map<String, String> duplicateCaseEventForPerson(String appId, String oldAccountId, String newAccountId, String personName) throws ExecutionException, InterruptedException {
         List<CaseEventEntity> caseEventList = caseEventDao.getCaseEventsByPersonId(appId, oldAccountId);
-        Map<String, String> kOldIdVNewIdMap = new HashMap<>();
 
+        Map<String, String> kOldIdVNewIdMap = new HashMap<>();
         if (CollectionUtils.isEmpty(caseEventList)) {
             return kOldIdVNewIdMap;
         }
