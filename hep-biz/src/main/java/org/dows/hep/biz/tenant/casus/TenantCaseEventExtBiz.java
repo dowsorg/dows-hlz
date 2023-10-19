@@ -6,7 +6,6 @@ import org.dows.hep.biz.dao.CaseEventActionDao;
 import org.dows.hep.biz.dao.CaseEventDao;
 import org.dows.hep.entity.CaseEventActionEntity;
 import org.dows.hep.entity.CaseEventEntity;
-import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -30,7 +29,6 @@ public class TenantCaseEventExtBiz {
     private final CaseEventDao caseEventDao;
     private final CaseEventActionDao caseEventActionDao;
     private final RsUtilBiz rsUtilBiz;
-    private final IdGenerator idGenerator;
 
     @Transactional(rollbackFor = Exception.class)
     public Map<String, String> duplicateCaseEventForPerson(String appId, String oldAccountId, String newAccountId, String personName) throws ExecutionException, InterruptedException {

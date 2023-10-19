@@ -153,7 +153,6 @@ public class CaseIndicatorInstanceExtBiz {
             caseIndicatorCategoryRefList.addAll(caseIndicatorCategoryRefService.lambdaQuery()
                     .eq(CaseIndicatorCategoryRefEntity::getAppId, appId)
                     .in(CaseIndicatorCategoryRefEntity::getIndicatorInstanceId, caseIndicatorInstanceIdSet)
-                    .in(CaseIndicatorCategoryRefEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
                     .list());
         });
         //案例指标影响
