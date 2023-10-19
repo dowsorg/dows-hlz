@@ -78,6 +78,8 @@ public class ExperimentJudgeBiz {
         ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
                 .checkOrgFlow(true);
 
+        req.getGoalItems().forEach(i->i.setValue(BigDecimalUtil.tryParseDecimalElseZero(i.getValue()).toPlainString()));
+
         //保存操作记录
         OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
