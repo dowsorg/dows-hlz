@@ -72,7 +72,7 @@ public class CaseIndicatorInstanceExtBiz {
         CompletableFuture<Void> queryCaseIndicatorInstanceListCF = CompletableFuture.runAsync(() -> {
             caseIndicatorInstanceList.addAll(caseIndicatorInstanceService.lambdaQuery()
                     .eq(CaseIndicatorInstanceEntity::getAppId, appId)
-                    .in(CaseIndicatorInstanceEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+                    .eq(CaseIndicatorInstanceEntity::getPrincipalId, personId)
                     .list());
         });
         CompletableFuture.allOf(queryCaseIndicatorCategoryListCF, queryCaseIndicatorInstanceListCF).get();
@@ -85,8 +85,9 @@ public class CaseIndicatorInstanceExtBiz {
         }
         //todo 插入一下突发事件 id与指标公式关系
         //突发事件指标公式关联
+        Set<String> reasonIdSet = new HashSet<>();
         if (!CollectionUtils.isEmpty(kOldReasonIdVNewReasonIdMap)) {
-            caseIndicatorInstanceIdSet.addAll(kOldReasonIdVNewReasonIdMap.keySet());
+            reasonIdSet.addAll(kOldReasonIdVNewReasonIdMap.keySet());
         }
 
         //案例指标规则
@@ -97,13 +98,13 @@ public class CaseIndicatorInstanceExtBiz {
                     .in(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceIdSet)
                     .list());
         });
-
+        reasonIdSet.addAll(caseIndicatorInstanceIdSet);
         //案例指标公式关联
         List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefList = new ArrayList<>();
         CompletableFuture<Void> queryCaseIndicatorExpressionRefListCF = CompletableFuture.runAsync(() -> {
             caseIndicatorExpressionRefList.addAll(caseIndicatorExpressionRefService.lambdaQuery()
                     .eq(CaseIndicatorExpressionRefEntity::getAppId, appId)
-                    .in(CaseIndicatorExpressionRefEntity::getReasonId, caseIndicatorInstanceIdSet)
+                    .in(CaseIndicatorExpressionRefEntity::getReasonId, reasonIdSet)
                     .list());
         });
         CompletableFuture.allOf(queryCaseIndicatorRuleListCF, queryCaseIndicatorExpressionRefListCF).get();
@@ -119,6 +120,13 @@ public class CaseIndicatorInstanceExtBiz {
                 .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, indicatorExpressionIdSet)
                 .list();
 
+        Set<String> casePrincipalIdSet = caseIndicatorExpressionList.stream().map(CaseIndicatorExpressionEntity::getCasePrincipalId).collect(Collectors.toSet());
+//        只有一个不相同
+//        for (String principalId:casePrincipalIdSet) {
+//            if (!caseIndicatorInstanceIdSet.contains(principalId)){
+//                log.warn("不相同");
+//            }
+//        }
         //案例指标公式项
         Set<CaseIndicatorExpressionItemEntity> caseExpressionItemList = new HashSet<>(caseIndicatorExpressionItemService.lambdaQuery()
                 .eq(CaseIndicatorExpressionItemEntity::getAppId, appId)
