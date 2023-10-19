@@ -50,11 +50,12 @@ public class IndicatorJudgeGoalDao extends BaseCategDao<IndicatorJudgeGoalServic
         return item::setState;
     }
 
-    public List<IndicatorJudgeGoalEntity> getAll(String appId, Integer state,
+    public List<IndicatorJudgeGoalEntity> getAll(FindJudgeGoalRequest req,
                                                  SFunction<IndicatorJudgeGoalEntity,?>... cols){
         return service.lambdaQuery()
-                .eq(ShareUtil.XObject.notEmpty(appId),IndicatorJudgeGoalEntity::getAppId,appId)
-                .eq(ShareUtil.XObject.notEmpty(state), IndicatorJudgeGoalEntity::getState,state)
+                .eq(ShareUtil.XObject.notEmpty(req.getAppId()), IndicatorJudgeGoalEntity::getAppId,req.getAppId())
+                .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
+                .eq(IndicatorJudgeGoalEntity::getIndicatorFuncId, req.getIndicatorFuncId())
                 .orderByAsc(IndicatorJudgeGoalEntity::getId)
                 .select(cols)
                 .list();
@@ -70,6 +71,7 @@ public class IndicatorJudgeGoalDao extends BaseCategDao<IndicatorJudgeGoalServic
                 .in(ShareUtil.XCollection.notEmpty(req.getIncIds()), getColId(), req.getIncIds())
                 .notIn(ShareUtil.XCollection.notEmpty(req.getExcIds()), getColId(), req.getExcIds())
                 .eq(ShareUtil.XObject.notEmpty(req.getState()), getColState(), req.getState())
+                .eq(IndicatorJudgeGoalEntity::getIndicatorFuncId, req.getIndicatorFuncId())
                 .orderByAsc(IndicatorJudgeGoalEntity::getId)
                 .select(cols)
                 .page(Page.of(req.getPageNo(),req.getPageSize()));

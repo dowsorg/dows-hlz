@@ -269,6 +269,7 @@ public class RsCopyBiz {
               case OPERATE_MANAGEMENT_INTERVENE_SPORTS:
               case OPERATE_MANAGEMENT_INTERVENE_PSYCHOLOGY:
               case OPERATE_MANAGEMENT_INTERVENE_TREATMENT:
+              case JUDGE_MANAGEMENT_HEALTH_MANAGEMENT_GOAL:
                   funcOperateIdSet.add(indicatorFuncId);
                   break;
               default:
@@ -921,10 +922,13 @@ public class RsCopyBiz {
             }
           });
     }
+
     Map<String, List<IndicatorExpressionItemEntity>> kReasonIdVIndicatorExpressionItemEntityListMap = new HashMap<>();
     Map<String, IndicatorExpressionEntity> kIndicatorExpressionIdVIndicatorExpressionEntityMap = new HashMap<>();
     Map<String, String> kReasonIdVIndicatorExpressionIdMap = new HashMap<>();
-    Set<String> riskFactorIndicatorExpressionIdSet = new HashSet<>();
+
+    //region 危险因素公式复制
+    /*Set<String> riskFactorIndicatorExpressionIdSet = new HashSet<>();
     if (!indicatorJudgeRiskFactorIdSet.isEmpty()) {
       indicatorExpressionRefService.lambdaQuery()
           .eq(IndicatorExpressionRefEntity::getAppId, appId)
@@ -962,7 +966,7 @@ public class RsCopyBiz {
             kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.put(indicatorExpressionId, indicatorExpressionItemEntityList);
           });
     }
-    /* runsix:sort */
+
     kIndicatorExpressionIdVIndicatorExpressionItemEntityListMap.forEach((indicatorExpressionId, indicatorExpressionItemEntityList) -> {
       indicatorExpressionItemEntityList.sort(Comparator.comparingInt(IndicatorExpressionItemEntity::getSeq));
     });
@@ -971,7 +975,10 @@ public class RsCopyBiz {
       if (Objects.nonNull(indicatorExpressionItemEntityList)) {
         kReasonIdVIndicatorExpressionItemEntityListMap.put(reasonId, indicatorExpressionItemEntityList);
       }
-    });
+    });*/
+    //endregion
+
+
     if (!indicatorJudgeRiskFactorEntityList.isEmpty()) {
       indicatorJudgeRiskFactorEntityList.forEach(indicatorJudgeRiskFactorEntity -> {
         String experimentIndicatorJudgeRiskFactorId = idGenerator.nextIdStr();
@@ -1028,6 +1035,9 @@ public class RsCopyBiz {
             .indicatorCategoryNameArray(indicatorCategoryNameArray)
             .build();
         experimentIndicatorJudgeRiskFactorRsEntityList.add(experimentIndicatorJudgeRiskFactorRsEntity);
+
+        //region 危险因素公式复制
+        /*
         String experimentIndicatorExpressionId = idGenerator.nextIdStr();
         String indicatorExpressionId = kReasonIdVIndicatorExpressionIdMap.get(indicatorJudgeRiskFactorId);
         List<IndicatorExpressionItemEntity> indicatorExpressionItemEntityList = kReasonIdVIndicatorExpressionItemEntityListMap.get(indicatorJudgeRiskFactorId);
@@ -1054,7 +1064,7 @@ public class RsCopyBiz {
             experimentIndicatorExpressionItemRsEntityList.add(experimentIndicatorExpressionItemRsEntity);
           });
         }
-        /* runsix:riskFactor does not need principalId */
+        *//* runsix:riskFactor does not need principalId *//*
         Integer type = null;
         Integer source = null;
         IndicatorExpressionEntity indicatorExpressionEntity = kIndicatorExpressionIdVIndicatorExpressionEntityMap.get(indicatorExpressionId);
@@ -1083,7 +1093,9 @@ public class RsCopyBiz {
             .reasonId(experimentIndicatorJudgeRiskFactorId)
             .build();
         experimentIndicatorExpressionRefRsEntityList.add(experimentIndicatorExpressionRefRsEntity);
+        */
       });
+      //endregion
     }
     /* runsix:判断指标-危险因素-二级类-无报告（有公式） */
     /* runsix:判断指标-健康指导-二级类-有报告（无公式） */
