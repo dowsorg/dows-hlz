@@ -120,13 +120,6 @@ public class CaseIndicatorInstanceExtBiz {
                 .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, indicatorExpressionIdSet)
                 .list();
 
-        Set<String> casePrincipalIdSet = caseIndicatorExpressionList.stream().map(CaseIndicatorExpressionEntity::getCasePrincipalId).collect(Collectors.toSet());
-//        只有一个不相同
-//        for (String principalId:casePrincipalIdSet) {
-//            if (!caseIndicatorInstanceIdSet.contains(principalId)){
-//                log.warn("不相同");
-//            }
-//        }
         //案例指标公式项
         Set<CaseIndicatorExpressionItemEntity> caseExpressionItemList = new HashSet<>(caseIndicatorExpressionItemService.lambdaQuery()
                 .eq(CaseIndicatorExpressionItemEntity::getAppId, appId)
@@ -165,9 +158,6 @@ public class CaseIndicatorInstanceExtBiz {
         CompletableFuture.allOf(queryCaseIndicatorCategoryRefListCF, queryCaseIndicatorInfluenceListCF).get();
 
         Set<String> allOldIdSet = new HashSet<>(indicatorCategoryIdSet);
-        if (!CollectionUtils.isEmpty(kOldReasonIdVNewReasonIdMap)) {
-            caseIndicatorInstanceIdSet.removeAll(kOldReasonIdVNewReasonIdMap.keySet());
-        }
         allOldIdSet.addAll(caseIndicatorInstanceIdSet);
         allOldIdSet.addAll(indicatorExpressionIdSet);
         allOldIdSet.addAll(caseIndicatorExperssionItemIdSet);
@@ -177,8 +167,8 @@ public class CaseIndicatorInstanceExtBiz {
         CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
                 rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
         cfPopulateKOldIdVNewIdMap.get();
-
         kOldIdVNewIdMap.putAll(kOldReasonIdVNewReasonIdMap);
+
 
         CompletableFuture<Void> gitNewCasPrincipalRefFuture = CompletableFuture.runAsync(() -> {
             gitNewCasPrincipalRefList(casePrincipalRefList, newAccountId, kOldIdVNewIdMap);
@@ -211,7 +201,7 @@ public class CaseIndicatorInstanceExtBiz {
         });
 
         CompletableFuture<Void> getNewCaseExpressionItemFuture = CompletableFuture.runAsync(() -> {
-            getNewCaseExpressionItemList(caseExpressionItemList, kOldIdVNewIdMap);
+            getNewCaseExpressionItemList(caseExpressionItemList, kOldIdVNewIdMap , caseIndicatorExperssionItemIdSet);
             caseIndicatorExpressionItemService.saveOrUpdateBatch(caseExpressionItemList);
         });
 
@@ -262,13 +252,22 @@ public class CaseIndicatorInstanceExtBiz {
     }
 
     private void getNewCaseExpressionItemList(Set<CaseIndicatorExpressionItemEntity> caseExpressionItemList,
-                                              Map<String, String> kOldIdVNewIdMap) {
+                                              Map<String, String> kOldIdVNewIdMap,
+                                              Set<String> caseIndicatorExperssionItemIdSet) {
         if (checkNullObject(caseExpressionItemList, kOldIdVNewIdMap)) {
             return;
         }
         caseExpressionItemList.forEach(caseExpressionItem -> {
-            caseExpressionItem.setCaseIndicatorExpressionItemId(checkNullNewId(caseExpressionItem.getCaseIndicatorExpressionItemId(), kOldIdVNewIdMap));
-            caseExpressionItem.setIndicatorExpressionId(checkNullNewId(caseExpressionItem.getIndicatorExpressionId(), kOldIdVNewIdMap));
+            String caseExpressionItemId = caseExpressionItem.getCaseIndicatorExpressionItemId();
+            //最大/最小 值项
+            if (!CollectionUtils.isEmpty(caseIndicatorExperssionItemIdSet) && caseIndicatorExperssionItemIdSet.contains(caseExpressionItemId)){
+                caseExpressionItem.setCaseIndicatorExpressionItemId(checkNullNewId(caseExpressionItemId, kOldIdVNewIdMap));
+            }else {
+                caseExpressionItem.setCaseIndicatorExpressionItemId(idGenerator.nextIdStr());
+            }
+            if (StringUtils.isNotBlank(caseExpressionItem.getIndicatorExpressionId())){
+                caseExpressionItem.setIndicatorExpressionId(checkNullNewId(caseExpressionItem.getIndicatorExpressionId(), kOldIdVNewIdMap));
+            }
             caseExpressionItem.setId(null);
             caseExpressionItem.setDt(new Date());
         });
@@ -281,6 +280,7 @@ public class CaseIndicatorInstanceExtBiz {
         }
         caseIndicatorExpressionList.forEach(caseIndicatorExpression -> {
             caseIndicatorExpression.setCaseIndicatorExpressionId(checkNullNewId(caseIndicatorExpression.getCaseIndicatorExpressionId(), kOldIdVNewIdMap));
+            caseIndicatorExpression.setCasePrincipalId(checkNullNewId(caseIndicatorExpression.getCasePrincipalId(), kOldIdVNewIdMap));
             caseIndicatorExpression.setMaxIndicatorExpressionItemId(checkNullNewId(caseIndicatorExpression.getMaxIndicatorExpressionItemId(), kOldIdVNewIdMap));
             caseIndicatorExpression.setMinIndicatorExpressionItemId(checkNullNewId(caseIndicatorExpression.getMinIndicatorExpressionItemId(), kOldIdVNewIdMap));
             caseIndicatorExpression.setId(null);
