@@ -36,6 +36,13 @@ public class JudgeGoalBiz {
 
     private final IndicatorFuncDao indicatorFuncDao;
 
+
+    public List<JudgeGoalResponse> listJudgeGoal(FindJudgeGoalRequest findJudgeGoal ) {
+        return ShareUtil.XCollection.map (indicatorJudgeGoalDao.getAll(findJudgeGoal), i ->
+                CopyWrapper.create(JudgeGoalResponse::new).endFrom(i));
+
+    }
+
     /**
      * 获取管理目标列表
      * @param

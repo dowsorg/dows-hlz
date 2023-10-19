@@ -2,6 +2,7 @@ package org.dows.hep.api.base.indicator.request;
 
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -48,5 +49,10 @@ public class FindJudgeGoalRequest {
 
     @Schema(title = "状态 null-所有, 0-启用 1-停用")
     private Integer state;
+
+    @Schema(title = "功能点id")
+    @ApiModelProperty(required = true)
+    @NotNull(message = "功能点ID不可为空")
+    private String indicatorFuncId;
 
 }
