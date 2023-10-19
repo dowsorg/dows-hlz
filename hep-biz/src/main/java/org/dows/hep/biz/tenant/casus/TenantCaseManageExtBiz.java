@@ -742,6 +742,7 @@ public class TenantCaseManageExtBiz {
         newEntity.setCaseIdentifier(baseBiz.getIdStr());
         newEntity.setVer(baseBiz.getLastVer());
         newEntity.setCaseName(caseInstanceName);
+        newEntity.setCaseType(oriCaseInstanceId);
         caseInstanceService.save(newEntity);
         return newEntity;
     }

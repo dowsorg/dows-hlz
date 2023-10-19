@@ -83,10 +83,9 @@ public class PersonManageExtBiz {
         userInstanceRequest.setName(userInstanceRequest.getName() + NAME_SUFFIX);
         String newUserid = userInstanceApi.insertUserInstance(userInstanceRequest);
         UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(oldUserId);
-        String intro = userExtinfoResponse.getIntro() + NAME_SUFFIX;
         UserExtinfoRequest userExtInfo = UserExtinfoRequest.builder()
                 .userId(newUserid)
-                .intro(intro)
+                .intro(userExtinfoResponse.getIntro())
                 .build();
         userExtinfoApi.insertUserExtinfo(userExtInfo);
         //3、获取该账户的所有信息
