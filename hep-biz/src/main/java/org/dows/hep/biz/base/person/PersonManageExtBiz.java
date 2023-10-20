@@ -80,7 +80,10 @@ public class PersonManageExtBiz {
         UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(oldUserId);
         UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
         BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId"});
-        userInstanceRequest.setName(userInstanceRequest.getName() + NAME_SUFFIX);
+        //只有人物管理复制时修妖修改名称
+        if (PERSON_MANAGE.equals(source)){
+            userInstanceRequest.setName(userInstanceRequest.getName() + NAME_SUFFIX);
+        }
         String newUserid = userInstanceApi.insertUserInstance(userInstanceRequest);
         UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(oldUserId);
         UserExtinfoRequest userExtInfo = UserExtinfoRequest.builder()
