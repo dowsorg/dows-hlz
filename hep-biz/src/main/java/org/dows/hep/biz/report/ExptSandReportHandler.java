@@ -426,11 +426,14 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         Float healthIndexWeight = sandSetting.getHealthIndexWeight();
         Float knowledgeWeight = sandSetting.getKnowledgeWeight();
         Float medicalRatioWeight = sandSetting.getMedicalRatioWeight();
+        Float operateRightWeight=sandSetting.getOperateRightWeight();
         ExptSandReportModel.ScoreInfo.ScoreWeight scoreWeight = ExptSandReportModel.ScoreInfo.ScoreWeight.builder()
                 .healthIndexWeight(String.valueOf(healthIndexWeight == null ? 0.00 : healthIndexWeight) + "%")
                 .knowledgeWeight(String.valueOf(knowledgeWeight == null ? 0.00 : knowledgeWeight) + "%")
                 .treatmentPercentWeight(String.valueOf(medicalRatioWeight == null ? 0.00 : medicalRatioWeight) + "%")
+                .operateRightWeight(String.valueOf(operateRightWeight == null ? 0.00 : operateRightWeight) + "%")
                 .build();
+
 
         // 期数得分信息
         List<ExptSandReportModel.ScoreInfo.PeriodScore> periodScores = new ArrayList<>();
@@ -585,10 +588,12 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         Float healthIndexWeight = sandSetting.getHealthIndexWeight();
         Float knowledgeWeight = sandSetting.getKnowledgeWeight();
         Float medicalRatioWeight = sandSetting.getMedicalRatioWeight();
+        Float operateRightWeight=sandSetting.getOperateRightWeight();
         ExptSandReportModel.ScoreInfo.ScoreWeight scoreWeight = ExptSandReportModel.ScoreInfo.ScoreWeight.builder()
                 .healthIndexWeight(String.valueOf(healthIndexWeight == null ? 0.00 : healthIndexWeight) + "%")
                 .knowledgeWeight(String.valueOf(knowledgeWeight == null ? 0.00 : knowledgeWeight) + "%")
                 .treatmentPercentWeight(String.valueOf(medicalRatioWeight == null ? 0.00 : medicalRatioWeight) + "%")
+                .operateRightWeight(String.valueOf(operateRightWeight == null ? 0.00 : operateRightWeight) + "%")
                 .build();
 
         // 期数得分信息
