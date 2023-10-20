@@ -332,6 +332,7 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
                         .healthIndexScore(groupItem.getHealthIndexScore())
                         .knowledgeScore(groupItem.getKnowledgeScore())
                         .treatmentPercentScore(groupItem.getTreatmentPercentScore())
+                        .operateRightScore(groupItem.getOperateRightScore())
                         .totalScore(groupItem.getTotalScore())
                         .build();
                 itemList.add(resultItem);

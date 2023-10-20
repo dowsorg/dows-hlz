@@ -447,6 +447,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                     .healthIndexScore(v.getHealthIndexScore())
                     .knowledgeScore(v.getKnowledgeScore())
                     .treatmentPercentScore(v.getTreatmentPercentScore())
+                    .operateRightScore(v.getOperateRightScore())
                     .totalScore(v.getTotalScore())
                     .totalRanking(String.valueOf(periodMapRank.get(period)))
                     .build();
@@ -461,6 +462,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         BigDecimal tHealthIndexScore = BigDecimal.ZERO;
         BigDecimal tKnowledgeScore = BigDecimal.ZERO;
         BigDecimal tTreatmentPercentScore = BigDecimal.ZERO;
+        BigDecimal tOperateRightScore = BigDecimal.ZERO;
         BigDecimal tTotalScore = BigDecimal.ZERO;
         for (int i = 0; i < periods; i++) {
             ExperimentScoringEntity exptScore = periodMapScore.get(i + 1);
@@ -470,11 +472,13 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
             String healthIndexScore = exptScore.getHealthIndexScore();
             String knowledgeScore = exptScore.getKnowledgeScore();
             String treatmentPercentScore = exptScore.getTreatmentPercentScore();
+            String operateRightScore = exptScore.getOperateRightScore();
             String totalScore = exptScore.getTotalScore();
             // convert bigDecimal
             BigDecimal bHealthIndexScore = new BigDecimal(healthIndexScore);
             BigDecimal bKnowledgeScore = new BigDecimal(knowledgeScore);
             BigDecimal bTreatmentPercentScore = new BigDecimal(treatmentPercentScore);
+            BigDecimal bOperateRightScore = new BigDecimal(operateRightScore);
             BigDecimal bTotalScore = new BigDecimal(totalScore);
 
             // weight
@@ -485,12 +489,14 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
             BigDecimal pHealthIndexScore = bHealthIndexScore.multiply(bPeriodWeight);
             BigDecimal pKnowledgeScore = bKnowledgeScore.multiply(bPeriodWeight);
             BigDecimal pTreatmentPercentScore = bTreatmentPercentScore.multiply(bPeriodWeight);
+            BigDecimal pOperateRightScore=bOperateRightScore.multiply(bPeriodWeight);
             BigDecimal pTotalScore = bTotalScore.multiply(bPeriodWeight);
 
             // accumulation
             tHealthIndexScore = tHealthIndexScore.add(pHealthIndexScore);
             tKnowledgeScore = tKnowledgeScore.add(pKnowledgeScore);
             tTreatmentPercentScore = tTreatmentPercentScore.add(pTreatmentPercentScore);
+            tOperateRightScore=tOperateRightScore.add(pOperateRightScore);
             tTotalScore = tTotalScore.add(pTotalScore);
         }
         //tHealthIndexScore = tHealthIndexScore.divide(BigDecimal.valueOf(periods), 2, RoundingMode.HALF_UP);
@@ -507,6 +513,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                 .healthIndexScore(BigDecimalUtil.formatRoundDecimal(tHealthIndexScore, 2 ))
                 .knowledgeScore(BigDecimalUtil.formatRoundDecimal(tKnowledgeScore, 2 ))
                 .treatmentPercentScore(BigDecimalUtil.formatRoundDecimal(tTreatmentPercentScore, 2 ))
+                .operateRightScore(BigDecimalUtil.formatRoundDecimal(tOperateRightScore, 2 ))
                 .totalScore(BigDecimalUtil.formatRoundDecimal(tTotalScore, 2 ))
                 .totalRanking(String.valueOf(totalRank))
                 .build();
@@ -592,6 +599,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                     .healthIndexScore("0.00")
                     .knowledgeScore("0.00")
                     .treatmentPercentScore("0.00")
+                    .operateRightScore("0.00")
                     .totalScore("0.00")
                     // todo 计算下
                     .totalRanking("0")
@@ -608,6 +616,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                 .healthIndexScore("0.00")
                 .knowledgeScore("0.00")
                 .treatmentPercentScore("0.00")
+                .operateRightScore("0.00")
                 .totalScore("0.00")
                 .totalRanking("1")
                 .build();
