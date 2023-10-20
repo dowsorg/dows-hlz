@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.dows.hep.api.base.indicator.response.*;
+import org.dows.hep.api.user.experiment.response.ExptJudgeGoalResponse;
 import org.dows.hep.api.user.experiment.response.ExptTreatPlanResponse;
 
 import java.util.List;
@@ -45,6 +46,9 @@ public class ExptOrgReportNodeDataVO {
 
     @Schema(title = "判断指标--健康指导")
     private List<ExperimentHealthGuidanceReportResponseRs> judgeHealthGuidance;
+
+    @Schema(title = "判断指标--管理目标")
+    private ExptJudgeGoalResponse judgeGoal;
 
     @Schema(title = "监测随访")
     private ExperimentIndicatorViewMonitorFollowupReportRsResponse monitorFollowup;

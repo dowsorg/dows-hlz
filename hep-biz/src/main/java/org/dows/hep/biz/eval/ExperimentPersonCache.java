@@ -70,6 +70,21 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         }
         return cached.getMapGroups().get(experimentGroupId);
     }
+
+    public Collection<ExperimentGroupEntity> getGroups(String experimentId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return Collections.emptyList();
+        }
+        return cached.getMapGroups().values();
+    }
+    public Map<String, ExperimentGroupEntity> getMapGroups(String experimentId){
+        ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
+        if(null==cached){
+            return Collections.emptyMap();
+        }
+        return cached.getMapGroups();
+    }
     public ExperimentOrgEntity getOrg(String experimentId,String experimentOrgId){
         ExperimentPersonCache.CacheData cached=getCacheData(experimentId);
         if(null==cached){

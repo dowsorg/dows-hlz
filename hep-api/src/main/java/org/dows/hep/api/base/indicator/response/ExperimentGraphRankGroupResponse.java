@@ -28,26 +28,32 @@ public class ExperimentGraphRankGroupResponse implements Serializable {
   @Schema(title = "实验小组名称")
   private String experimentGroupName;
 
-  @Schema(title = "知识考点分数")
+  @Schema(title = "知识考点分数百分比")
   private String percentKnowledgeScore;
 
-  @Schema(title = "健康指数分数")
+  @Schema(title = "健康指数分数百分比")
   private String percentHealthIndexScore;
 
-  @Schema(title = "医疗占比分数")
+  @Schema(title = "医疗占比分数百分比")
   private String percentTreatmentPercentScore;
+
+  @Schema(title = "操作准确度分数百分比")
+  private String percentOperateRightScore;
 
   @Schema(title = "总分")
   private String totalScore;
 
-  @Schema(title = "知识考点分数百分比")
-  private String percentKnowledge;
+  @Schema(title = "知识考点分数")
+  private String knowledgeScore;
 
-  @Schema(title = "健康指数分数百分比")
-  private String percentHealthIndex;
+  @Schema(title = "健康指数分数")
+  private String healthIndexScore;
 
-  @Schema(title = "医疗占比分数百分比")
-  private String percentTreatmentPercent;
+  @Schema(title = "医疗占比分数")
+  private String treatmentPercentScore;
+
+  @Schema(title = "操作准确度分数")
+  private String operateRightScore;
 
   @Schema(title = "排名")
   private String rankNo;
