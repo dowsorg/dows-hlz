@@ -305,7 +305,7 @@ public class TenantCaseManageExtBiz {
         List<CaseOrgModuleEntity> caseOrgModuleList = getCaseOrgModuleList(caseOrgIdSet);
         //机构功能id
         if (!CollectionUtils.isEmpty(caseOrgModuleList)){
-            duplicateCaseOrgModule(kOldCaseOrgIdVNewCaseOrgIdMap);
+            duplicateCaseOrgModule(caseOrgModuleList,kOldCaseOrgIdVNewCaseOrgIdMap);
         }
         //复制案例机构人物
         if (isCopyPerson) {
@@ -318,26 +318,31 @@ public class TenantCaseManageExtBiz {
         getCaseOrgFeeListCF.get();
         return kOldCaseOrgIdVNewCaseOrgIdMap;
     }
+
     //复制机构功能
-    private void duplicateCaseOrgModule(Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap){
+    private void duplicateCaseOrgModule(List<CaseOrgModuleEntity> caseOrgModuleList,
+                                        Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap){
         if (CollectionUtils.isEmpty(kOldCaseOrgIdVNewCaseOrgIdMap)){ return ;}
-        kOldCaseOrgIdVNewCaseOrgIdMap.forEach((oldCaseOrgId , newCaseOrgId)->{
-            List<CaseOrgModuleEntity> caseOrgModuleList = getCaseOrgModuleList(oldCaseOrgId);
-            //机构功能id
-            Set<String> caseOrgModuleIdSet = caseOrgModuleList.stream().map(CaseOrgModuleEntity::getCaseOrgModuleId).collect(Collectors.toSet());
-            Map<String, String> kOldIdVNewIdMap = new HashMap<>();
-            rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, caseOrgModuleIdSet);
-            List<CaseOrgModuleFuncRefEntity> caseOrgModuleFuncRefList = getCaseOrgModuleFuncRefList(caseOrgModuleIdSet);
-            CompletableFuture<Void> getCaseOrgModuleListCF = CompletableFuture.runAsync(() -> {
-                getCaseOrgModuleList(caseOrgModuleList,newCaseOrgId, kOldIdVNewIdMap);
-                caseOrgModuleService.saveOrUpdateBatch(caseOrgModuleList);
-            });
-            CompletableFuture<Void> getCaseOrgModuleFuncRefListCF = CompletableFuture.runAsync(() -> {
-                getCaseOrgModuleFuncRefList(caseOrgModuleFuncRefList, kOldIdVNewIdMap);
-                caseOrgModuleFuncRefService.saveOrUpdateBatch(caseOrgModuleFuncRefList);
-            });
-            CompletableFuture.allOf(getCaseOrgModuleListCF,getCaseOrgModuleFuncRefListCF);
+        //机构功能id集合
+        Set<String> caseOrgModuleIdSet = caseOrgModuleList.stream().map(CaseOrgModuleEntity::getCaseOrgModuleId).collect(Collectors.toSet());
+
+        Map<String, String> kOldIdVNewIdMap = new HashMap<>();
+        rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, caseOrgModuleIdSet);
+
+        //机构功能点映射
+        List<CaseOrgModuleFuncRefEntity> caseOrgModuleFuncRefList = getCaseOrgModuleFuncRefList(caseOrgModuleIdSet);
+
+        CompletableFuture<Void> getCaseOrgModuleListCF = CompletableFuture.runAsync(() -> {
+            getCaseOrgModuleList(caseOrgModuleList,kOldCaseOrgIdVNewCaseOrgIdMap, kOldIdVNewIdMap);
+            caseOrgModuleService.saveOrUpdateBatch(caseOrgModuleList);
         });
+
+        CompletableFuture<Void> getCaseOrgModuleFuncRefListCF = CompletableFuture.runAsync(() -> {
+            getCaseOrgModuleFuncRefList(caseOrgModuleFuncRefList, kOldIdVNewIdMap);
+            caseOrgModuleFuncRefService.saveOrUpdateBatch(caseOrgModuleFuncRefList);
+        });
+
+        CompletableFuture.allOf(getCaseOrgModuleListCF,getCaseOrgModuleFuncRefListCF);
     }
 
     /**
@@ -468,13 +473,13 @@ public class TenantCaseManageExtBiz {
     }
 
     private void getCaseOrgModuleList(List<CaseOrgModuleEntity> caseOrgModuleList,
-                                      String newCaseOrgId,
+                                      Map<String, String> kOldCaseOrgIdVNewCaseOrgIdMap,
                                       Map<String, String> kOldIdVNewIdMap) {
         if (checkNull(caseOrgModuleList, kOldIdVNewIdMap)) {
             return;
         }
         caseOrgModuleList.forEach(caseOrgModule -> {
-            caseOrgModule.setCaseOrgId(newCaseOrgId);
+            caseOrgModule.setCaseOrgId(checkNullNewId(caseOrgModule.getCaseOrgId(), kOldCaseOrgIdVNewCaseOrgIdMap));
             caseOrgModule.setCaseOrgModuleId(checkNullNewId(caseOrgModule.getCaseOrgModuleId(), kOldIdVNewIdMap));
             caseOrgModule.setId(null);
             caseOrgModule.setDt(new Date());
