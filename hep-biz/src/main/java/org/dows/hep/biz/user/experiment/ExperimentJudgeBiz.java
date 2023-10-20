@@ -59,7 +59,7 @@ public class ExperimentJudgeBiz {
     public SaveExptOperateResponse saveJudgeGoal(SaveExptJudgeGoalRequest req, HttpServletRequest httpReq){
         ExptRequestValidator validator=ExptRequestValidator.create(req)
                 .checkExperimentPerson()
-                .checkExperimentOrgId()
+                .checkExperimentOrg()
                 .checkExperimentInstanceId();
 
         req.setGoalItems(ShareUtil.XObject.defaultIfNull(req.getGoalItems(), Collections.emptyList()));
