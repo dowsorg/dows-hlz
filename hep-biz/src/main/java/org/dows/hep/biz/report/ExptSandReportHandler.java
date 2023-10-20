@@ -26,6 +26,7 @@ import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.dto.ExptQuestionnaireOptionDTO;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireItemResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentQuestionnaireResponse;
+import org.dows.hep.biz.eval.EvalScoreRankBiz;
 import org.dows.hep.biz.risk.RiskBiz;
 import org.dows.hep.biz.user.experiment.ExperimentOrgBiz;
 import org.dows.hep.biz.user.experiment.ExperimentQuestionnaireBiz;
@@ -63,6 +64,8 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentQuestionnaireBiz experimentQuestionnaireBiz;
     private final ExperimentScoringBiz experimentScoringBiz;
+
+    private final EvalScoreRankBiz evalScoreRankBiz;
     private final ExperimentGroupService experimentGroupService;
     private final ExperimentParticipatorService experimentParticipatorService;
     private final ExperimentInstanceService experimentInstanceService;
@@ -304,7 +307,8 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
     private ExperimentRankResponse getRank(String exptInstanceId) {
         ExperimentRankResponse result = null;
         try {
-            result = experimentScoringBiz.getRank(exptInstanceId);
+            //result = experimentScoringBiz.getRank(exptInstanceId);
+            result = evalScoreRankBiz.getRank(exptInstanceId);
         } catch (Exception e) {
             log.error("获取沙盘模拟报告时，获取实验 {} 的排行榜数据异常", exptInstanceId);
             throw new BizException(String.format("获取沙盘模拟报告时，获取实验 %s 的排行榜数据异常", exptInstanceId));

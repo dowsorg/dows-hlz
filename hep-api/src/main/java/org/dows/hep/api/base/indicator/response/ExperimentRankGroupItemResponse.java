@@ -34,9 +34,15 @@ public class ExperimentRankGroupItemResponse implements Serializable {
   @Schema(title = "医疗占比分数")
   private String treatmentPercentScore;
 
+  @Schema(title = "操作准确度分数")
+  private String operateRightScore;
+
   @Schema(title = "总分")
   private String totalScore;
 
   @Schema(title = "期数")
   private Integer periods;
+
+  @Schema(title = "排名")
+  private Integer rankNo;
 }

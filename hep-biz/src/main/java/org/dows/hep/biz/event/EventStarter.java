@@ -10,7 +10,6 @@ import org.dows.hep.entity.ExperimentInstanceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -21,7 +20,7 @@ import java.util.Set;
  * @author : wuzl
  * @date : 2023/7/10 11:10
  */
-@Component
+//@Component
 @Slf4j
 public class EventStarter implements ApplicationListener<ApplicationStartedEvent> {
 

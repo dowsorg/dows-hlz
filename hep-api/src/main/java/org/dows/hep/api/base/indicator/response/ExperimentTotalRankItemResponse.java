@@ -29,6 +29,9 @@ public class ExperimentTotalRankItemResponse implements Serializable {
   @Schema(title = "总分")
   private String allPeriodsTotalScore;
 
+  @Schema(title = "排名")
+  private Integer rankingIndex;
+
   @Schema(title = "每期总分列表")
   private List<ExperimentTotalRankGroupItemResponse> experimentTotalRankGroupItemResponseList;
 }

@@ -19,6 +19,7 @@ import org.dows.hep.api.constant.SystemConstant;
 import org.dows.hep.api.user.experiment.ExptReportTypeEnum;
 import org.dows.hep.api.user.experiment.ExptSettingModeEnum;
 import org.dows.hep.api.user.experiment.response.ExptSchemeScoreRankResponse;
+import org.dows.hep.biz.eval.EvalScoreRankBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSchemeBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentSettingBiz;
@@ -56,6 +57,8 @@ import java.util.stream.Collectors;
 public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverviewReportHandler.ExptOverviewReportData, ExptOverviewReportModel> {
     private final ExperimentSchemeBiz experimentSchemeBiz;
     private final ExperimentScoringBiz experimentScoringBiz;
+
+    private final EvalScoreRankBiz evalScoreRankBiz;
     private final ExperimentSettingBiz experimentSettingBiz;
     private final ExperimentInstanceService experimentInstanceService;
 
@@ -237,7 +240,8 @@ public class ExptOverviewReportHandler implements ExptReportHandler<ExptOverview
     private ExperimentRankResponse getRank(String exptInstanceId) {
         ExperimentRankResponse result = null;
         try {
-            result = experimentScoringBiz.getRank(exptInstanceId);
+            //result = experimentScoringBiz.getRank(exptInstanceId);
+            result = evalScoreRankBiz.getRank(exptInstanceId);
         } catch (Exception e) {
             log.error("获取总报告时，获取实验 {} 的排行榜数据异常", exptInstanceId);
             throw new BizException(String.format("获取总报告时，获取实验 %s 的排行榜数据异常", exptInstanceId));
