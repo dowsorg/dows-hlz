@@ -77,7 +77,7 @@ public class ExperimentJudgeBiz {
         final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
         ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
         ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
-                .checkOrgFlow(true);
+                .requireOrgFlowRunning(timePoint.getPeriod());
 
         req.getGoalItems().forEach(i->i.setValue(BigDecimalUtil.tryParseDecimalElseZero(i.getValue()).toPlainString()));
 
