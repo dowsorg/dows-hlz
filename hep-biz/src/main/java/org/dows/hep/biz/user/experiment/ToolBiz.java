@@ -9,6 +9,7 @@ import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.biz.eval.EvalHealthIndexBiz;
 import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.eval.EvalPersonIndicatorBiz;
+import org.dows.hep.biz.eval.EvalScoreRankBiz;
 import org.dows.hep.biz.event.PersonBasedEventTask;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.websocket.HepClientManager;
@@ -32,6 +33,8 @@ public class ToolBiz {
     private final EvalPersonIndicatorBiz evalPersonIndicatorBiz;
 
     private final EvalPersonBiz evalPersonBiz;
+
+    private final EvalScoreRankBiz evalScoreRankBiz;
 
     public String ping(){
 
@@ -81,6 +84,10 @@ public class ToolBiz {
     public void evalPeriodEnd(RsCalculatePeriodsRequest req)  {
 
         evalPersonBiz.evalPeriodEnd(req);
+    }
+
+    public void evalPeriodEndScore(RsCalculatePeriodsRequest req){
+        evalScoreRankBiz.saveOrUpd(req.getExperimentId(),req.getPeriods());
     }
 
     public void raiseevent(RsCalculatePersonRequestRs req)  {
