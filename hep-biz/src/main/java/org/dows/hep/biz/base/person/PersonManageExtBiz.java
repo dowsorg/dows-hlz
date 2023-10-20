@@ -83,11 +83,11 @@ public class PersonManageExtBiz {
         userInstanceRequest.setName(userInstanceRequest.getName() + NAME_SUFFIX);
         String newUserid = userInstanceApi.insertUserInstance(userInstanceRequest);
         UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(oldUserId);
-        UserExtinfoRequest userExtinfo = UserExtinfoRequest.builder()
+        UserExtinfoRequest userExtInfo = UserExtinfoRequest.builder()
                 .userId(newUserid)
                 .intro(userExtinfoResponse.getIntro())
                 .build();
-        userExtinfoApi.insertUserExtinfo(userExtinfo);
+        userExtinfoApi.insertUserExtinfo(userExtInfo);
         //3、获取该账户的所有信息
         AccountInstanceResponse accountInstanceResponse = accountInstanceApi.getAccountInstanceByAccountId(accountId);
         //4、复制账户信息并创建，身份标识在uim一起新建

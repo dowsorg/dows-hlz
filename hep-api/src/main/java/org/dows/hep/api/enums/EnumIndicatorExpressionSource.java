@@ -27,11 +27,15 @@ public enum EnumIndicatorExpressionSource {
   LABEL_MANAGEMENT(10, "标签管理"),
   CROWDS(11, "人群类型"),
   RISK_MODEL(12, "死亡模型"),
+  INDICATOR_OPERATOR_NO_REPORT_THREE_LEVEL(13, "三级类-无报告"),
+  INDICATOR_OPERATOR_HAS_REPORT_TWO_LEVEL(14, "二级类-有报告"),
+
 
   INDICATOR_JUDGE_CHECKRULE(21,"判断指标-判断规则"),
   INDICATOR_JUDGE_REFINDICATOR(22,"判断指标-关联指标"),
   INDICATOR_JUDGE_GOAL_CHECKRULE(23,"管理目标-判断规则"),
   INDICATOR_JUDGE_GOAL_REFINDICATOR(24,"管理目标-关联指标"),
+
   ;
 
   private final Integer source;

@@ -72,7 +72,7 @@ public class CaseIndicatorInstanceExtBiz {
         CompletableFuture<Void> queryCaseIndicatorInstanceListCF = CompletableFuture.runAsync(() -> {
             caseIndicatorInstanceList.addAll(caseIndicatorInstanceService.lambdaQuery()
                     .eq(CaseIndicatorInstanceEntity::getAppId, appId)
-                    .in(CaseIndicatorInstanceEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
+                    .eq(CaseIndicatorInstanceEntity::getPrincipalId, personId)
                     .list());
         });
         CompletableFuture.allOf(queryCaseIndicatorCategoryListCF, queryCaseIndicatorInstanceListCF).get();
@@ -85,8 +85,9 @@ public class CaseIndicatorInstanceExtBiz {
         }
         //todo 插入一下突发事件 id与指标公式关系
         //突发事件指标公式关联
+        Set<String> reasonIdSet = new HashSet<>();
         if (!CollectionUtils.isEmpty(kOldReasonIdVNewReasonIdMap)) {
-            caseIndicatorInstanceIdSet.addAll(kOldReasonIdVNewReasonIdMap.keySet());
+            reasonIdSet.addAll(kOldReasonIdVNewReasonIdMap.keySet());
         }
 
         //案例指标规则
@@ -97,18 +98,18 @@ public class CaseIndicatorInstanceExtBiz {
                     .in(CaseIndicatorRuleEntity::getVariableId, caseIndicatorInstanceIdSet)
                     .list());
         });
-
+        reasonIdSet.addAll(caseIndicatorInstanceIdSet);
         //案例指标公式关联
         List<CaseIndicatorExpressionRefEntity> caseIndicatorExpressionRefList = new ArrayList<>();
         CompletableFuture<Void> queryCaseIndicatorExpressionRefListCF = CompletableFuture.runAsync(() -> {
             caseIndicatorExpressionRefList.addAll(caseIndicatorExpressionRefService.lambdaQuery()
                     .eq(CaseIndicatorExpressionRefEntity::getAppId, appId)
-                    .in(CaseIndicatorExpressionRefEntity::getReasonId, caseIndicatorInstanceIdSet)
+                    .in(CaseIndicatorExpressionRefEntity::getReasonId, reasonIdSet)
                     .list());
         });
         CompletableFuture.allOf(queryCaseIndicatorRuleListCF, queryCaseIndicatorExpressionRefListCF).get();
 
-        //指标公式id
+        //案例指标公式id
         Set<String> indicatorExpressionIdSet = caseIndicatorExpressionRefList.stream()
                 .map(CaseIndicatorExpressionRefEntity::getIndicatorExpressionId)
                 .collect(Collectors.toSet());
@@ -118,20 +119,25 @@ public class CaseIndicatorInstanceExtBiz {
                 .eq(CaseIndicatorExpressionEntity::getAppId, appId)
                 .in(CaseIndicatorExpressionEntity::getCaseIndicatorExpressionId, indicatorExpressionIdSet)
                 .list();
-        //案例指标细项id
+
+        //案例指标公式项
+        Set<CaseIndicatorExpressionItemEntity> caseExpressionItemList = new HashSet<>(caseIndicatorExpressionItemService.lambdaQuery()
+                .eq(CaseIndicatorExpressionItemEntity::getAppId, appId)
+                .in(CaseIndicatorExpressionItemEntity::getIndicatorExpressionId,indicatorExpressionIdSet)
+                .list());
+
+        //案例指标细项-最大值/最小值
         Set<String> caseIndicatorExperssionItemIdSet = new HashSet<>();
         caseIndicatorExpressionList.forEach(expression -> {
             caseIndicatorExperssionItemIdSet.add(expression.getMaxIndicatorExpressionItemId());
             caseIndicatorExperssionItemIdSet.add(expression.getMinIndicatorExpressionItemId());
         });
-        Set<CaseIndicatorExpressionItemEntity> caseExpressionItemList;
+
         if (!CollectionUtils.isEmpty(caseIndicatorExperssionItemIdSet)) {
-            caseExpressionItemList = new HashSet<>(caseIndicatorExpressionItemService.lambdaQuery()
+            caseExpressionItemList.addAll(caseIndicatorExpressionItemService.lambdaQuery()
                     .eq(CaseIndicatorExpressionItemEntity::getAppId, appId)
                     .in(CaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId, caseIndicatorExperssionItemIdSet)
                     .list());
-        } else {
-            caseExpressionItemList = new HashSet<>();
         }
 
         //案例指标 目录与实例 关系
@@ -140,7 +146,6 @@ public class CaseIndicatorInstanceExtBiz {
             caseIndicatorCategoryRefList.addAll(caseIndicatorCategoryRefService.lambdaQuery()
                     .eq(CaseIndicatorCategoryRefEntity::getAppId, appId)
                     .in(CaseIndicatorCategoryRefEntity::getIndicatorInstanceId, caseIndicatorInstanceIdSet)
-                    .in(CaseIndicatorCategoryRefEntity::getIndicatorCategoryId, indicatorCategoryIdSet)
                     .list());
         });
         //案例指标影响
@@ -153,9 +158,6 @@ public class CaseIndicatorInstanceExtBiz {
         CompletableFuture.allOf(queryCaseIndicatorCategoryRefListCF, queryCaseIndicatorInfluenceListCF).get();
 
         Set<String> allOldIdSet = new HashSet<>(indicatorCategoryIdSet);
-        if (!CollectionUtils.isEmpty(kOldReasonIdVNewReasonIdMap)) {
-            caseIndicatorInstanceIdSet.removeAll(kOldReasonIdVNewReasonIdMap.keySet());
-        }
         allOldIdSet.addAll(caseIndicatorInstanceIdSet);
         allOldIdSet.addAll(indicatorExpressionIdSet);
         allOldIdSet.addAll(caseIndicatorExperssionItemIdSet);
@@ -166,6 +168,8 @@ public class CaseIndicatorInstanceExtBiz {
                 rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
         cfPopulateKOldIdVNewIdMap.get();
         kOldIdVNewIdMap.putAll(kOldReasonIdVNewReasonIdMap);
+
+
         CompletableFuture<Void> gitNewCasPrincipalRefFuture = CompletableFuture.runAsync(() -> {
             gitNewCasPrincipalRefList(casePrincipalRefList, newAccountId, kOldIdVNewIdMap);
             caseIndicatorCategoryPrincipalRefService.saveOrUpdateBatch(casePrincipalRefList);
@@ -197,7 +201,7 @@ public class CaseIndicatorInstanceExtBiz {
         });
 
         CompletableFuture<Void> getNewCaseExpressionItemFuture = CompletableFuture.runAsync(() -> {
-            getNewCaseExpressionItemList(caseExpressionItemList, kOldIdVNewIdMap);
+            getNewCaseExpressionItemList(caseExpressionItemList, kOldIdVNewIdMap , caseIndicatorExperssionItemIdSet);
             caseIndicatorExpressionItemService.saveOrUpdateBatch(caseExpressionItemList);
         });
 
@@ -248,12 +252,22 @@ public class CaseIndicatorInstanceExtBiz {
     }
 
     private void getNewCaseExpressionItemList(Set<CaseIndicatorExpressionItemEntity> caseExpressionItemList,
-                                              Map<String, String> kOldIdVNewIdMap) {
+                                              Map<String, String> kOldIdVNewIdMap,
+                                              Set<String> caseIndicatorExperssionItemIdSet) {
         if (checkNullObject(caseExpressionItemList, kOldIdVNewIdMap)) {
             return;
         }
         caseExpressionItemList.forEach(caseExpressionItem -> {
-            caseExpressionItem.setCaseIndicatorExpressionItemId(checkNullNewId(caseExpressionItem.getCaseIndicatorExpressionItemId(), kOldIdVNewIdMap));
+            String caseExpressionItemId = caseExpressionItem.getCaseIndicatorExpressionItemId();
+            //最大/最小 值项
+            if (!CollectionUtils.isEmpty(caseIndicatorExperssionItemIdSet) && caseIndicatorExperssionItemIdSet.contains(caseExpressionItemId)){
+                caseExpressionItem.setCaseIndicatorExpressionItemId(checkNullNewId(caseExpressionItemId, kOldIdVNewIdMap));
+            }else {
+                caseExpressionItem.setCaseIndicatorExpressionItemId(idGenerator.nextIdStr());
+            }
+            if (StringUtils.isNotBlank(caseExpressionItem.getIndicatorExpressionId())){
+                caseExpressionItem.setIndicatorExpressionId(checkNullNewId(caseExpressionItem.getIndicatorExpressionId(), kOldIdVNewIdMap));
+            }
             caseExpressionItem.setId(null);
             caseExpressionItem.setDt(new Date());
         });
@@ -281,6 +295,7 @@ public class CaseIndicatorInstanceExtBiz {
         }
         caseIndicatorExpressionRefList.forEach(caseExpression -> {
             caseExpression.setCaseIndicatorExpressionRefId(idGenerator.nextIdStr());
+            caseExpression.setIndicatorExpressionId(checkNullNewId(caseExpression.getIndicatorExpressionId(), kOldIdVNewIdMap));
             caseExpression.setReasonId(checkNullNewId(caseExpression.getReasonId(), kOldIdVNewIdMap));
             caseExpression.setId(null);
             caseExpression.setDt(new Date());

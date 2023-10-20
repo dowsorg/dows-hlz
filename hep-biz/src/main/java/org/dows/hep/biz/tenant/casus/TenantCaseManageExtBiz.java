@@ -78,6 +78,9 @@ public class TenantCaseManageExtBiz {
     private final AccountGroupApi accountGroupApi;
     private final AccountUserApi accountUserApi;
     private final AccountInstanceApi accountInstanceApi;
+    private final QuestionAnswersService questionAnswersService;
+    private final QuestionOptionsService questionOptionsService;
+
     /**
      * TODO 案例 复制
      */
@@ -85,7 +88,7 @@ public class TenantCaseManageExtBiz {
     public String duplicateCaseInstance(CaseInstanceCopyRequest request) throws ExecutionException, InterruptedException {
         //需要复制的案例id
         String oriCaseInstanceId = request.getOriCaseInstanceId();
-        String targetCaseInstanceName = request.getTargetCaseInstanceName() ;
+        String targetCaseInstanceName = request.getTargetCaseInstanceName();
         String appId = request.getAppId();
         if (StrUtil.isBlank(oriCaseInstanceId) || StrUtil.isBlank(targetCaseInstanceName)) {
             throw new BizException(CaseESCEnum.DATA_NULL);
@@ -102,78 +105,133 @@ public class TenantCaseManageExtBiz {
             log.error("TenantCaseManageExtBiz.duplicateCaseInstance duplicateCaseScheme error");
             throw new RuntimeException(e);
         }
-        //  copy case-org  oldOrgId<-> newOrgId
-        Map<String, String> kOldIdVNewIdMap = duplicateCaseOrgList(oriCaseInstanceId, newCaseInstanceId, request.getIsCopyPerson(),appId);
+        //  copy case-org  oldCaseOrgId<-> newCaseOrgId
+        Map<String, String> kOldCaseOrgIdVNewCaseOrgIdMap = duplicateCaseOrgList(oriCaseInstanceId, newCaseInstanceId, request.getIsCopyPerson(), appId);
         // copy case-notice
         caseNoticeBiz.copyCaseNotice(oriCaseInstanceId, caseInstanceEntity);
         //  copy case-questionnaire
-        duplicateCaseQuestionnaire(oriCaseInstanceId, newCaseInstanceId, kOldIdVNewIdMap);
+        duplicateCaseQuestionnaire(oriCaseInstanceId, newCaseInstanceId, kOldCaseOrgIdVNewCaseOrgIdMap);
 
         return newCaseInstanceId;
     }
 
     /**
+     * 复制 案例-知识答题
      * kOldIdVNewIdMap：机构id和新机构id对应
      */
     private void duplicateCaseQuestionnaire(String oriCaseInstanceId, String newCaseInstanceId,
-                                            Map<String, String> kOldOrgIdVNewOrgIdMap) throws ExecutionException, InterruptedException {
+                                            Map<String, String> kOldCaseOrgIdVNewCaseOrgIdMap) throws ExecutionException, InterruptedException {
         //案例知识答题分配方式设置
         CaseSettingEntity caseSetting = getCaseSetting(oriCaseInstanceId);
         if (Objects.isNull(caseSetting)) {
             return;
         }
+        Set<String> allOldIdSet = new HashSet<>();
         //试卷
         List<CaseQuestionnaireEntity> caseQuestionnaireList = getCaseQuestionnaire(oriCaseInstanceId);
+        Set<String> questionSectionIdSet = caseQuestionnaireList.stream().map(CaseQuestionnaireEntity::getQuestionSectionId).collect(Collectors.toSet());
+        Set<String> questionnaireIdSet = caseQuestionnaireList.stream().map(CaseQuestionnaireEntity::getCaseQuestionnaireId).collect(Collectors.toSet());
+
+        //试卷选中的题目
+        List<QuestionSectionItemEntity> questionSectionItemList = getQuestionItemByQuestionSectionId(questionSectionIdSet);
+        Set<String> questionInstanceIdSet = questionSectionItemList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).collect(Collectors.toSet());
+
+        //试题实例
+        List<QuestionInstanceEntity> questionInstanceList = getQuestionInstanceList(questionInstanceIdSet);
+
+        //试题答案
+        List<QuestionAnswersEntity> questionAnswersList = getQuestionAnswersList(questionInstanceIdSet);
+
+        Set<String> questionOptionsIdSet = questionAnswersList.stream().map(QuestionAnswersEntity::getQuestionOptionsId).collect(Collectors.toSet());
+        //试题选项
+        List<QuestionOptionsEntity> questionOptionsList = getQuestionOptionsList1(questionInstanceIdSet);
+
         //试卷与机构分配关系
         List<CaseOrgQuestionnaireEntity> caseOrgQuestionnaireList = getCaseOrgQuestionnaire(oriCaseInstanceId);
 
-        CompletableFuture<Void> getCaseQuestionnaireList = CompletableFuture.runAsync(() ->
-                getCaseQuestionnaireList(caseQuestionnaireList, newCaseInstanceId, kOldOrgIdVNewOrgIdMap));
-        getCaseQuestionnaireList.get();
+        allOldIdSet.addAll(questionnaireIdSet);
+        allOldIdSet.addAll(questionSectionIdSet);
+        allOldIdSet.addAll(questionOptionsIdSet);
+        allOldIdSet.addAll(questionInstanceIdSet);
+        Map<String, String> kOldIdVNewIdMap = new HashMap<>();
+        CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
+                rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
+        cfPopulateKOldIdVNewIdMap.get();
+        kOldIdVNewIdMap.putAll(kOldCaseOrgIdVNewCaseOrgIdMap);
 
-        CompletableFuture<Void> getCaseOrgQuestionnaireList = CompletableFuture.runAsync(() ->
-                getCaseOrgQuestionnaireList(caseOrgQuestionnaireList, newCaseInstanceId, kOldOrgIdVNewOrgIdMap));
-        getCaseOrgQuestionnaireList.get();
+        CompletableFuture<Void> getQuestionOptionsListCF = CompletableFuture.runAsync(() -> {
+            getQuestionOptionsList(questionOptionsList, kOldIdVNewIdMap);
+            questionOptionsService.saveOrUpdateBatch(questionOptionsList);
+        });
+
+        CompletableFuture<Void> getQuestionAnswersListCF = CompletableFuture.runAsync(() -> {
+            getQuestionAnswersList(questionAnswersList, kOldIdVNewIdMap);
+            questionAnswersService.saveOrUpdateBatch(questionAnswersList);
+        });
+
+        CompletableFuture<Void> getQuestionInstanceListCF = CompletableFuture.runAsync(() -> {
+            getAllQuestionInstanceList(questionInstanceList, kOldIdVNewIdMap);
+            questionInstanceService.saveOrUpdateBatch(questionInstanceList);
+        });
+
+        CompletableFuture<Void> getQuestionSectionItemListCF = CompletableFuture.runAsync(() -> {
+            getQuestionItemList(questionSectionItemList, kOldIdVNewIdMap);
+            questionSectionItemService.saveOrUpdateBatch(questionSectionItemList);
+        });
+
+        CompletableFuture<Void> getCaseQuestionnaireListCF = CompletableFuture.runAsync(() -> {
+            getCaseQuestionnaireList(caseQuestionnaireList, newCaseInstanceId, kOldIdVNewIdMap);
+            caseQuestionnaireService.saveOrUpdateBatch(caseQuestionnaireList);
+        });
+
+        CompletableFuture<Void> getCaseOrgQuestionnaireListCF = CompletableFuture.runAsync(() -> {
+            getCaseOrgQuestionnaireList(caseOrgQuestionnaireList, newCaseInstanceId, kOldIdVNewIdMap);
+            caseOrgQuestionnaireService.saveOrUpdateBatch(caseOrgQuestionnaireList);
+        });
+
+        CompletableFuture.allOf(getQuestionOptionsListCF, getQuestionAnswersListCF, getQuestionInstanceListCF,
+                getQuestionSectionItemListCF, getCaseQuestionnaireListCF, getCaseOrgQuestionnaireListCF).get();
 
         caseSetting.setId(null);
         caseSetting.setDt(new Date());
         caseSetting.setCaseSettingId(idGenerator.nextIdStr());
         caseSetting.setCaseInstanceId(newCaseInstanceId);
         caseSettingService.save(caseSetting);
-        caseQuestionnaireService.saveOrUpdateBatch(caseQuestionnaireList);
-        caseOrgQuestionnaireService.saveOrUpdateBatch(caseOrgQuestionnaireList);
     }
 
     /**
      * 复制 案例机构人物
      */
     private void duplicateCaseOrgPersonList(String oriCaseInstanceId, String newCaseInstanceId, Map<String, String> kOldIdVNewIdMap) throws ExecutionException, InterruptedException {
+        List<CaseOrgEntity> caseOrgList = getCaseOrgList(oriCaseInstanceId);
+        //没有机构
+        if (CollectionUtils.isEmpty(caseOrgList)) {
+            return;
+        }
         List<CasePersonEntity> casePersonList = getCasePersonList(oriCaseInstanceId);
         //案例机构id对应人员
         Map<String, List<CasePersonEntity>> kCaseOrgIdVPerson = casePersonList.stream().collect(Collectors.groupingBy(CasePersonEntity::getCaseOrgId));
-        List<CaseOrgEntity> caseOrgList = getCaseOrgList(oriCaseInstanceId);
-        caseOrgList.forEach(caseOrg -> {
+        for (CaseOrgEntity caseOrg : caseOrgList) {
             //机构人员
             String caseOrgId = caseOrg.getCaseOrgId();
             String newCaseOrgId = checkNullNewId(caseOrgId, kOldIdVNewIdMap);
             List<CasePersonEntity> casePersonEntityList = kCaseOrgIdVPerson.get(caseOrgId);
+            //机构里没有人物
+            if (CollectionUtils.isEmpty(casePersonEntityList)) {
+                continue;
+            }
             casePersonEntityList.forEach(casePerson -> {
                 String oldAccountId = casePerson.getAccountId();
-                PersonInstanceResponse personInstanceResponse = null;
-                personInstanceResponse = personManageExtBiz.duplicatePerson(oldAccountId, ORG_PERSON);
-                if (personInstanceResponse == null) {
+                PersonInstanceResponse personInstanceResponse = personManageExtBiz.duplicatePerson(oldAccountId, ORG_PERSON);
+                if (personInstanceResponse == null || StringUtils.isEmpty(personInstanceResponse.getAccountId())) {
                     throw new BizException("复制人物异常");
                 }
                 String newAccountId = personInstanceResponse.getAccountId();
                 addPersonToCaseOrg(newAccountId, newCaseOrgId, APPId);
                 kOldIdVNewIdMap.put(oldAccountId, newAccountId);
             });
-        });
-
-        CompletableFuture<Void> getCasePersonList = CompletableFuture.runAsync(() ->
-                getCasePersonList(casePersonList, newCaseInstanceId, kOldIdVNewIdMap));
-        getCasePersonList.get();
-
+        }
+        getCasePersonList(casePersonList, newCaseInstanceId, kOldIdVNewIdMap);
         casePersonService.saveOrUpdateBatch(casePersonList);
     }
 
@@ -202,13 +260,14 @@ public class TenantCaseManageExtBiz {
                 .appId(appId)
                 .build());
     }
+
     /**
      * 复制机构列表
      * isCopyPerson true/false
      * true 机构人物一起复制
      */
     private Map<String, String> duplicateCaseOrgList(String oriCaseInstanceId, String newCaseInstanceId,
-                                                     boolean isCopyPerson,String appId) throws ExecutionException, InterruptedException {
+                                                     boolean isCopyPerson, String appId) throws ExecutionException, InterruptedException {
         List<CaseOrgEntity> caseOrgList = getCaseOrgList(oriCaseInstanceId);
         //案例机构id
         Set<String> caseOrgIdSet = caseOrgList.stream().map(CaseOrgEntity::getCaseOrgId).collect(Collectors.toSet());
@@ -244,35 +303,31 @@ public class TenantCaseManageExtBiz {
         });
 
         //保存案例机构
-        CompletableFuture<Void> getCaseOrgList = CompletableFuture.runAsync(() -> {
-            getCaseOrgList(caseOrgList,newCaseInstanceId,kOldIdVNewIdMap, kOldOrgIdVNewOrgIdMap);
-        });
-        getCaseOrgList.get();
+        Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap = getCaseOrgList(caseOrgList, newCaseInstanceId, kOldIdVNewIdMap, kOldOrgIdVNewOrgIdMap);
         caseOrgService.saveOrUpdateBatch(caseOrgList);
 
         //复制案例机构人物
-        if (isCopyPerson){
-            duplicateCaseOrgPersonList(oriCaseInstanceId, newCaseInstanceId,kOldIdVNewIdMap);
+        if (isCopyPerson) {
+            duplicateCaseOrgPersonList(oriCaseInstanceId, newCaseInstanceId, kOldIdVNewIdMap);
         }
 
-        CompletableFuture<Void> getCaseOrgFeeList = CompletableFuture.runAsync(() ->
-                getCaseOrgFeeList(caseOrgFeeList, newCaseInstanceId, kOldIdVNewIdMap));
-        getCaseOrgFeeList.get();
+        CompletableFuture<Void> getCaseOrgFeeListCF = CompletableFuture.runAsync(() -> {
+            getCaseOrgFeeList(caseOrgFeeList, newCaseInstanceId, kOldIdVNewIdMap);
+            caseOrgFeeService.saveOrUpdateBatch(caseOrgFeeList);
+        });
 
-        CompletableFuture<Void> getCaseOrgModuleList = CompletableFuture.runAsync(() ->
-                getCaseOrgModuleList(caseOrgModuleList, kOldIdVNewIdMap));
-        getCaseOrgModuleList.get();
+        CompletableFuture<Void> getCaseOrgModuleListCF = CompletableFuture.runAsync(() -> {
+            getCaseOrgModuleList(caseOrgModuleList, kOldIdVNewIdMap);
+            caseOrgModuleService.saveOrUpdateBatch(caseOrgModuleList);
+        });
 
-        CompletableFuture<Void> getCaseOrgModuleFuncRefList = CompletableFuture.runAsync(() ->
-                getCaseOrgModuleFuncRefList(caseOrgModuleFuncRefList, kOldIdVNewIdMap));
-        getCaseOrgModuleFuncRefList.get();
+        CompletableFuture<Void> getCaseOrgModuleFuncRefListCF = CompletableFuture.runAsync(() -> {
+            getCaseOrgModuleFuncRefList(caseOrgModuleFuncRefList, kOldIdVNewIdMap);
+            caseOrgModuleFuncRefService.saveOrUpdateBatch(caseOrgModuleFuncRefList);
+        });
 
-
-        caseOrgFeeService.saveOrUpdateBatch(caseOrgFeeList);
-        caseOrgModuleService.saveOrUpdateBatch(caseOrgModuleList);
-        caseOrgModuleFuncRefService.saveOrUpdateBatch(caseOrgModuleFuncRefList);
-
-        return kOldOrgIdVNewOrgIdMap;
+        CompletableFuture.allOf(getCaseOrgFeeListCF, getCaseOrgModuleListCF, getCaseOrgModuleFuncRefListCF).get();
+        return kOldCaseOrgIdVNewCaseOrgIdMap;
     }
 
     /**
@@ -339,17 +394,20 @@ public class TenantCaseManageExtBiz {
                 rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allQuestionInstanceIdSet));
         cfPopulateKOldIdVNewIdMap.get();
 
-        CompletableFuture<Void> getQuestionItemList = CompletableFuture.runAsync(() ->
-                getQuestionItemList(questionItemList, kOldIdVNewIdMap.get(questionSectionId), kOldIdVNewIdMap));
-        getQuestionItemList.get();
+        CompletableFuture<Void> getQuestionItemListCF = CompletableFuture.runAsync(() ->{
+                getQuestionItemList(questionItemList, kOldIdVNewIdMap);
+            questionSectionItemService.saveOrUpdateBatch(questionItemList);
+        });
 
-        CompletableFuture<Void> getAllQuestionInstanceList = CompletableFuture.runAsync(() ->
-                getAllQuestionInstanceList(allQuestionInstanceList, kOldIdVNewIdMap));
-        getAllQuestionInstanceList.get();
+        CompletableFuture<Void> getAllQuestionInstanceListCF = CompletableFuture.runAsync(() ->{
+                getAllQuestionInstanceList(allQuestionInstanceList, kOldIdVNewIdMap);
+            questionInstanceService.saveOrUpdateBatch(allQuestionInstanceList);
+        });
 
-        CompletableFuture<Void> getQuestionDimensionList = CompletableFuture.runAsync(() ->
-                getQuestionDimensionList(questionDimensionList, kOldIdVNewIdMap.get(questionSectionId)));
-        getQuestionDimensionList.get();
+        CompletableFuture<Void> getQuestionDimensionListCF = CompletableFuture.runAsync(() ->{
+                getQuestionDimensionList(questionDimensionList, kOldIdVNewIdMap.get(questionSectionId));
+            questionSectionDimensionService.saveOrUpdateBatch(questionDimensionList);
+        });
 
         CaseSchemeEntity targetCaseScheme = BeanUtil.copyProperties(oriEntity, CaseSchemeEntity.class);
         targetCaseScheme.setId(null);
@@ -362,10 +420,8 @@ public class TenantCaseManageExtBiz {
         questionSection.setDt(new Date());
         questionSection.setQuestionSectionId(kOldIdVNewIdMap.get(questionSectionId));
         questionSectionService.save(questionSection);
-        questionInstanceService.saveOrUpdateBatch(allQuestionInstanceList);
-        questionSectionItemService.saveOrUpdateBatch(questionItemList);
-        questionSectionDimensionService.saveOrUpdateBatch(questionDimensionList);
 
+        CompletableFuture.allOf(getQuestionItemListCF,getAllQuestionInstanceListCF,getQuestionDimensionListCF).get();
     }
 
     private void getCasePersonList(List<CasePersonEntity> casePersonList,
@@ -424,19 +480,22 @@ public class TenantCaseManageExtBiz {
         });
     }
 
-    private void getCaseOrgList(List<CaseOrgEntity> caseOrgList, String newCaseInstanceId,
+    private Map<String ,String > getCaseOrgList(List<CaseOrgEntity> caseOrgList, String newCaseInstanceId,
                                 Map<String, String> kOldIdVNewIdMap, Map<String, String> kOldOrgIdVNewOrgIdMap
     ) {
+        Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap = new HashMap<>();
         if (checkNull(caseOrgList, kOldIdVNewIdMap, newCaseInstanceId)) {
-            return;
+            return kOldCaseOrgIdVNewCaseOrgIdMap;
         }
         caseOrgList.forEach(caseOrg -> {
+            kOldCaseOrgIdVNewCaseOrgIdMap.put(caseOrg.getCaseOrgId(),checkNullNewId(caseOrg.getCaseOrgId(), kOldIdVNewIdMap));
             caseOrg.setCaseOrgId(checkNullNewId(caseOrg.getCaseOrgId(), kOldIdVNewIdMap));
             caseOrg.setCaseInstanceId(newCaseInstanceId);
             caseOrg.setOrgId(checkNullNewId(caseOrg.getOrgId(), kOldOrgIdVNewOrgIdMap));
             caseOrg.setId(null);
             caseOrg.setDt(new Date());
         });
+        return kOldCaseOrgIdVNewCaseOrgIdMap;
     }
 
     private void getCaseOrgQuestionnaireList(List<CaseOrgQuestionnaireEntity> caseOrgQuestionnaireList,
@@ -464,6 +523,7 @@ public class TenantCaseManageExtBiz {
             caseQuestionnaire.setDt(new Date());
             caseQuestionnaire.setCaseQuestionnaireId(checkNullNewId(caseQuestionnaire.getCaseQuestionnaireId(), kOldIdVNewIdMap));
             caseQuestionnaire.setCaseInstanceId(newCaseInstanceId);
+            caseQuestionnaire.setQuestionSectionId(checkNullNewId(caseQuestionnaire.getQuestionSectionId(), kOldIdVNewIdMap));
         });
     }
 
@@ -477,6 +537,27 @@ public class TenantCaseManageExtBiz {
             questionDimension.setDt(new Date());
             questionDimension.setQuestionSectionDimensionId(idGenerator.nextIdStr());
             questionDimension.setQuestionSectionId(newQuestionSectionId);
+        });
+    }
+
+    private void getQuestionOptionsList(List<QuestionOptionsEntity> questionOptionsList,
+                                        Map<String, String> kOldIdVNewIdMap) {
+        questionOptionsList.forEach(options -> {
+            options.setId(null);
+            options.setDt(new Date());
+            options.setQuestionOptionsId(checkNullNewId(options.getQuestionOptionsId(), kOldIdVNewIdMap));
+            options.setQuestionInstanceId(checkNullNewId(options.getQuestionInstanceId(), kOldIdVNewIdMap));
+        });
+    }
+
+    private void getQuestionAnswersList(List<QuestionAnswersEntity> questionAnswersList,
+                                        Map<String, String> kOldIdVNewIdMap) {
+        questionAnswersList.forEach(answers -> {
+            answers.setId(null);
+            answers.setDt(new Date());
+            answers.setQuestionAnswerId(idGenerator.nextIdStr());
+            answers.setQuestionOptionsId(checkNullNewId(answers.getQuestionOptionsId(), kOldIdVNewIdMap));
+            answers.setQuestionInstanceId(checkNullNewId(answers.getQuestionInstanceId(), kOldIdVNewIdMap));
         });
     }
 
@@ -494,7 +575,6 @@ public class TenantCaseManageExtBiz {
     }
 
     private void getQuestionItemList(List<QuestionSectionItemEntity> questionItemList,
-                                     String newQuestionSectionId,
                                      Map<String, String> kOldIdVNewIdMap) {
         if (checkNull(questionItemList, kOldIdVNewIdMap)) {
             return;
@@ -503,7 +583,7 @@ public class TenantCaseManageExtBiz {
             questionItem.setId(null);
             questionItem.setDt(new Date());
             questionItem.setQuestionSectionItemId(idGenerator.nextIdStr());
-            questionItem.setQuestionSectionId(newQuestionSectionId);
+            questionItem.setQuestionSectionId(checkNullNewId(questionItem.getQuestionSectionId(), kOldIdVNewIdMap));
             questionItem.setQuestionInstanceId(checkNullNewId(questionItem.getQuestionInstanceId(), kOldIdVNewIdMap));
         });
         System.out.println(questionItemList);
@@ -589,6 +669,19 @@ public class TenantCaseManageExtBiz {
                 .in(CaseOrgEntity::getCaseInstanceId, caseInstanceId).list();
     }
 
+    public List<QuestionOptionsEntity> getQuestionOptionsList1(Set<String> questionInstanceIdSet) {
+        return questionOptionsService.lambdaQuery().in(QuestionOptionsEntity::getQuestionInstanceId, questionInstanceIdSet).list();
+    }
+
+    public List<QuestionOptionsEntity> getQuestionOptionsList0(Set<String> questionOptionsIdSet) {
+        return questionOptionsService.lambdaQuery().in(QuestionOptionsEntity::getQuestionOptionsId, questionOptionsIdSet).list();
+    }
+
+    public List<QuestionAnswersEntity> getQuestionAnswersList(Set<String> questionInstanceIdSet) {
+        return questionAnswersService.lambdaQuery()
+                .in(QuestionAnswersEntity::getQuestionInstanceId, questionInstanceIdSet).list();
+    }
+
     /**
      * 试题实例查询
      */
@@ -615,6 +708,11 @@ public class TenantCaseManageExtBiz {
                 .eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId).list();
     }
 
+    public List<QuestionSectionItemEntity> getQuestionItemByQuestionSectionId(Set<String> questionSectionIdSet) {
+        return questionSectionItemService.lambdaQuery()
+                .in(QuestionSectionItemEntity::getQuestionSectionId, questionSectionIdSet).list();
+    }
+
     //查询问题集
     public QuestionSectionEntity getByQuestionSectionId(String questionSectionId) {
         return questionSectionService.lambdaQuery()
@@ -633,8 +731,8 @@ public class TenantCaseManageExtBiz {
     private CaseInstanceEntity copyCaseInstance0(String oriCaseInstanceId, String caseInstanceName) {
         // get ori
         CaseInstanceEntity oriEntity = getById(oriCaseInstanceId);
-        if (StringUtils.isBlank(caseInstanceName)){
-            caseInstanceName =oriEntity.getCaseName()+ NAME_SUFFIX;
+        if (StringUtils.isBlank(caseInstanceName)) {
+            caseInstanceName = oriEntity.getCaseName() + NAME_SUFFIX;
         }
         // copy
         CaseInstanceEntity newEntity = BeanUtil.copyProperties(oriEntity, CaseInstanceEntity.class);
@@ -644,6 +742,7 @@ public class TenantCaseManageExtBiz {
         newEntity.setCaseIdentifier(baseBiz.getIdStr());
         newEntity.setVer(baseBiz.getLastVer());
         newEntity.setCaseName(caseInstanceName);
+        newEntity.setCaseType(oriCaseInstanceId);
         caseInstanceService.save(newEntity);
         return newEntity;
     }

@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
-* @description project descr:指标:判断指标危险因素
+* @description project descr:指标:判断指标-危险因素
 *
 * @author lait.zhang
 * @date 2023年4月23日 上午9:44:34
@@ -91,6 +91,7 @@ public class IndicatorJudgeRiskFactorBiz{
                     indicatorCategoryResponse.getIndicatorCategoryId(), indicatorCategoryResponse
                 ));
         }
+        //查询指标公式
         Map<String, List<IndicatorExpressionResponseRs>> kReasonIdExpressionResponseRsListMap = new HashMap<>();
         indicatorExpressionBiz.populateKReasonIdVIndicatorExpressionResponseRsListMap(appId, principalIdSet, kReasonIdExpressionResponseRsListMap);
         return indicatorJudgeRiskFactorEntityList
@@ -302,6 +303,10 @@ public class IndicatorJudgeRiskFactorBiz{
         return indicatorJudgeRiskFactorResponseRsList.get(0);
     }
 
+    /**
+     * 判断指标
+     * 健康评估
+     */
     public Page<IndicatorJudgeRiskFactorResponseRs> pageRs(Long pageNo, Long pageSize, String order, Boolean asc, String appId, String indicatorFuncId, String name, String indicatorCategoryIdList, Integer status) {
         Page<IndicatorJudgeRiskFactorEntity> page = RsPageUtil.getRsPage(pageNo, pageSize, order, asc);
         LambdaQueryWrapper<IndicatorJudgeRiskFactorEntity> indicatorJudgeRiskFactorEntityLQW = new LambdaQueryWrapper<>();
