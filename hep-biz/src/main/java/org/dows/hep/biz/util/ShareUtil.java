@@ -291,13 +291,18 @@ public class ShareUtil {
 
             }
             final long factor=(long)Math.pow(10,scale<0?0:scale);
-            int minVal=min.multiply(BigDecimal.valueOf( factor)).intValue();
-            int maxVal=max.multiply(BigDecimal.valueOf( factor)).intValue();
-            return BigDecimalUtil.div(BigDecimal.valueOf(randomInteger(minVal, maxVal)),BigDecimal.valueOf(factor),scale);
+            double minVal=min.multiply(BigDecimal.valueOf( factor)).doubleValue();
+            double maxVal=max.multiply(BigDecimal.valueOf( factor)).doubleValue();
+            return BigDecimalUtil.div(BigDecimal.valueOf(randomDouble(minVal, maxVal)),BigDecimal.valueOf(factor),scale);
         }
         public static int randomInteger(int min, int max){
             return ThreadLocalRandom.current().nextInt(min,max);
         }
+
+        private static double randomDouble(double min, double max){
+            return ThreadLocalRandom.current().nextDouble(min,max);
+        }
+
     }
 
 
