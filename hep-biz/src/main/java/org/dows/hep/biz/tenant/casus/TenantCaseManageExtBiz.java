@@ -569,6 +569,7 @@ public class TenantCaseManageExtBiz {
         allQuestionInstanceList.forEach(questionInstance -> {
             questionInstance.setId(null);
             questionInstance.setDt(new Date());
+            questionInstance.setQuestionIdentifier(idGenerator.nextIdStr());
             questionInstance.setQuestionInstanceId(checkNullNewId(questionInstance.getQuestionInstanceId(), kOldIdVNewIdMap));
             questionInstance.setQuestionInstancePid(checkNullNewId(questionInstance.getQuestionInstancePid(), kOldIdVNewIdMap));
         });
