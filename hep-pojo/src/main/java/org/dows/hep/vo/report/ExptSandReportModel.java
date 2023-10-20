@@ -80,6 +80,8 @@ public class ExptSandReportModel implements ExptReportModel {
             private String healthIndexScore;
             private String knowledgeScore;
             private String treatmentPercentScore;
+
+            private String operateRightScore;
             private String totalScore;
             private String totalRanking;
         }
