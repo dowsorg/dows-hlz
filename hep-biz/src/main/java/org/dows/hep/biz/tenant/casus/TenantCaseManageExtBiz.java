@@ -129,6 +129,14 @@ public class TenantCaseManageExtBiz {
         Set<String> allOldIdSet = new HashSet<>();
         //试卷
         List<CaseQuestionnaireEntity> caseQuestionnaireList = getCaseQuestionnaire(oriCaseInstanceId);
+        caseSetting.setId(null);
+        caseSetting.setDt(new Date());
+        caseSetting.setCaseSettingId(idGenerator.nextIdStr());
+        caseSetting.setCaseInstanceId(newCaseInstanceId);
+        caseSettingService.save(caseSetting);
+        if (CollectionUtils.isEmpty(caseQuestionnaireList)){
+            return ;
+        }
         Set<String> questionSectionIdSet = caseQuestionnaireList.stream().map(CaseQuestionnaireEntity::getQuestionSectionId).collect(Collectors.toSet());
         Set<String> questionnaireIdSet = caseQuestionnaireList.stream().map(CaseQuestionnaireEntity::getCaseQuestionnaireId).collect(Collectors.toSet());
 
@@ -192,11 +200,6 @@ public class TenantCaseManageExtBiz {
         CompletableFuture.allOf(getQuestionOptionsListCF, getQuestionAnswersListCF, getQuestionInstanceListCF,
                 getQuestionSectionItemListCF, getCaseQuestionnaireListCF, getCaseOrgQuestionnaireListCF).get();
 
-        caseSetting.setId(null);
-        caseSetting.setDt(new Date());
-        caseSetting.setCaseSettingId(idGenerator.nextIdStr());
-        caseSetting.setCaseInstanceId(newCaseInstanceId);
-        caseSettingService.save(caseSetting);
     }
 
     /**
@@ -209,6 +212,9 @@ public class TenantCaseManageExtBiz {
             return;
         }
         List<CasePersonEntity> casePersonList = getCasePersonList(oriCaseInstanceId);
+        if (CollectionUtils.isEmpty(casePersonList)){
+            throw new BizException("机构人物"+CaseESCEnum.DATA_NULL.getDescr());
+        }
         //案例机构id对应人员
         Map<String, List<CasePersonEntity>> kCaseOrgIdVPerson = casePersonList.stream().collect(Collectors.groupingBy(CasePersonEntity::getCaseOrgId));
         for (CaseOrgEntity caseOrg : caseOrgList) {
@@ -273,27 +279,15 @@ public class TenantCaseManageExtBiz {
         if (CollectionUtils.isEmpty(caseOrgList)){return new HashMap<>();}
         //案例机构id
         Set<String> caseOrgIdSet = caseOrgList.stream().map(CaseOrgEntity::getCaseOrgId).collect(Collectors.toSet());
-
         List<CaseOrgFeeEntity> caseOrgFeeList = getCaseOrgFeeList(caseOrgIdSet);
-
-        List<CaseOrgModuleEntity> caseOrgModuleList = getCaseOrgModuleList(caseOrgIdSet);
-        //机构功能id
-        Set<String> caseOrgModuleIdSet = caseOrgModuleList.stream().map(CaseOrgModuleEntity::getCaseOrgModuleId).collect(Collectors.toSet());
-
-        List<CaseOrgModuleFuncRefEntity> caseOrgModuleFuncRefList = getCaseOrgModuleFuncRefList(caseOrgModuleIdSet);
-
         //机构 oldOrgId 和 newOrgId 对应
         Map<String, String> kOldOrgIdVNewOrgIdMap = new HashMap<>();
 
-        Set<String> allOldIdSet = new HashSet<>();
-        allOldIdSet.addAll(caseOrgIdSet);
-        allOldIdSet.addAll(caseOrgModuleIdSet);
         //生成新的id
         Map<String, String> kOldIdVNewIdMap = new HashMap<>();
         CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
-                rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
+                rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, caseOrgIdSet));
         cfPopulateKOldIdVNewIdMap.get();
-
         //机构
         caseOrgList.forEach(caseOrg -> {
             String orgId = caseOrg.getOrgId();
@@ -308,28 +302,42 @@ public class TenantCaseManageExtBiz {
         Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap = getCaseOrgList(caseOrgList, newCaseInstanceId, kOldIdVNewIdMap, kOldOrgIdVNewOrgIdMap);
         caseOrgService.saveOrUpdateBatch(caseOrgList);
 
+        List<CaseOrgModuleEntity> caseOrgModuleList = getCaseOrgModuleList(caseOrgIdSet);
+        //机构功能id
+        if (!CollectionUtils.isEmpty(caseOrgModuleList)){
+            duplicateCaseOrgModule(kOldCaseOrgIdVNewCaseOrgIdMap);
+        }
         //复制案例机构人物
         if (isCopyPerson) {
             duplicateCaseOrgPersonList(oriCaseInstanceId, newCaseInstanceId, kOldIdVNewIdMap);
         }
-
         CompletableFuture<Void> getCaseOrgFeeListCF = CompletableFuture.runAsync(() -> {
             getCaseOrgFeeList(caseOrgFeeList, newCaseInstanceId, kOldIdVNewIdMap);
             caseOrgFeeService.saveOrUpdateBatch(caseOrgFeeList);
         });
-
-        CompletableFuture<Void> getCaseOrgModuleListCF = CompletableFuture.runAsync(() -> {
-            getCaseOrgModuleList(caseOrgModuleList, kOldIdVNewIdMap);
-            caseOrgModuleService.saveOrUpdateBatch(caseOrgModuleList);
-        });
-
-        CompletableFuture<Void> getCaseOrgModuleFuncRefListCF = CompletableFuture.runAsync(() -> {
-            getCaseOrgModuleFuncRefList(caseOrgModuleFuncRefList, kOldIdVNewIdMap);
-            caseOrgModuleFuncRefService.saveOrUpdateBatch(caseOrgModuleFuncRefList);
-        });
-
-        CompletableFuture.allOf(getCaseOrgFeeListCF, getCaseOrgModuleListCF, getCaseOrgModuleFuncRefListCF).get();
+        getCaseOrgFeeListCF.get();
         return kOldCaseOrgIdVNewCaseOrgIdMap;
+    }
+    //复制机构功能
+    private void duplicateCaseOrgModule(Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap){
+        if (CollectionUtils.isEmpty(kOldCaseOrgIdVNewCaseOrgIdMap)){ return ;}
+        kOldCaseOrgIdVNewCaseOrgIdMap.forEach((oldCaseOrgId , newCaseOrgId)->{
+            List<CaseOrgModuleEntity> caseOrgModuleList = getCaseOrgModuleList(oldCaseOrgId);
+            //机构功能id
+            Set<String> caseOrgModuleIdSet = caseOrgModuleList.stream().map(CaseOrgModuleEntity::getCaseOrgModuleId).collect(Collectors.toSet());
+            Map<String, String> kOldIdVNewIdMap = new HashMap<>();
+            rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, caseOrgModuleIdSet);
+            List<CaseOrgModuleFuncRefEntity> caseOrgModuleFuncRefList = getCaseOrgModuleFuncRefList(caseOrgModuleIdSet);
+            CompletableFuture<Void> getCaseOrgModuleListCF = CompletableFuture.runAsync(() -> {
+                getCaseOrgModuleList(caseOrgModuleList,newCaseOrgId, kOldIdVNewIdMap);
+                caseOrgModuleService.saveOrUpdateBatch(caseOrgModuleList);
+            });
+            CompletableFuture<Void> getCaseOrgModuleFuncRefListCF = CompletableFuture.runAsync(() -> {
+                getCaseOrgModuleFuncRefList(caseOrgModuleFuncRefList, kOldIdVNewIdMap);
+                caseOrgModuleFuncRefService.saveOrUpdateBatch(caseOrgModuleFuncRefList);
+            });
+            CompletableFuture.allOf(getCaseOrgModuleListCF,getCaseOrgModuleFuncRefListCF);
+        });
     }
 
     /**
@@ -460,12 +468,13 @@ public class TenantCaseManageExtBiz {
     }
 
     private void getCaseOrgModuleList(List<CaseOrgModuleEntity> caseOrgModuleList,
+                                      String newCaseOrgId,
                                       Map<String, String> kOldIdVNewIdMap) {
         if (checkNull(caseOrgModuleList, kOldIdVNewIdMap)) {
             return;
         }
         caseOrgModuleList.forEach(caseOrgModule -> {
-            caseOrgModule.setCaseOrgId(checkNullNewId(caseOrgModule.getCaseOrgId(), kOldIdVNewIdMap));
+            caseOrgModule.setCaseOrgId(newCaseOrgId);
             caseOrgModule.setCaseOrgModuleId(checkNullNewId(caseOrgModule.getCaseOrgModuleId(), kOldIdVNewIdMap));
             caseOrgModule.setId(null);
             caseOrgModule.setDt(new Date());
@@ -662,6 +671,11 @@ public class TenantCaseManageExtBiz {
     public List<CaseOrgModuleEntity> getCaseOrgModuleList(Set<String> caseOrgIdSet) {
         return caseOrgModuleService.lambdaQuery()
                 .in(CaseOrgModuleEntity::getCaseOrgId, caseOrgIdSet).list();
+    }
+
+    public List<CaseOrgModuleEntity> getCaseOrgModuleList(String caseOrgId) {
+        return caseOrgModuleService.lambdaQuery()
+                .eq(CaseOrgModuleEntity::getCaseOrgId, caseOrgId).list();
     }
 
     //查询机构费用以及报销比例
