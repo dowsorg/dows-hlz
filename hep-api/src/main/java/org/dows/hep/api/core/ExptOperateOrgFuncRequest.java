@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 /**
  * 学生端机构操作记录请求基类
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
  * @date : 2023/6/5 13:36
  */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(name = "ExptOperateOrgFunc 对象", title = "学生端机构操作记录")
 public class ExptOperateOrgFuncRequest extends ExptOrgFuncRequest {

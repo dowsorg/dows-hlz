@@ -5,12 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.response.ExperimentGraphRankResponse;
 import org.dows.hep.api.base.indicator.response.ExperimentRankResponse;
+import org.dows.hep.biz.eval.EvalScoreRankBiz;
 import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author runsix
@@ -21,10 +20,13 @@ import java.util.concurrent.ExecutionException;
 public class ExperimentScoringRest {
   private final ExperimentScoringBiz experimentScoringBiz;
 
+  private final EvalScoreRankBiz evalScoreRankBiz;
+
   @Operation(summary = "实验排行榜")
   @GetMapping("v1/userExperiment/experimentScore/getRank")
   public ExperimentRankResponse getRank(@RequestParam String experimentId) {
-    return experimentScoringBiz.getRank(experimentId);
+    //return experimentScoringBiz.getRank(experimentId);
+    return evalScoreRankBiz.getRank(experimentId);
   }
 
   @Operation(summary = "实验每一期图标排行榜")
@@ -33,7 +35,8 @@ public class ExperimentScoringRest {
       @RequestParam String appId,
       @RequestParam String experimentId,
       @RequestParam(required = false) Integer period
-      ) throws ExecutionException, InterruptedException {
-    return experimentScoringBiz.getGraphRank(appId, experimentId, period);
+      )  {
+    //return experimentScoringBiz.getGraphRank(appId, experimentId, period);
+    return evalScoreRankBiz.getGraphRank(appId, experimentId, period);
   }
 }

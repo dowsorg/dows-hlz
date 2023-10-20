@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.biz.dao.ExperimentTimerDao;
+import org.dows.hep.biz.eval.EvalScoreRankBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.event.data.ExperimentSettingCollection;
@@ -36,6 +37,8 @@ public class ExperimentReportDealer extends BaseEventDealer {
     private final ExperimentTimerDao experimentTimerDao;
 
     private final ExperimentScoringBiz experimentScoringBiz;
+
+    private final EvalScoreRankBiz evalScoreRankBiz;
 
     private final ExptReportFacadeBiz exptReportFacadeBiz;
 
@@ -70,7 +73,8 @@ public class ExperimentReportDealer extends BaseEventDealer {
             return false;
         }
         this.pushTimeState(rst, ExperimentCacheKey.create(appId,experimentInstanceId), exptColl, EnumWebSocketType.FLOW_SAND_END , row);
-        experimentScoringBiz.getRank(experimentInstanceId);
+        //experimentScoringBiz.getRank(experimentInstanceId);
+        evalScoreRankBiz.getRank(experimentInstanceId);
 
         final String accountId="admin";
         final boolean regenerate=false;

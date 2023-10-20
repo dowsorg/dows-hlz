@@ -20,7 +20,6 @@ import org.dows.hep.biz.operate.OperateCostBiz;
 import org.dows.hep.biz.spel.SpelEngine;
 import org.dows.hep.biz.spel.SpelPersonContext;
 import org.dows.hep.biz.spel.meta.SpelEvalResult;
-import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.person.PersonStatiscBiz;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.LoginContextVO;
@@ -55,7 +54,7 @@ public class EvalPersonBiz {
 
     private final PersonStatiscBiz personStatiscBiz;
 
-    private final ExperimentScoringBiz experimentScoringBiz;
+    private final EvalScoreRankBiz evalScoreRankBiz;
 
     private final ExperimentIndicatorViewPhysicalExamRsService experimentIndicatorViewPhysicalExamRsService;
 
@@ -512,7 +511,7 @@ public class EvalPersonBiz {
                 .funcType(EnumEvalFuncType.PERIODEnd)
                 .build());
 
-        experimentScoringBiz.saveOrUpd(experimentId, periods);
+        evalScoreRankBiz.saveOrUpd(experimentId, periods);
 
         PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
 

@@ -52,6 +52,7 @@ public class ExperimentJudgeBiz {
     }
 
     public ExptJudgeGoalResponse getJudgeGoal(ExptOperateOrgFuncRequest req){
+        req.setOperateFlowId(null).setPeriods(null);
         return getReportSnapData(req, false, false, ExptJudgeGoalResponse.class, ExptJudgeGoalResponse::new);
     }
 
@@ -116,7 +117,6 @@ public class ExperimentJudgeBiz {
                 .checkExperimentPerson()
                 .checkExperimentOrgId()
                 .checkExperimentInstanceId();
-        reqOperateFunc.setExperimentOrgId(validator.getExperimentOrgId());
         if(checkIndicatorFunc){
             validator.checkIndicatorFunc();
         }
