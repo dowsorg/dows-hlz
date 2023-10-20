@@ -123,7 +123,7 @@ public class TenantCaseManageExtBiz {
                                             Map<String, String> kOldCaseOrgIdVNewCaseOrgIdMap) throws ExecutionException, InterruptedException {
         //案例知识答题分配方式设置
         CaseSettingEntity caseSetting = getCaseSetting(oriCaseInstanceId);
-        if (Objects.isNull(caseSetting)) {
+        if (Objects.isNull(caseSetting) || CollectionUtils.isEmpty(kOldCaseOrgIdVNewCaseOrgIdMap)) {
             return;
         }
         Set<String> allOldIdSet = new HashSet<>();
@@ -269,6 +269,8 @@ public class TenantCaseManageExtBiz {
     private Map<String, String> duplicateCaseOrgList(String oriCaseInstanceId, String newCaseInstanceId,
                                                      boolean isCopyPerson, String appId) throws ExecutionException, InterruptedException {
         List<CaseOrgEntity> caseOrgList = getCaseOrgList(oriCaseInstanceId);
+        //没有机构
+        if (CollectionUtils.isEmpty(caseOrgList)){return new HashMap<>();}
         //案例机构id
         Set<String> caseOrgIdSet = caseOrgList.stream().map(CaseOrgEntity::getCaseOrgId).collect(Collectors.toSet());
 
@@ -371,6 +373,10 @@ public class TenantCaseManageExtBiz {
      */
     private void duplicateCaseScheme(String oriCaseInstanceId, String newCaseInstanceId) throws ExecutionException, InterruptedException {
         CaseSchemeEntity oriEntity = getByInstanceId(oriCaseInstanceId);
+        //没有找到方案设计
+        if (Objects.isNull(oriEntity)){
+            return ;
+        }
         //问卷id
         String questionSectionId = oriEntity.getQuestionSectionId();
         //问卷
