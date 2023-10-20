@@ -106,12 +106,12 @@ public class TenantCaseNoticeBiz {
     public void copyCaseNotice(String oriCaseInstanceId, CaseInstanceEntity targetCaseInstance) {
         List<CaseNoticeEntity> oriEntityList = listCaseNotice0(oriCaseInstanceId);
         if (oriEntityList == null || oriEntityList.isEmpty()) {
-            throw new BizException(CaseESCEnum.DATA_NULL);
+            return;
         }
 
         String targetCaseInstanceId = targetCaseInstance.getCaseInstanceId();
         if (StrUtil.isBlank(targetCaseInstanceId)) {
-            throw new BizException(CaseESCEnum.DATA_NULL);
+            throw new BizException("案例"+CaseESCEnum.DATA_NULL.getDescr());
         }
 
         List<CaseNoticeEntity> targetCaseNoticeList = new ArrayList<>();
