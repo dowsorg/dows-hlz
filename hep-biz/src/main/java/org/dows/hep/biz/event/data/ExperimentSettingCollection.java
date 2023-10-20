@@ -59,6 +59,9 @@ public class ExperimentSettingCollection implements ICacheClear {
     @Schema(title = "期数设置")
     private Map<Integer,ExperimentPeriodSetting> mapPeriod;
 
+    @Schema(title = "期数权重")
+    private Map<String,Float> mapPeriodWeight;
+
     @Schema(title = "相对秒数-期数")
     private RangeMap<Integer,Integer> rangePeriodSeconds;
 
@@ -71,6 +74,8 @@ public class ExperimentSettingCollection implements ICacheClear {
     private BigDecimal healthIndexWeight;
 
     private BigDecimal medicalRatioWeight;
+
+    private BigDecimal operateRightWeight;
     //endregion
 
     //region 兼容countDown
@@ -88,6 +93,10 @@ public class ExperimentSettingCollection implements ICacheClear {
     }
     public boolean hasSandMode(){
         return mode ==EnumExperimentMode.SAND;
+    }
+
+    public Float getPeriodWigtht(Integer period){
+        return mapPeriodWeight.get(String.valueOf(period));
     }
 
     public LocalDateTime getRawEndTime(){

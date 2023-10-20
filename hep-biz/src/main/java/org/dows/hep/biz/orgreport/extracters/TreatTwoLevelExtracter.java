@@ -1,6 +1,5 @@
 package org.dows.hep.biz.orgreport.extracters;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.dows.hep.api.core.ExptOperateOrgFuncRequest;
 import org.dows.hep.api.enums.EnumExptOperateType;
 import org.dows.hep.api.user.experiment.response.ExptTreatPlanResponse;
@@ -23,7 +22,6 @@ public class TreatTwoLevelExtracter implements IOrgReportExtracter<ExptTreatPlan
     @Autowired
     private ExperimentOrgInterveneBiz experimentOrgInterveneBiz;
 
-    private static final TypeReference<ExptTreatPlanResponse> s_typeRef=new TypeReference<>() {};
 
 
     @Override

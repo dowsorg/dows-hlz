@@ -1033,9 +1033,9 @@ public class ExperimentScoringBiz {
                     .percentHealthIndexScore(percentHealthIndexScore)
                     .percentTreatmentPercentScore(percentTreatmentPercentScore)
                     .totalScore(totalScore)
-                    .percentKnowledge(percentKnowledge)
-                    .percentHealthIndex(percentHealthIndex)
-                    .percentTreatmentPercent(percentTreatmentPercent)
+                    .knowledgeScore(percentKnowledge)
+                    .healthIndexScore(percentHealthIndex)
+                    .treatmentPercentScore(percentTreatmentPercent)
                     .rankNo(rankNo)
                     .build();
             kExperimentGroupIdVExperimentGraphRankGroupResponseMap.put(experimentGroupId, experimentGraphRankGroupResponse);

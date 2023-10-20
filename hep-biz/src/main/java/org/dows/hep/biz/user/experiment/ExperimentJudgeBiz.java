@@ -52,6 +52,7 @@ public class ExperimentJudgeBiz {
     }
 
     public ExptJudgeGoalResponse getJudgeGoal(ExptOperateOrgFuncRequest req){
+        req.setOperateFlowId(null).setPeriods(null);
         return getReportSnapData(req, false, false, ExptJudgeGoalResponse.class, ExptJudgeGoalResponse::new);
     }
 
@@ -77,6 +78,8 @@ public class ExperimentJudgeBiz {
         ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
         ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
                 .checkOrgFlow(true);
+
+        req.getGoalItems().forEach(i->i.setValue(BigDecimalUtil.tryParseDecimalElseZero(i.getValue()).toPlainString()));
 
         //保存操作记录
         OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
@@ -114,7 +117,6 @@ public class ExperimentJudgeBiz {
                 .checkExperimentPerson()
                 .checkExperimentOrgId()
                 .checkExperimentInstanceId();
-        reqOperateFunc.setExperimentOrgId(validator.getExperimentOrgId());
         if(checkIndicatorFunc){
             validator.checkIndicatorFunc();
         }

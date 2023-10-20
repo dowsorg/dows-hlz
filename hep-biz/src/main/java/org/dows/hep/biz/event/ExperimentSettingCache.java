@@ -107,11 +107,13 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
         if(null==sandSetting){
             return rst.setPeriods(0);
         }
-        rst.setKnowledgeWeight(BigDecimal.valueOf(sandSetting.getKnowledgeWeight()) );
-        rst.setHealthIndexWeight(BigDecimal.valueOf(sandSetting.getHealthIndexWeight()));
-        rst.setMedicalRatioWeight(BigDecimal.valueOf(sandSetting.getMedicalRatioWeight()));
-        rst.setDurationMap(sandSetting.getDurationMap());
-        rst.setPeriodMap(sandSetting.getPeriodMap());
+        rst.setKnowledgeWeight(BigDecimal.valueOf(sandSetting.getKnowledgeWeight()) )
+                .setHealthIndexWeight(BigDecimal.valueOf(sandSetting.getHealthIndexWeight()))
+                .setMedicalRatioWeight(BigDecimal.valueOf(sandSetting.getMedicalRatioWeight()))
+                .setOperateRightWeight(BigDecimal.valueOf(sandSetting.getOperateRightWeight()))
+                .setDurationMap(sandSetting.getDurationMap())
+                .setPeriodMap(sandSetting.getPeriodMap())
+                .setMapPeriodWeight(sandSetting.getWeightMap());
         Map<String, Double> mockRateMap = new HashMap<>();
         rst.setMockRateMap(mockRateMap);
         Map<Integer, ExperimentSettingCollection.ExperimentPeriodSetting> mapPeriod = new HashMap<>();
