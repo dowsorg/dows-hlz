@@ -73,9 +73,10 @@ public class IndicatorJudgeHealthProblemBizV2 {
         String indicatorJudgeHealthProblemId = createOrUpdateIndicatorJudgeHealthProblemRequestRs.getIndicatorJudgeHealthProblemId();
         BigDecimal point = BigDecimal.valueOf(createOrUpdateIndicatorJudgeHealthProblemRequestRs.getPoint());
         if (StringUtils.isBlank(indicatorJudgeHealthProblemId)) {
+            indicatorJudgeHealthProblemId = idGenerator.nextIdStr();
             indicatorJudgeHealthProblemEntity = IndicatorJudgeHealthProblemEntity
                 .builder()
-                .indicatorJudgeHealthProblemId(idGenerator.nextIdStr())
+                .indicatorJudgeHealthProblemId(indicatorJudgeHealthProblemId)
                 .appId(appId)
                 .indicatorFuncId(indicatorFuncId)
                 .name(createOrUpdateIndicatorJudgeHealthProblemRequestRs.getName())
@@ -85,12 +86,13 @@ public class IndicatorJudgeHealthProblemBizV2 {
                 .status(createOrUpdateIndicatorJudgeHealthProblemRequestRs.getStatus())
                 .build();
         } else {
+            String finalIndicatorJudgeHealthProblemId = indicatorJudgeHealthProblemId;
             indicatorJudgeHealthProblemEntity = indicatorJudgeHealthProblemService.lambdaQuery()
                 .eq(IndicatorJudgeHealthProblemEntity::getAppId, appId)
                 .eq(IndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId, indicatorJudgeHealthProblemId)
                 .oneOpt()
                 .orElseThrow(() -> {
-                    log.warn("method IndicatorJudgeHealthProblemBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeHealthProblemRequestRs indicatorJudgeHealthProblemId:{} is illegal", indicatorJudgeHealthProblemId);
+                    log.warn("method IndicatorJudgeHealthProblemBiz.createOrUpdateRs param createOrUpdateIndicatorJudgeHealthProblemRequestRs indicatorJudgeHealthProblemId:{} is illegal", finalIndicatorJudgeHealthProblemId);
                     throw new IndicatorJudgeHealthProblemException(EnumESC.VALIDATE_EXCEPTION);
                 });
             indicatorJudgeHealthProblemEntity.setName(createOrUpdateIndicatorJudgeHealthProblemRequestRs.getName());
