@@ -112,6 +112,8 @@ public class ExptSandReportModel implements ExptReportModel {
             private String healthIndexWeight;
             private String knowledgeWeight;
             private String treatmentPercentWeight;
+
+            private String operateRightWeight;
         }
     }
 
