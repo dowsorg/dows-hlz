@@ -11,11 +11,13 @@ import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.core.ExptOrgFuncRequest;
 import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.api.user.experiment.response.ExptOrgFlowReportResponse;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeDataVO;
 import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
 import org.dows.hep.biz.dao.OperateFlowDao;
+import org.dows.hep.biz.eval.EvalJudgeScoreBiz;
 import org.dows.hep.biz.eval.EvalPersonBiz;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.orgreport.OrgReportComposer;
@@ -31,6 +33,7 @@ import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,6 +59,8 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
   private final OperateFlowDao operateFlowDao;
 
   private final EvalPersonBiz evalPersonBiz;
+
+  private final EvalJudgeScoreBiz evalJudgeScoreBiz;
 
   public static ExperimentHealthGuidanceReportResponseRs experimentHealthGuidanceReport2ResponseRs(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity experimentIndicatorJudgeHealthGuidanceReportRsEntity) {
     if (Objects.isNull(experimentIndicatorJudgeHealthGuidanceReportRsEntity)) {
@@ -84,27 +89,31 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
     String experimentId = experimentHealthGuidanceCheckRequestRs.getExperimentId();
     String experimentOrgId = experimentHealthGuidanceCheckRequestRs.getExperimentOrgId();
 
-    ExptOrgFuncRequest funcRequest = (ExptOrgFuncRequest) new ExptOrgFuncRequest().setIndicatorFuncId(indicatorFuncId)
+    ExptOrgFuncRequest funcRequest = (ExptOrgFuncRequest) new ExptOrgFuncRequest()
+            .setIndicatorFuncId(indicatorFuncId)
             .setExperimentInstanceId(experimentId)
             .setExperimentOrgId(experimentOrgId)
             .setExperimentPersonId(experimentPersonId)
             .setPeriods(periods)
             .setAppId(appId);
     ExptRequestValidator exptValidator = ExptRequestValidator.create(funcRequest)
+            .checkExperimentPerson()
             .checkExperimentOrg();
     final LocalDateTime ldtNow = LocalDateTime.now();
     final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
     ExperimentTimePoint timePoint = exptValidator.getTimePoint(true, ldtNow, true);
     ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(exptValidator)
-            .checkOrgFlowRunning(periods);
+            .checkOrgFlowRunning(timePoint.getPeriod());
     final String operateFlowId = flowValidator.getOperateFlowId();
     Map<String, ExperimentIndicatorJudgeHealthGuidanceRsEntity> kExperimentIndicatorJudgeHealthGuidanceIdVExperimentIndicatorJudgeHealthGuidanceRsEntityMap = new HashMap<>();
 
+    final Map<String, BigDecimal> mapJudgeItems=new HashMap<>();
     experimentIndicatorJudgeHealthGuidanceRsService.lambdaQuery()
             .eq(ExperimentIndicatorJudgeHealthGuidanceRsEntity::getAppId, appId)
             .in(ExperimentIndicatorJudgeHealthGuidanceRsEntity::getExperimentIndicatorJudgeHealthGuidanceId, experimentIndicatorJudgeHealthGuidanceIdList)
             .list()
             .forEach(experimentIndicatorJudgeHealthGuidanceRsEntity -> {
+              mapJudgeItems.put(experimentIndicatorJudgeHealthGuidanceRsEntity.getIndicatorJudgeHealthGuidanceId(),BigDecimal.ZERO);
               kExperimentIndicatorJudgeHealthGuidanceIdVExperimentIndicatorJudgeHealthGuidanceRsEntityMap.put(experimentIndicatorJudgeHealthGuidanceRsEntity.getExperimentIndicatorJudgeHealthGuidanceId(), experimentIndicatorJudgeHealthGuidanceRsEntity);
             });
     AtomicInteger atomicIntegerCount = new AtomicInteger(1);
@@ -141,6 +150,11 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
       );
     });
     experimentIndicatorJudgeHealthGuidanceReportRsService.saveOrUpdateBatch(experimentIndicatorJudgeHealthGuidanceReportRsEntityList);
+    //操作准确度得分
+    Map<String, BigDecimal> mapJudgeScores=evalJudgeScoreBiz.evalJudgeScore4Func(exptValidator.getExperimentInstanceId(),exptValidator.getExperimentPersonId(),
+            mapJudgeItems, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE);
+
+
     //机构报告
     OperateFlowEntity flow = flowValidator.getExptFlow().get();
     LoginContextVO voLogin = ShareBiz.getLoginUser();
@@ -199,7 +213,11 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
     } catch (Exception ex) {
       AssertUtil.justThrow(String.format("机构报告数据编制失败：%s", ex.getMessage()), ex);
     }
-    operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
+    operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false,()->{
+      AssertUtil.falseThenThrow(evalJudgeScoreBiz.saveJudgeScore4Func(exptValidator, flowValidator.getOperateFlowId(), timePoint,mapJudgeScores))
+              .throwMessage("操作准确度得分保存失败");
+      return true;
+    });
     return report;
 
   }

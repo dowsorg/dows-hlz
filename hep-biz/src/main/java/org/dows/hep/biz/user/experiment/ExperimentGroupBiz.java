@@ -18,6 +18,7 @@ import org.dows.hep.api.user.experiment.request.ExperimentParticipatorRequest;
 import org.dows.hep.api.user.experiment.request.ExptQuestionnaireAllotRequest;
 import org.dows.hep.api.user.experiment.response.ExperimentGroupResponse;
 import org.dows.hep.api.user.experiment.response.ExperimentParticipatorResponse;
+import org.dows.hep.biz.eval.ExperimentPersonCache;
 import org.dows.hep.biz.event.sysevent.SysEventInvoker;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.RedissonUtil;
@@ -107,13 +108,15 @@ public class ExperimentGroupBiz {
                             .groupName(createGroup.getGroupName())
                             .build());
         } else if (experimentParticipatorEntity.getModel() == EnumExperimentMode.SAND.getCode()) {
-            return experimentGroupService.lambdaUpdate()
+            boolean rst=experimentGroupService.lambdaUpdate()
                     .eq(ExperimentGroupEntity::getExperimentGroupId, createGroup.getExperimentGroupId())
                     .eq(ExperimentGroupEntity::getExperimentInstanceId, createGroup.getExperimentInstanceId())
                     .update(ExperimentGroupEntity.builder()
                             .groupState(EnumExperimentGroupStatus.ASSIGN_DEPARTMENT.getCode())
                             .groupName(createGroup.getGroupName())
                             .build());
+            ExperimentPersonCache.Instance().removeGroups(createGroup.getExperimentInstanceId());
+            return rst;
         }
         return false;
     }

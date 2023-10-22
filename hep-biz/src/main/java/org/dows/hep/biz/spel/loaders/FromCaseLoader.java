@@ -2,11 +2,8 @@ package org.dows.hep.biz.spel.loaders;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.biz.dao.CaseIndicatorExpressionDao;
 import org.dows.hep.biz.dao.CaseIndicatorExpressionRefDao;
-import org.dows.hep.biz.spel.SpelVarKeyFormatter;
-import org.dows.hep.biz.spel.meta.ISpelLoad;
 import org.dows.hep.biz.spel.meta.SpelInput;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -15,7 +12,6 @@ import org.dows.hep.entity.CaseIndicatorExpressionItemEntity;
 import org.dows.hep.entity.CaseIndicatorExpressionRefEntity;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -25,17 +21,17 @@ import java.util.*;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class FromCaseLoader implements ISpelLoad {
+public class FromCaseLoader extends BaseSpelLoader {
     private final CaseIndicatorExpressionRefDao caseIndicatorExpressionRefDao;
     private final CaseIndicatorExpressionDao caseIndicatorExpressionDao;
 
     @Override
-    public SpelInput withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source) {
+    public SpelInput withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source,Integer... sources) {
         return null;
     }
 
     @Override
-    public List<SpelInput> withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source) {
+    public List<SpelInput> withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source,Integer... sources) {
         return null;
     }
 
@@ -161,7 +157,7 @@ public class FromCaseLoader implements ISpelLoad {
             if (rst.isRandom()) {
                 continue;
             }
-            expressionItem = buildExpressionItem(item);
+            expressionItem = this.buildExpressionItem(item);
             if (ShareUtil.XObject.isEmpty(expressionItem)) {
                 continue;
             }
@@ -170,44 +166,5 @@ public class FromCaseLoader implements ISpelLoad {
         return rst.setExpressions(expressionItems);
     }
 
-    protected SpelInput.SpelExpressionItem buildExpressionItem(CaseIndicatorExpressionItemEntity src) {
-        if (ShareUtil.XObject.isEmpty(src)) {
-            return null;
-        }
-        return SpelInput.SpelExpressionItem.builder()
-                .conditionExpression(buildExpressionString(src.getConditionExpression(), src.getConditionNameList(), src.getConditionValList()))
-                .resultExpression(buildExpressionString(src.getResultExpression(), src.getResultNameList(), src.getResultValList()))
-                .build();
-    }
 
-    protected String buildExpressionString(String rawExpression,String names,String vals){
-        if(ShareUtil.XObject.isEmpty(names)){
-            return rawExpression;
-        }
-        String[] splitNames=names.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr());
-        if(ShareUtil.XObject.isEmpty(splitNames)){
-            return rawExpression;
-        }
-        String[] splitVals=vals.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr());
-        for(int i=0;i<splitVals.length;i++){
-            String name=splitNames[i];
-            String[] splits=name.split(EnumString.INDICATOR_EXPRESSION_SPLIT.getStr());
-            boolean lastFlag=splits.length>1&&splits[1].endsWith("1");
-            splitVals[i]= SpelVarKeyFormatter.getVariableKey(splitVals[i],lastFlag);
-        }
-        for(int i=0;i<splitNames.length;i++){
-            rawExpression=rawExpression.replace(splitNames[i],splitVals[i]);
-        }
-        return rawExpression;
-    }
-
-    protected void logError(String func, String msg,Object... args){
-        logError(null, func, msg, args);
-    }
-    protected void logError(Throwable ex, String func, String msg,Object... args){
-        String str=String.format("%s.%s@%s[%s] %s", this.getClass().getName(), func, LocalDateTime.now(),this.hashCode(),
-                String.format(Optional.ofNullable(msg).orElse(""), args));
-        log.error(str,ex);
-
-    }
 }

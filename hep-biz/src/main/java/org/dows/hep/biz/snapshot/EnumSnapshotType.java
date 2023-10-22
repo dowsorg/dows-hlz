@@ -30,12 +30,20 @@ public enum EnumSnapshotType {
 
     TreatItem("treat.item","治疗项目",14,"state","treat_item",""),
 
+    INDICATORJudgeGoal("judge.goal","管理目标",21,"state","indicator_judge_goal",""),
 
-    INDICATORInstance("indicator.instance","数据库指标",15,"","indicator_instance",""),
-    INDICATORRule("indicator.rule","数据库指标规则",16,"","indicator_rule",""),
+    INDICATORJudgeHealthGuidance("judge.guidance","健康指导",22,"status","indicator_judge_health_guidance",""),
 
-    CROWD("crowd","人群",21,"","crowds_instance",""),
-    RISKModel("crowd.riskmodel","风险模型",22,"status","risk_model",""),
+    INDICATORJudgeHealthProblem("judge.problem","健康问题",23,"status","indicator_judge_health_problem",""),
+
+    INDICATORJudgeRiskFactor("judge.riskfactor","危险因素",24,"status","indicator_judge_risk_factor",""),
+
+
+    INDICATORInstance("indicator.instance","数据库指标",31,"","indicator_instance",""),
+    INDICATORRule("indicator.rule","数据库指标规则",32,"","indicator_rule",""),
+
+    CROWD("crowd","人群",41,"","crowds_instance",""),
+    RISKModel("crowd.riskmodel","风险模型",42,"status","risk_model",""),
     CASEIndicatorInstance("case.indicator.instance","案例指标",91,"","case_indicator_instance",""),
 
     CASEIndicatorExpressionRef("case.indicator.expression.ref","案例指标公式",93,"","case_indicator_expression_ref",""),

@@ -62,6 +62,15 @@ public class IndicatorJudgeGoalDao extends BaseCategDao<IndicatorJudgeGoalServic
 
     }
 
+    public List<IndicatorJudgeGoalEntity> getAll(String appId, Integer state, boolean isAsc, SFunction<IndicatorJudgeGoalEntity,?>... cols) {
+        return service.lambdaQuery()
+                .eq(ShareUtil.XObject.notEmpty(appId), IndicatorJudgeGoalEntity::getAppId, appId)
+                .eq(ShareUtil.XObject.notEmpty(state), IndicatorJudgeGoalEntity::getState, state)
+                .orderBy(true, isAsc, IndicatorJudgeGoalEntity::getId)
+                .select(cols)
+                .list();
+    }
+
     @Override
     public IPage<IndicatorJudgeGoalEntity> pageByCondition(FindJudgeGoalRequest req, SFunction<IndicatorJudgeGoalEntity, ?>... cols) {
         return service.lambdaQuery()

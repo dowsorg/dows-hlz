@@ -56,6 +56,8 @@ public class EvalScoreRankBiz {
 
     private final OperateCostService operateCostService;
 
+    private final EvalJudgeScoreBiz evalJudgeScoreBiz;
+
 
     @Transactional(rollbackFor = Exception.class)
     public void saveOrUpd(String experimentInstanceId, Integer periods) {
@@ -112,7 +114,7 @@ public class EvalScoreRankBiz {
             });
         }
         //D.操作准确度得分
-
+        Map<String, BigDecimalOptional> mapJudgeSocre= evalJudgeScoreBiz.evalJudgeScore4Period(experimentInstanceId,periods);
 
         List<ExperimentScoringEntity> experimentScoringEntityList = new ArrayList<>();
         experimentGroupEntityList.forEach(experimentGroupEntity -> {
@@ -138,8 +140,8 @@ public class EvalScoreRankBiz {
             if (Objects.isNull(groupIdVGroupMoneyScoreBigDecimal)) {
                 groupIdVGroupMoneyScoreBigDecimal = BigDecimal.ZERO;
             }
-            //操作准确度得分 todo
-            BigDecimal groupOperateRightScore=BigDecimal.TEN;
+            //操作准确度得分
+            BigDecimal groupOperateRightScore=mapJudgeSocre.getOrDefault(experimentGroupId,BigDecimalOptional.zero()).getValue(2);
 
             //权重
             BigDecimal knowledgeWeight = knowledgeWeightAtomicReference.get();

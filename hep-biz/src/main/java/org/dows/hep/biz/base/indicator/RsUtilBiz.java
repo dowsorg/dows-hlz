@@ -621,7 +621,7 @@ public class RsUtilBiz {
 
   private static StandardEvaluationContext getCheckEvalContext(){
     StandardEvaluationContext context= new StandardEvaluationContext();
-    context.setVariable(EnumString.INPUT_GOAL.getStr(), new BigDecimal("1"));
+    context.setVariable(EnumString.INPUT_GOAL.getStr(), BigDecimal.ONE);
     return context;
   }
 }

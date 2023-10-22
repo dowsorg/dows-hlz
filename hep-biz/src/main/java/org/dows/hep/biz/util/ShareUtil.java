@@ -11,6 +11,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -288,12 +289,12 @@ public class ShareUtil {
 
         public static BigDecimal randomBigDecimal(BigDecimal min, BigDecimal max, int scale){
             if(min.compareTo(max)>0){
-
+                BigDecimal v=max;
+                min=max;
+                max=v;
             }
-            final long factor=(long)Math.pow(10,scale<0?0:scale);
-            double minVal=min.multiply(BigDecimal.valueOf( factor)).doubleValue();
-            double maxVal=max.multiply(BigDecimal.valueOf( factor)).doubleValue();
-            return BigDecimalUtil.div(BigDecimal.valueOf(randomDouble(minVal, maxVal)),BigDecimal.valueOf(factor),scale);
+            return BigDecimalUtil.valueOf(randomDouble(min.doubleValue(), max.doubleValue()))
+                    .setScale(scale, RoundingMode.DOWN);
         }
         public static int randomInteger(int min, int max){
             return ThreadLocalRandom.current().nextInt(min,max);
