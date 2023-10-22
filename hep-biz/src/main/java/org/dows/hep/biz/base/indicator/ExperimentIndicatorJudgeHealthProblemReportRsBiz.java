@@ -4,9 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.base.indicator.request.ExperimentHealthProblemCheckRequestRs;
 import org.dows.hep.api.base.indicator.response.ExperimentHealthProblemReportResponseRs;
+import org.dows.hep.api.core.ExptOrgFuncRequest;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
-import org.dows.hep.biz.util.ShareBiz;
-import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.biz.eval.EvalJudgeScoreBiz;
+import org.dows.hep.biz.event.data.ExperimentTimePoint;
+import org.dows.hep.biz.util.*;
 import org.dows.hep.entity.ExperimentIndicatorJudgeHealthProblemReportRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorJudgeHealthProblemRsEntity;
 import org.dows.hep.service.*;
@@ -14,6 +17,8 @@ import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -35,6 +40,7 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
   private final ExperimentIndicatorExpressionItemRsService experimentIndicatorExpressionItemRsService;
   private final ExperimentIndicatorExpressionInfluenceRsService experimentIndicatorExpressionInfluenceRsService;
 
+  private final EvalJudgeScoreBiz evalJudgeScoreBiz;
   public static ExperimentHealthProblemReportResponseRs experimentHealthProblemReport2ResponseRs(ExperimentIndicatorJudgeHealthProblemReportRsEntity experimentIndicatorJudgeHealthProblemReportRsEntity) {
     if (Objects.isNull(experimentIndicatorJudgeHealthProblemReportRsEntity)) {
       return null;
@@ -59,7 +65,22 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
     String experimentId = experimentHealthProblemCheckRequestRs.getExperimentId();
     String experimentOrgId = experimentHealthProblemCheckRequestRs.getExperimentOrgId();
 
-    String operateFlowId = ShareBiz.assertRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
+    ExptOrgFuncRequest funcRequest = (ExptOrgFuncRequest) new ExptOrgFuncRequest()
+            .setIndicatorFuncId(indicatorFuncId)
+            .setExperimentInstanceId(experimentId)
+            .setExperimentOrgId(experimentOrgId)
+            .setExperimentPersonId(experimentPersonId)
+            .setPeriods(periods)
+            .setAppId(appId);
+    ExptRequestValidator exptValidator = ExptRequestValidator.create(funcRequest)
+            .checkExperimentPerson();
+    final LocalDateTime ldtNow = LocalDateTime.now();
+    ExperimentTimePoint timePoint = exptValidator.getTimePoint(true, ldtNow, true);
+    ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(exptValidator)
+            .checkOrgFlowRunning(timePoint.getPeriod());
+    final String operateFlowId = flowValidator.getOperateFlowId();
+
+    //String operateFlowId = ShareBiz.assertRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     Map<String, ExperimentIndicatorJudgeHealthProblemRsEntity> kExperimentIndicatorJudgeHealthProblemIdVExperimentIndicatorJudgeHealthProblemRsEntityMap = new HashMap<>();
     if (experimentIndicatorJudgeHealthProblemIdList.isEmpty()) {
       experimentIndicatorJudgeHealthProblemReportRsService.lambdaUpdate()
@@ -72,11 +93,13 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
               .remove();
       return;
     }
+    final Map<String, BigDecimal> mapJudgeItems=new HashMap<>();
     experimentIndicatorJudgeHealthProblemRsService.lambdaQuery()
             .eq(ExperimentIndicatorJudgeHealthProblemRsEntity::getAppId, appId)
             .in(ExperimentIndicatorJudgeHealthProblemRsEntity::getExperimentIndicatorJudgeHealthProblemId, experimentIndicatorJudgeHealthProblemIdList)
             .list()
             .forEach(experimentIndicatorJudgeHealthProblemRsEntity -> {
+              mapJudgeItems.put(experimentIndicatorJudgeHealthProblemRsEntity.getIndicatorJudgeHealthProblemId(),BigDecimal.ZERO);
               kExperimentIndicatorJudgeHealthProblemIdVExperimentIndicatorJudgeHealthProblemRsEntityMap.put(experimentIndicatorJudgeHealthProblemRsEntity.getExperimentIndicatorJudgeHealthProblemId(), experimentIndicatorJudgeHealthProblemRsEntity);
             });
     AtomicInteger atomicIntegerCount = new AtomicInteger(1);
@@ -112,6 +135,9 @@ public class ExperimentIndicatorJudgeHealthProblemReportRsBiz {
               .build()
       );
     });
+    AssertUtil.falseThenThrow(evalJudgeScoreBiz.saveJudgeScore4Func(exptValidator, flowValidator.getOperateFlowId(), timePoint,
+                    mapJudgeItems, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE))
+            .throwMessage("操作准确度得分保存失败");
     experimentIndicatorJudgeHealthProblemReportRsService.saveOrUpdateBatch(experimentIndicatorJudgeHealthProblemReportRsEntityList);
   }
 

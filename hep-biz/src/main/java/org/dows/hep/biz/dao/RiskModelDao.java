@@ -22,22 +22,22 @@ public class RiskModelDao extends BaseDao<RiskModelService, RiskModelEntity>  {
 
     @Override
     protected SFunction<RiskModelEntity, String> getColId() {
-        return null;
+        return RiskModelEntity::getRiskModelId;
     }
 
     @Override
     protected SFunction<String, ?> setColId(RiskModelEntity item) {
-        return null;
+        return item::setRiskModelId;
     }
 
     @Override
     protected SFunction<RiskModelEntity, Integer> getColState() {
-        return null;
+        return RiskModelEntity::getStatus;
     }
 
     @Override
     protected SFunction<Integer, ?> setColState(RiskModelEntity item) {
-        return null;
+        return item::setStatus;
     }
 
     public List<RiskModelEntity> getAll(String appId, Integer state, SFunction<RiskModelEntity,?>... cols){

@@ -308,13 +308,13 @@ public class SpelEngine {
         private final ISpelLoad target;
 
         @Override
-        public ISpelExecute withReasonId(String experimentId,String experimentPersonId,  String reasonId, Integer source) {
-            return new SpelExecuteProxy(target.withReasonId(experimentId, experimentPersonId, reasonId, source));
+        public ISpelExecute withReasonId(String experimentId,String experimentPersonId,  String reasonId, Integer source,Integer... sources) {
+            return new SpelExecuteProxy(target.withReasonId(experimentId, experimentPersonId, reasonId, source,sources));
         }
 
         @Override
-        public ISpelExecuteBatch withReasonId(String experimentId,String experimentPersonId,  Collection<String> reasonIds, Integer source) {
-            return new SpelExecuteBatchProxy(target.withReasonId(experimentId,  experimentPersonId,reasonIds, source));
+        public ISpelExecuteBatch withReasonId(String experimentId,String experimentPersonId,  Collection<String> reasonIds, Integer source,Integer... sources) {
+            return new SpelExecuteBatchProxy(target.withReasonId(experimentId,  experimentPersonId,reasonIds, source,sources));
         }
 
         @Override

@@ -28,7 +28,7 @@ public class SnapshotRefCache extends BaseLoadingCache<SnapshotRefCache.Snapshot
         return s_instance;
     }
     protected final static int CACHEInitCapacity=50;
-    protected final static int CACHEMaxSize=100;
+    protected final static int CACHEMaxSize=500;
     protected final static int CACHEExpireSeconds=60*60;
 
     private SnapshotRefCache(){

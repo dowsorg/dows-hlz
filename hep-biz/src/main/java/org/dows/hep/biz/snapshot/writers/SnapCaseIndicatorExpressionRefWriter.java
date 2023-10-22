@@ -59,6 +59,18 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
     @Autowired
     private CaseIndicatorInstanceDao caseIndicatorInstanceDao;
 
+    @Autowired
+    private IndicatorJudgeGoalDao indicatorJudgeGoalDao;
+    @Autowired
+    private IndicatorJudgeHealthGuidanceDao indicatorJudgeHealthGuidanceDao;
+    @Autowired
+    private IndicatorJudgeHealthProblemDao indicatorJudgeHealthProblemDao;
+    @Autowired
+    private IndicatorJudgeRiskFactorDao indicatorJudgeRiskFactorDao;
+
+
+
+
     @Override
     public List<CaseIndicatorExpressionRefEntity> readSource(SnapshotRequest req) {
         List<CaseIndicatorExpressionRefEntity> rst=new ArrayList<>();
@@ -88,6 +100,17 @@ public class SnapCaseIndicatorExpressionRefWriter extends BaseSnapshotTableWrite
                 CrowdsInstanceEntity::getCrowdsId);
         refItemIds.addAll(ShareUtil.XCollection.map(riskModelDao.getAll(req.getAppId(), EnumStatus.ENABLE.getCode(), RiskModelEntity::getRiskModelId),
                 RiskModelEntity::getRiskModelId));
+        refItems.addAll(indicatorExpressionRefDao.getByReasonId(req.getAppId(), refItemIds));
+
+        //判断指标
+        refItemIds=ShareUtil.XCollection.map(indicatorJudgeGoalDao.getAll(req.getAppId(), EnumStatus.ENABLE.getCode(), true,IndicatorJudgeGoalEntity::getIndicatorJudgeGoalId),
+                IndicatorJudgeGoalEntity::getIndicatorJudgeGoalId);
+        refItemIds.addAll(ShareUtil.XCollection.map(indicatorJudgeHealthGuidanceDao.getAll(req.getAppId(), EnumStatus.ENABLE.getCode(),true, IndicatorJudgeHealthGuidanceEntity::getIndicatorJudgeHealthGuidanceId),
+                IndicatorJudgeHealthGuidanceEntity::getIndicatorJudgeHealthGuidanceId));
+        refItemIds.addAll(ShareUtil.XCollection.map(indicatorJudgeHealthProblemDao.getAll(req.getAppId(), EnumStatus.ENABLE.getCode(),true, IndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId),
+                IndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId));
+        refItemIds.addAll(ShareUtil.XCollection.map(indicatorJudgeRiskFactorDao.getAll(req.getAppId(), EnumStatus.ENABLE.getCode(),true, IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId),
+                IndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId));
         refItems.addAll(indicatorExpressionRefDao.getByReasonId(req.getAppId(), refItemIds));
 
         rst.addAll(ShareUtil.XCollection.map(refItems, i->
