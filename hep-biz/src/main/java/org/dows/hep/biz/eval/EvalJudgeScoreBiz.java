@@ -68,7 +68,8 @@ public class EvalJudgeScoreBiz {
                 .setOperateTime(new Date())
                 .setOperateGameDay(Optional.ofNullable(timePoint.getGameDay()).orElse(null))
                 .setScore(totalScore)
-                .setScoreJson(Optional.ofNullable( JacksonUtil.toJsonSilence(mapJudgeScores,true)).orElse("").substring(0,4000));
+                .setScoreJson(Optional.ofNullable( JacksonUtil.toJsonSilence(mapJudgeScores,true))
+                        .map(i->i.substring(0,Math.min(4000,i.length()))).orElse(""));
         return experimentJudgeScoreLogDao.saveOrUpdate(rowScoreLog);
 
     }
