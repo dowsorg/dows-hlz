@@ -56,6 +56,11 @@ public class SnapCaseIndicatorExpressionWriter extends BaseSnapshotTableWriter<C
         }
         List<IndicatorExpressionEntity> rowsExpression=indicatorExpressionDao.getBySource(List.of(EnumIndicatorExpressionSource.INDICATOR_OPERATOR_NO_REPORT_TWO_LEVEL.getSource(),
                 EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL.getSource(),
+                EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR.getSource(),
+                EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE.getSource(),
+                EnumIndicatorExpressionSource.INDICATOR_JUDGE_REFINDICATOR.getSource(),
+                EnumIndicatorExpressionSource.INDICATOR_JUDGE_GOAL_CHECKRULE.getSource(),
+                EnumIndicatorExpressionSource.INDICATOR_JUDGE_GOAL_REFINDICATOR.getSource(),
                 EnumIndicatorExpressionSource.CROWDS.getSource(),
                 EnumIndicatorExpressionSource.RISK_MODEL.getSource()
         ));

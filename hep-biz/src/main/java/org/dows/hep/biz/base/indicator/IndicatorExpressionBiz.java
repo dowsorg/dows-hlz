@@ -1413,7 +1413,11 @@ public class IndicatorExpressionBiz{
     String principalId = createOrUpdateIndicatorExpressionRequestRs.getPrincipalId();
     String appId = createOrUpdateIndicatorExpressionRequestRs.getAppId();
     Integer paramType = createOrUpdateIndicatorExpressionRequestRs.getType();
-    Integer source = createOrUpdateIndicatorExpressionRequestRs.getSource();
+    Integer vSource = createOrUpdateIndicatorExpressionRequestRs.getSource();
+    if(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR.getSource().equals(vSource)){
+      vSource=EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE.getSource();
+    }
+    final Integer source=vSource;
     List<CreateOrUpdateIndicatorExpressionItemRequestRs> createOrUpdateIndicatorExpressionItemRequestRsList = createOrUpdateIndicatorExpressionRequestRs.getCreateOrUpdateIndicatorExpressionItemRequestRsList();
     CreateOrUpdateIndicatorExpressionItemRequestRs minCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMinCreateOrUpdateIndicatorExpressionItemRequestRs();
     CreateOrUpdateIndicatorExpressionItemRequestRs maxCreateOrUpdateIndicatorExpressionItemRequestRs = createOrUpdateIndicatorExpressionRequestRs.getMaxCreateOrUpdateIndicatorExpressionItemRequestRs();

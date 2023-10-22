@@ -8,6 +8,7 @@ import org.dows.hep.api.base.indicator.request.FindJudgeGoalRequest;
 import org.dows.hep.api.base.indicator.response.JudgeGoalResponse;
 import org.dows.hep.api.core.ExptOperateOrgFuncRequest;
 import org.dows.hep.api.enums.EnumExptOperateType;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.user.experiment.request.FindInterveneList4ExptRequest;
 import org.dows.hep.api.user.experiment.request.SaveExptJudgeGoalRequest;
 import org.dows.hep.api.user.experiment.response.ExptJudgeGoalResponse;
@@ -15,6 +16,7 @@ import org.dows.hep.api.user.experiment.response.SaveExptOperateResponse;
 import org.dows.hep.api.user.experiment.vo.ExptJudgeGoalItemVO;
 import org.dows.hep.biz.base.indicator.JudgeGoalBiz;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
+import org.dows.hep.biz.eval.EvalJudgeScoreBiz;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.LoginContextVO;
@@ -22,6 +24,7 @@ import org.dows.hep.entity.OperateOrgFuncEntity;
 import org.dows.hep.entity.OperateOrgFuncSnapEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
@@ -42,6 +45,8 @@ public class ExperimentJudgeBiz {
 
     private final OperateOrgFuncDao operateOrgFuncDao;
 
+    private final EvalJudgeScoreBiz evalJudgeScoreBiz;
+
     public List<JudgeGoalResponse> listJudgeGoal(FindInterveneList4ExptRequest req){
         ExptRequestValidator.create(req).checkExperimentInstanceId();
         FindJudgeGoalRequest castReq= FindJudgeGoalRequest.builder()
@@ -56,8 +61,8 @@ public class ExperimentJudgeBiz {
         return getReportSnapData(req, false, false, ExptJudgeGoalResponse.class, ExptJudgeGoalResponse::new);
     }
 
-    public SaveExptOperateResponse saveJudgeGoal(SaveExptJudgeGoalRequest req, HttpServletRequest httpReq){
-        ExptRequestValidator validator=ExptRequestValidator.create(req)
+    public SaveExptOperateResponse saveJudgeGoal(SaveExptJudgeGoalRequest req, HttpServletRequest httpReq) {
+        ExptRequestValidator validator = ExptRequestValidator.create(req)
                 .checkExperimentPerson()
                 .checkExperimentOrg()
                 .checkExperimentInstanceId();
@@ -66,23 +71,28 @@ public class ExperimentJudgeBiz {
         AssertUtil.trueThenThrow(req.getGoalItems().stream()
                         .map(ExptJudgeGoalItemVO::getIndicatorJudgeGoalId)
                         .collect(Collectors.toSet())
-                        .size()<req.getGoalItems().size())
+                        .size() < req.getGoalItems().size())
                 .throwMessage("存在重复的目标项目，请检查");
         //校验操作类型
-        final EnumExptOperateType operateType=EnumExptOperateType.JUDGEHealthGoal;
+        final EnumExptOperateType operateType = EnumExptOperateType.JUDGEHealthGoal;
         //校验登录
-        LoginContextVO voLogin= ShareBiz.getLoginUser(httpReq);
+        LoginContextVO voLogin = ShareBiz.getLoginUser(httpReq);
         //校验挂号
-        final LocalDateTime ldtNow=LocalDateTime.now();
-        final Date dateNow=ShareUtil.XDate.localDT2Date(ldtNow);
-        ExperimentTimePoint timePoint=validator.getTimePoint(true, ldtNow, true);
-        ExptOrgFlowValidator flowValidator=ExptOrgFlowValidator.create(validator)
-                .requireOrgFlowRunning(timePoint.getPeriod());
+        final LocalDateTime ldtNow = LocalDateTime.now();
+        final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
+        ExperimentTimePoint timePoint = validator.getTimePoint(true, ldtNow, true);
+        ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(validator)
+                .checkOrgFlowRunning(timePoint.getPeriod());
 
-        req.getGoalItems().forEach(i->i.setValue(BigDecimalUtil.tryParseDecimalElseZero(i.getValue()).toPlainString()));
+        final Map<String, BigDecimal> mapJudgeItems = new HashMap<>();
+        req.getGoalItems().forEach(i -> {
+            BigDecimal val = BigDecimalUtil.tryParseDecimalElseZero(i.getValue());
+            i.setValue(BigDecimalUtil.formatDecimal(val));
+            mapJudgeItems.put(i.getIndicatorJudgeGoalId(), val);
+        });
 
         //保存操作记录
-        OperateOrgFuncEntity rowOrgFunc= createRowOrgFunc(validator)
+        OperateOrgFuncEntity rowOrgFunc = createRowOrgFunc(validator)
                 .setIndicatorCategoryId(operateType.getIndicatorCateg().getCode())
                 .setOperateType(operateType.getCode())
                 .setOperateAccountId(voLogin.getAccountId())
@@ -91,21 +101,28 @@ public class ExperimentJudgeBiz {
                 .setOperateGameDay(timePoint.getGameDay())
                 .setPeriods(timePoint.getPeriod())
                 .setOperateFlowId(flowValidator.getOperateFlowId())
-                .setReportFlag(operateType.getReportFuncFlag()?1:0)
+                .setReportFlag(operateType.getReportFuncFlag() ? 1 : 0)
                 .setReportLabel("管理目标")
                 .setReportDescr("");
         //保存快照
-        OperateOrgFuncSnapEntity rowOrgFuncSnap=new OperateOrgFuncSnapEntity()
+        OperateOrgFuncSnapEntity rowOrgFuncSnap = new OperateOrgFuncSnapEntity()
                 .setAppId(validator.getAppId())
                 .setSnapTime(dateNow);
-        ExptJudgeGoalResponse snapRst=new ExptJudgeGoalResponse().setGoalItems(req.getGoalItems());
-        try{
-            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst,true));
-        }catch (Exception ex){
-            AssertUtil.justThrow(String.format("记录数据编制失败：%s",ex.getMessage()),ex);
+        ExptJudgeGoalResponse snapRst = new ExptJudgeGoalResponse().setGoalItems(req.getGoalItems());
+        try {
+            rowOrgFuncSnap.setInputJson(JacksonUtil.toJson(snapRst, true));
+        } catch (Exception ex) {
+            AssertUtil.justThrow(String.format("记录数据编制失败：%s", ex.getMessage()), ex);
         }
+        //操作准确度得分
+        Map<String, BigDecimal> mapJudgeScores=evalJudgeScoreBiz.evalJudgeScore4Func(validator.getExperimentInstanceId(),validator.getExperimentPersonId(),
+                mapJudgeItems, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE);
 
-        boolean succFlag= operateOrgFuncDao.tranSave(rowOrgFunc, Arrays.asList(rowOrgFuncSnap),false);
+        boolean succFlag = operateOrgFuncDao.tranSave(rowOrgFunc, Arrays.asList(rowOrgFuncSnap), false, () -> {
+            AssertUtil.falseThenThrow(evalJudgeScoreBiz.saveJudgeScore4Func(validator, flowValidator.getOperateFlowId(), timePoint,mapJudgeScores))
+                    .throwMessage("操作准确度得分保存失败");
+            return true;
+        });
         return new SaveExptOperateResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());

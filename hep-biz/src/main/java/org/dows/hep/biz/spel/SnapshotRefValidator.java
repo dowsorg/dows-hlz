@@ -144,6 +144,10 @@ public class SnapshotRefValidator {
     }
     //endregion
 
+    public String getRefExperimentId(EnumSnapshotType snapshotType){
+        return SnapshotRefCache.Instance().getRefExperimentId(appId,snapshotType,experimentId);
+    }
+
 
     protected void logError(String func, String msg,Object... args){
         logError(null, func, msg, args);

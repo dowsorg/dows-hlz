@@ -365,7 +365,8 @@ public class ExperimentOrgInterveneBiz{
             final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
             ExperimentTimePoint timePoint = validator.getTimePoint(true, ldtNow, true);
             ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(validator)
-                    .requireOrgFlowRunning(timePoint.getPeriod());
+                    //.requireOrgFlowRunning(timePoint.getPeriod());
+                    .checkOrgFlowRunning(timePoint.getPeriod());
             //校验扣费
             final List<ExptTreatPlanItemVO> newItems = new ArrayList<>();
             for (int i = saveTreat.getTreatItems().size() - 1; i >= 0; i--) {

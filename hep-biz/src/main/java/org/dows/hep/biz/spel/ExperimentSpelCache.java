@@ -6,20 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.biz.cache.BaseLoadingCache;
-import org.dows.hep.biz.dao.ExperimentIndicatorInstanceRsDao;
-import org.dows.hep.biz.dao.SnapCrowdsInstanceDao;
-import org.dows.hep.biz.dao.SnapRiskModelDao;
-import org.dows.hep.biz.dao.SnapTreatItemDao;
+import org.dows.hep.biz.dao.*;
 import org.dows.hep.biz.eval.ExperimentPersonCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.snapshot.EnumSnapshotType;
 import org.dows.hep.biz.spel.loaders.FromSnapshotLoader;
 import org.dows.hep.biz.spel.meta.ISpelLoad;
 import org.dows.hep.biz.spel.meta.SpelInput;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
-import org.dows.hep.entity.snapshot.SnapCrowdsInstanceEntity;
-import org.dows.hep.entity.snapshot.SnapRiskModelEntity;
-import org.dows.hep.entity.snapshot.SnapTreatItemEntity;
+import org.dows.hep.entity.snapshot.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -65,16 +61,32 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
     @Autowired
     private SnapTreatItemDao snapTreatItemDao;
 
+    @Autowired
+    private SnapIndicatorJudgeGoalDao snapIndicatorJudgeGoalDao;
+
+    @Autowired
+    private SnapIndicatorJudgeHealthGuidanceDao snapIndicatorJudgeHealthGuidanceDao;
+
+    @Autowired
+    private SnapIndicatorJudgeHealthProblemDao snapIndicatorJudgeHealthProblemDao;
+
+    @Autowired
+    private SnapIndicatorJudgeRiskFactorDao snapIndicatorJudgeRiskFactorDao;
+
+
     private final static String APPId="3";
 
 
 
     @Override
-    public SpelInput withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source) {
+    public SpelInput withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source,Integer... sources) {
         ExperimentCacheKey cacheKey=ExperimentCacheKey.create(APPId,experimentId);
         CacheData cached=loadingCache().get(cacheKey);
+        if (isRawExpression(source)){
+            experimentPersonId=null;
+        }
         if(null==cached){
-            return fromSnapshotLoader.withReasonId(experimentId,experimentPersonId,reasonId,source);
+            return fromSnapshotLoader.withReasonId(experimentId,experimentPersonId,reasonId,source,sources);
         }
         final SpelCacheKey spelCacheKey=SpelCacheKey.create(experimentPersonId,reasonId,source);
         List<SpelInput> inputs=cached.get(spelCacheKey);
@@ -88,11 +100,14 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
     }
 
     @Override
-    public List<SpelInput> withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source) {
+    public List<SpelInput> withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source,Integer... sources) {
         ExperimentCacheKey cacheKey=ExperimentCacheKey.create(APPId,experimentId);
         CacheData cached=loadingCache().get(cacheKey);
+        if (isRawExpression(source)){
+            experimentPersonId=null;
+        }
         if(null==cached){
-            return fromSnapshotLoader.withReasonId(experimentId,experimentPersonId,reasonIds,source);
+            return fromSnapshotLoader.withReasonId(experimentId,experimentPersonId,reasonIds,source,sources);
         }
         final List<SpelInput> rst=new ArrayList<>();
         final List<String> missReasonIds=new ArrayList<>();
@@ -106,7 +121,7 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
             }
         }
         if(ShareUtil.XObject.notEmpty(missReasonIds)) {
-            rst.addAll(fillInput(cached, experimentId, experimentPersonId, missReasonIds, EnumIndicatorExpressionSource.of(source)));
+            rst.addAll(fillInput(cached, experimentId, experimentPersonId, missReasonIds, EnumIndicatorExpressionSource.of(source),sources));
         }
         return rst;
     }
@@ -176,6 +191,24 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
                 fillInput(rst, experimentId, personId, lv4TreatItemIds, EnumIndicatorExpressionSource.INDICATOR_OPERATOR_HAS_REPORT_FOUR_LEVEL);
             }
             ts=logCostTime(sb, "8-treatSpels-".concat(String.valueOf(rst.mapReasonInput.size())),ts);
+            final String refExptId4JudgeGoal = refValidator.getRefExperimentId(EnumSnapshotType.INDICATORJudgeGoal);
+            final String refExptId4JudgeGuidance = refValidator.getRefExperimentId(EnumSnapshotType.INDICATORJudgeHealthGuidance);
+            final String refExptId4JudgeProblem = refValidator.getRefExperimentId(EnumSnapshotType.INDICATORJudgeHealthProblem);
+            final String refExptId4JudgeRiskFactor = refValidator.getRefExperimentId(EnumSnapshotType.INDICATORJudgeRiskFactor);
+            final List<String> judgeGoalIds=ShareUtil.XCollection.map(snapIndicatorJudgeGoalDao.getByExperimentId(refExptId4JudgeGoal, SnapIndicatorJudgeGoalEntity::getIndicatorJudgeGoalId),
+                    SnapIndicatorJudgeGoalEntity::getIndicatorJudgeGoalId);
+            final List<String> JudgeGuidanceIds=ShareUtil.XCollection.map(snapIndicatorJudgeHealthGuidanceDao.getByExperimentId(refExptId4JudgeGuidance, SnapIndicatorJudgeHealthGuidanceEntity::getIndicatorJudgeHealthGuidanceId),
+                    SnapIndicatorJudgeHealthGuidanceEntity::getIndicatorJudgeHealthGuidanceId);
+            final List<String> judgeProblemIds=ShareUtil.XCollection.map(snapIndicatorJudgeHealthProblemDao.getByExperimentId(refExptId4JudgeProblem,  SnapIndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId),
+                    SnapIndicatorJudgeHealthProblemEntity::getIndicatorJudgeHealthProblemId);
+            final List<String> judgeRiskFactorIds=ShareUtil.XCollection.map(snapIndicatorJudgeRiskFactorDao.getByExperimentId(refExptId4JudgeRiskFactor, SnapIndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId),
+                    SnapIndicatorJudgeRiskFactorEntity::getIndicatorJudgeRiskFactorId);
+            ts=logCostTime(sb, "9-judgeIds",ts);
+            fillInput(rst, experimentId, null, judgeGoalIds, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE,EnumIndicatorExpressionSource.INDICATOR_JUDGE_REFINDICATOR.getSource());
+            fillInput(rst, experimentId, null, JudgeGuidanceIds, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE,EnumIndicatorExpressionSource.INDICATOR_JUDGE_REFINDICATOR.getSource());
+            fillInput(rst, experimentId, null, judgeProblemIds, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE,EnumIndicatorExpressionSource.INDICATOR_JUDGE_REFINDICATOR.getSource());
+            fillInput(rst, experimentId, null, judgeRiskFactorIds, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE,EnumIndicatorExpressionSource.INDICATOR_JUDGE_REFINDICATOR.getSource());
+            ts=logCostTime(sb, "10-judgeSpels",ts);
 
         }catch (Exception ex){
             ts=logCostTime(sb, String.format("error:%s", ex.getMessage()));
@@ -187,15 +220,36 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
         return rst;
     }
 
-    private List<SpelInput> fillInput(CacheData rst,String experimentId, String personId, Collection<String> reasonIds, EnumIndicatorExpressionSource source){
-        List<SpelInput> inputs=fromSnapshotLoader.withReasonId(experimentId,personId,reasonIds, source.getSource());
-        Map<String,List<SpelInput>> mapReasons= ShareUtil.XCollection.groupBy(inputs, SpelInput::getReasonId);
-        mapReasons.forEach((reasonId,vInputs)->rst.mapReasonInput.put(SpelCacheKey.create(personId,reasonId,source.getSource()),vInputs));
+    private List<SpelInput> fillInput(CacheData rst,String experimentId, String personId, Collection<String> reasonIds, EnumIndicatorExpressionSource source,Integer... sources){
+        List<SpelInput> inputs=fromSnapshotLoader.withReasonId(experimentId,personId,reasonIds, source.getSource(),sources);
+        inputs.forEach(input-> {
+            rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(personId, input.getReasonId(),
+                            Optional.ofNullable(input.getSource()).map(EnumIndicatorExpressionSource::getSource).orElse(null)), k -> new ArrayList<>())
+                    .add(input);
+        });
         reasonIds.forEach(reasonId->{
             rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(personId,reasonId,source.getSource()),k->List.of(new SpelInput(source).setReasonId(reasonId)));
+            if(null==sources||sources.length==0){
+                return;
+            }
+            for(Integer item:sources){
+                rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(personId,reasonId,item),k->List.of(new SpelInput(item).setReasonId(reasonId)));
+            }
         });
-        mapReasons.clear();;
         return inputs;
+    }
+
+    private Set<EnumIndicatorExpressionSource> rawSources=Set.of(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR,
+            EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE,
+            EnumIndicatorExpressionSource.INDICATOR_JUDGE_REFINDICATOR,
+            EnumIndicatorExpressionSource.INDICATOR_JUDGE_GOAL_CHECKRULE,
+            EnumIndicatorExpressionSource.INDICATOR_JUDGE_GOAL_REFINDICATOR
+    );
+    protected boolean isRawExpression(Integer source){
+        if(ShareUtil.XObject.isEmpty(source)){
+            return false;
+        }
+        return rawSources.contains(EnumIndicatorExpressionSource.of(source));
     }
     private long logCostTime(StringBuilder sb,String start){
         sb.append(start);

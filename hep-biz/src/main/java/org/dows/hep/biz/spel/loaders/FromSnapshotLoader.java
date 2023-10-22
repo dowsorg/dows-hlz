@@ -30,7 +30,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
     private final SnapCaseIndicatorExpressionItemDao snapCaseIndicatorExpressionItemDao;
 
     @Override
-    public SpelInput withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source) {
+    public SpelInput withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source,Integer... sources) {
         SpelInput rst=new SpelInput(source).setReasonId(reasonId);
         SnapshotRefValidator refValidator=new SnapshotRefValidator(experimentId);
         final String refExperimentId4ExpressionRef=refValidator.checkExpressionRef().getExpressionRefId();
@@ -86,7 +86,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
     }
 
     @Override
-    public List<SpelInput> withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source) {
+    public List<SpelInput> withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source,Integer... sources) {
         List<SpelInput> rst=new ArrayList<>();
         if(ShareUtil.XObject.isEmpty(reasonIds)){
             return rst;
@@ -107,9 +107,10 @@ public class FromSnapshotLoader extends BaseSpelLoader {
             return rst;
         }
         final List<String> expressionIds=ShareUtil.XCollection.map(rowsExpressionRef, SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId);
-        List<SnapCaseIndicatorExpressionEntity> rowsExpression= snapCaseIndicatorExpressionDao.getByExpressionId(refExperimentId4Expression,expressionIds,source,
+        List<SnapCaseIndicatorExpressionEntity> rowsExpression= snapCaseIndicatorExpressionDao.getByExpressionId(refExperimentId4Expression,expressionIds,null,
                 SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId,
                 SnapCaseIndicatorExpressionEntity::getCasePrincipalId,
+                SnapCaseIndicatorExpressionEntity::getSource,
                 SnapCaseIndicatorExpressionEntity::getType,
                 SnapCaseIndicatorExpressionEntity::getMaxIndicatorExpressionItemId,
                 SnapCaseIndicatorExpressionEntity::getMinIndicatorExpressionItemId
@@ -163,7 +164,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
         Map<String,String> mapExpressionRef=ShareUtil.XCollection.toMap(rowsExpressionRef,
                 SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId, SnapCaseIndicatorExpressionRefEntity::getReasonId);
         mapExpression.forEach((k,v)->{
-            SpelInput input=new SpelInput(source).setReasonId(mapExpressionRef.get(k));
+            SpelInput input=new SpelInput(ShareUtil.XObject.defaultIfNull(v.getSource(), source) ).setReasonId(mapExpressionRef.get(k));
             rst.add(fillInput(input,experimentPersonId,v,mapExpressionItem.get(k)));
         });
         return rst;

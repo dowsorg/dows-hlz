@@ -7,9 +7,9 @@ import java.util.Collection;
  * @date : 2023/7/24 10:12
  */
 public interface ISpelFlow {
-    ISpelExecute withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source);
+    ISpelExecute withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source,Integer... sources);
 
-    ISpelExecuteBatch withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source);
+    ISpelExecuteBatch withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source,Integer... sources);
 
     ISpelExecute withReasonIdSilence(String experimentId, String experimentPersonId, String reasonId, Integer source);
 

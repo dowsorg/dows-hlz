@@ -60,7 +60,7 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
     }
 
     public ExperimentPersonCache.CacheData getCacheData(ExperimentCacheKey key){
-        return this.loadingCache().get(key);
+        return this.getSet(key,false);
     }
 
     public ExperimentGroupEntity getGroup(String experimentId,String experimentGroupId){
@@ -165,10 +165,21 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         remove(ExperimentCacheKey.create(appId, experimentId));
     }
 
+    public void removeGroups(String experimentId){
+        removeGroups(ExperimentCacheKey.create("3", experimentId));
+    }
+
     private void remove(ExperimentCacheKey key){
         key.setAppId(ShareBiz.checkAppId(key.getAppId(), key.getExperimentInstanceId()));
         this.loadingCache().invalidate(key);
     }
+    private void removeGroups(ExperimentCacheKey key){
+        key.setAppId(ShareBiz.checkAppId(key.getAppId(), key.getExperimentInstanceId()));
+        getCacheData(key).mapGroups.clear();
+    }
+
+
+
 
     @Override
     protected CacheData load(ExperimentCacheKey key) {
@@ -182,10 +193,6 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
             rst.mapGroupPersons.computeIfAbsent(i.getExperimentGroupId(), k->new ArrayList<>()).add(i);
             rst.mapOrgPersons.computeIfAbsent(i.getExperimentOrgId(), k->new ArrayList<>()).add(i);
         });
-        List<ExperimentGroupEntity> rowsGroup=experimentGroupDao.getByExperimentId(key.getExperimentInstanceId() );
-        rowsGroup.forEach(i->{
-            rst.mapGroups.put(i.getExperimentGroupId(),i);
-        });
         List<ExperimentOrgEntity> rowsOrg=experimentOrgService.lambdaQuery()
                 .eq(ExperimentOrgEntity::getExperimentInstanceId, key.getExperimentInstanceId())
                 .list();
@@ -193,7 +200,29 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
             rst.mapOrgs.put(i.getExperimentOrgId(),i);
         });
         rst.getSetMonitorOrgId().addAll(experimentOrgModuleBiz.getMonitorOrgIds(rst.mapOrgs.keySet()));
-        return rst;
+        return cotinueLoad(key,rst);
+    }
+
+    @Override
+    protected boolean isCompleted(CacheData val) {
+        if(ShareUtil.XObject.isEmpty(val)){
+            return false;
+        }
+        return ShareUtil.XObject.allNotEmpty(val.getMapPersons(),val.getMapGroups(),val.getMapOrgPersons());
+    }
+
+    @Override
+    protected CacheData cotinueLoad(ExperimentCacheKey key, CacheData curVal) {
+        if(ShareUtil.XObject.isEmpty(curVal)){
+           return curVal;
+        }
+        if(ShareUtil.XObject.isEmpty(curVal.mapGroups)){
+            List<ExperimentGroupEntity> rowsGroup=experimentGroupDao.getByExperimentId(key.getExperimentInstanceId() );
+            rowsGroup.forEach(i->{
+                curVal.mapGroups.put(i.getExperimentGroupId(),i);
+            });
+        }
+        return curVal;
     }
 
     @Data
@@ -204,7 +233,7 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
 
         private final Map<String,List<ExperimentPersonEntity>> mapOrgPersons=new HashMap<>();
 
-        private final Map<String, ExperimentGroupEntity> mapGroups=new HashMap<>();
+        private final ConcurrentMap<String, ExperimentGroupEntity> mapGroups=new ConcurrentHashMap<>();
 
         private final Map<String, ExperimentOrgEntity> mapOrgs=new HashMap<>();
 

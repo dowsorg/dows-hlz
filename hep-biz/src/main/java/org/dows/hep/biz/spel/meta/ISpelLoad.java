@@ -9,9 +9,9 @@ import java.util.List;
  */
 public interface ISpelLoad {
 
-    SpelInput withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source);
+    SpelInput withReasonId(String experimentId, String experimentPersonId, String reasonId, Integer source,Integer... sources);
 
-    List<SpelInput> withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source);
+    List<SpelInput> withReasonId(String experimentId, String experimentPersonId, Collection<String> reasonIds, Integer source,Integer... sources);
 
     SpelInput withExpressionId(String experimentId, String experimentPersonId, String expressionId, Integer source);
 
