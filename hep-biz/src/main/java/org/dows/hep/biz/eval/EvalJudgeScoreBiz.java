@@ -104,6 +104,7 @@ public class EvalJudgeScoreBiz {
         final boolean singleFag=rst.size()==1;
         List<ExperimentJudgeScoreLogEntity> rowsScoreLog = experimentJudgeScoreLogDao.getAllByPeriod(experimentId, period,
                 ExperimentJudgeScoreLogEntity::getExperimentGroupId,
+                ExperimentJudgeScoreLogEntity::getExperimentOrgId,
                 ExperimentJudgeScoreLogEntity::getExperimentPersonId,
                 ExperimentJudgeScoreLogEntity::getIndicatorFuncId,
                 ExperimentJudgeScoreLogEntity::getScore
