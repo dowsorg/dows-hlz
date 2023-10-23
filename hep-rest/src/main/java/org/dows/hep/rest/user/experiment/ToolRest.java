@@ -80,6 +80,12 @@ public class ToolRest {
         toolBiz.evalPeriodEndScore(req);
     }
 
+    @Operation(summary = "期末翻转-判断类算分")
+    @PostMapping("v1/tool/evalPeriodJudgeScore")
+    public void evalPeriodJudgeScore(@RequestBody RsCalculatePeriodsRequest req){
+        toolBiz.evalPeriodJudgeScore(req);
+    }
+
     @Operation(summary = "条件事件触发")
     @PostMapping("v1/tool/raiseevent")
     public void raiseevent(@RequestBody RsCalculatePersonRequestRs req)  {
