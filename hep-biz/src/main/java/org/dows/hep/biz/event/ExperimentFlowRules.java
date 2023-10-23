@@ -158,7 +158,7 @@ public class ExperimentFlowRules {
         final ExperimentTimerEntity lastTimer = cacheTimer.getTimerByPeriod(cacheTimer.getMapTimer().size());
         if (lastTimer.getState().equals(EnumExperimentState.FINISH.getState())
                 || lastTimer.getEndTime().getTime() + lastTimer.getPeriodInterval() <= nowTs) {
-            rst.setState(lastTimer.getState().equals(EnumExperimentState.UNBEGIN.getState())?
+            rst.setState(lastTimer.getState()<EnumExperimentState.ONGOING.getState()?
                     lastTimer.getState():EnumExperimentState.FINISH.getState());
             rst.setPeriod(lastTimer.getPeriod());
             if(!lastTimer.getPaused()) {
