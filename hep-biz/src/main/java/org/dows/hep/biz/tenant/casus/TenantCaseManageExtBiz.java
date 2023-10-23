@@ -205,7 +205,8 @@ public class TenantCaseManageExtBiz {
     /**
      * 复制 案例机构人物
      */
-    private void duplicateCaseOrgPersonList(String oriCaseInstanceId, String newCaseInstanceId, Map<String, String> kOldIdVNewIdMap) throws ExecutionException, InterruptedException {
+    private void duplicateCaseOrgPersonList(String oriCaseInstanceId, String newCaseInstanceId, Map<String, String> kOldCaseOrgIdVNewCaseOrgIdMap,
+                                            Map<String, String>kOldOrgIdVNewOrgIdMap) throws ExecutionException, InterruptedException {
         List<CaseOrgEntity> caseOrgList = getCaseOrgList(oriCaseInstanceId);
         //没有机构
         if (CollectionUtils.isEmpty(caseOrgList)) {
@@ -218,48 +219,50 @@ public class TenantCaseManageExtBiz {
         //案例机构id对应人员
         Map<String, List<CasePersonEntity>> kCaseOrgIdVPerson = casePersonList.stream().collect(Collectors.groupingBy(CasePersonEntity::getCaseOrgId));
         for (CaseOrgEntity caseOrg : caseOrgList) {
-            //机构人员
-            String caseOrgId = caseOrg.getCaseOrgId();
-            String newCaseOrgId = checkNullNewId(caseOrgId, kOldIdVNewIdMap);
-            List<CasePersonEntity> casePersonEntityList = kCaseOrgIdVPerson.get(caseOrgId);
+            //机构id
+            String newOrgId = checkNullNewId(caseOrg.getOrgId(),kOldOrgIdVNewOrgIdMap);
+            String newCaseOrgId = kOldCaseOrgIdVNewCaseOrgIdMap.get(caseOrg.getCaseOrgId());
+            //案例机构人员对案例机构
+            List<CasePersonEntity> casePersonEntityList = kCaseOrgIdVPerson.get(caseOrg.getCaseOrgId());
             //机构里没有人物
             if (CollectionUtils.isEmpty(casePersonEntityList)) {
                 continue;
             }
             casePersonEntityList.forEach(casePerson -> {
                 String oldAccountId = casePerson.getAccountId();
+
                 PersonInstanceResponse personInstanceResponse = personManageExtBiz.duplicatePerson(oldAccountId, ORG_PERSON);
                 if (personInstanceResponse == null || StringUtils.isEmpty(personInstanceResponse.getAccountId())) {
                     throw new BizException("复制人物异常");
                 }
                 String newAccountId = personInstanceResponse.getAccountId();
-                addPersonToCaseOrg(newAccountId, newCaseOrgId, APPId);
-                kOldIdVNewIdMap.put(oldAccountId, newAccountId);
+                addPersonToCaseOrg(newAccountId,newCaseInstanceId, newCaseOrgId,newOrgId,caseOrg.getOrgName(), APPId);
             });
         }
-        getCasePersonList(casePersonList, newCaseInstanceId, kOldIdVNewIdMap);
-        casePersonService.saveOrUpdateBatch(casePersonList);
     }
 
     /**
      * 建立机构人物关系
      */
-    public void addPersonToCaseOrg(String newPersonId, String newCaseOrgId, String appId) {
-        //1、建立人物与组关系
-        //1.1、通过案例机构ID找到机构ID
-        CaseOrgEntity newEntity = caseOrgService.lambdaQuery()
-                .eq(CaseOrgEntity::getCaseOrgId, newCaseOrgId)
-                .eq(CaseOrgEntity::getDeleted, false)
-                .eq(CaseOrgEntity::getAppId, appId)
-                .one();
-        //1.2、账户实例
+    public void addPersonToCaseOrg(String newPersonId,String newCaseInstanceId, String newCaseOrgId,String newOrgId,String orgName, String appId) {
+        //1、建立人物与案例机构关系
+        String casePersonId = idGenerator.nextIdStr();
+        CasePersonEntity person = CasePersonEntity.builder()
+                .casePersonId(casePersonId)
+                .caseInstanceId(newCaseInstanceId)
+                .caseOrgId(newCaseOrgId)
+                .accountId(newPersonId)
+                .build();
+        casePersonService.save(person);
+        //2、建立人物与组关系
+        //2.1、账户实例
         AccountInstanceResponse instanceResponse = accountInstanceApi.getAccountInstanceByAccountId(newPersonId);
-        //1.3、获取用户ID
+        //2.2、获取用户ID
         String userId = accountUserApi.getUserByAccountId(newPersonId).getUserId();
         accountGroupApi.insertAccountGroup(AccountGroupRequest.builder()
                 .groupId(idGenerator.nextIdStr())
-                .orgId(newEntity.getOrgId())
-                .orgName(newEntity.getOrgName())
+                .orgId(newOrgId)
+                .orgName(orgName)
                 .accountId(newPersonId)
                 .accountName(instanceResponse.getAccountName())
                 .userId(userId)
@@ -283,10 +286,10 @@ public class TenantCaseManageExtBiz {
         //机构 oldOrgId 和 newOrgId 对应
         Map<String, String> kOldOrgIdVNewOrgIdMap = new HashMap<>();
 
-        //生成新的id
-        Map<String, String> kOldIdVNewIdMap = new HashMap<>();
+        //案例机构 oldCaseOrgId <-> newCaseOrgId
+        Map<String, String> kOldCaseOrgIdVNewCaseOrgIdMap = new HashMap<>();
         CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
-                rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, caseOrgIdSet));
+                rsUtilBiz.populateKOldIdVNewIdMap(kOldCaseOrgIdVNewCaseOrgIdMap, caseOrgIdSet));
         cfPopulateKOldIdVNewIdMap.get();
         //机构
         caseOrgList.forEach(caseOrg -> {
@@ -299,7 +302,7 @@ public class TenantCaseManageExtBiz {
         });
 
         //保存案例机构
-        Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap = getCaseOrgList(caseOrgList, newCaseInstanceId, kOldIdVNewIdMap, kOldOrgIdVNewOrgIdMap);
+        getCaseOrgList(caseOrgList, newCaseInstanceId, kOldCaseOrgIdVNewCaseOrgIdMap, kOldOrgIdVNewOrgIdMap);
         caseOrgService.saveOrUpdateBatch(caseOrgList);
 
         List<CaseOrgModuleEntity> caseOrgModuleList = getCaseOrgModuleList(caseOrgIdSet);
@@ -309,10 +312,10 @@ public class TenantCaseManageExtBiz {
         }
         //复制案例机构人物
         if (isCopyPerson) {
-            duplicateCaseOrgPersonList(oriCaseInstanceId, newCaseInstanceId, kOldIdVNewIdMap);
+            duplicateCaseOrgPersonList(oriCaseInstanceId, newCaseInstanceId, kOldCaseOrgIdVNewCaseOrgIdMap,kOldOrgIdVNewOrgIdMap);
         }
         CompletableFuture<Void> getCaseOrgFeeListCF = CompletableFuture.runAsync(() -> {
-            getCaseOrgFeeList(caseOrgFeeList, newCaseInstanceId, kOldIdVNewIdMap);
+            getCaseOrgFeeList(caseOrgFeeList, newCaseInstanceId, kOldCaseOrgIdVNewCaseOrgIdMap);
             caseOrgFeeService.saveOrUpdateBatch(caseOrgFeeList);
         });
         getCaseOrgFeeListCF.get();
@@ -500,22 +503,19 @@ public class TenantCaseManageExtBiz {
         });
     }
 
-    private Map<String ,String > getCaseOrgList(List<CaseOrgEntity> caseOrgList, String newCaseInstanceId,
+    private void getCaseOrgList(List<CaseOrgEntity> caseOrgList, String newCaseInstanceId,
                                 Map<String, String> kOldIdVNewIdMap, Map<String, String> kOldOrgIdVNewOrgIdMap
     ) {
-        Map<String ,String > kOldCaseOrgIdVNewCaseOrgIdMap = new HashMap<>();
         if (checkNull(caseOrgList, kOldIdVNewIdMap, newCaseInstanceId)) {
-            return kOldCaseOrgIdVNewCaseOrgIdMap;
+            return ;
         }
         caseOrgList.forEach(caseOrg -> {
-            kOldCaseOrgIdVNewCaseOrgIdMap.put(caseOrg.getCaseOrgId(),checkNullNewId(caseOrg.getCaseOrgId(), kOldIdVNewIdMap));
             caseOrg.setCaseOrgId(checkNullNewId(caseOrg.getCaseOrgId(), kOldIdVNewIdMap));
             caseOrg.setCaseInstanceId(newCaseInstanceId);
             caseOrg.setOrgId(checkNullNewId(caseOrg.getOrgId(), kOldOrgIdVNewOrgIdMap));
             caseOrg.setId(null);
             caseOrg.setDt(new Date());
         });
-        return kOldCaseOrgIdVNewCaseOrgIdMap;
     }
 
     private void getCaseOrgQuestionnaireList(List<CaseOrgQuestionnaireEntity> caseOrgQuestionnaireList,
