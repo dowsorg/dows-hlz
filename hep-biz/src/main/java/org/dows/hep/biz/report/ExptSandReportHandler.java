@@ -297,6 +297,8 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         return experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, exptInstanceId)
                 .eq(StrUtil.isNotBlank(exptGroupId), ExperimentScoringEntity::getExperimentGroupId, exptGroupId)
+                .orderByAsc(ExperimentScoringEntity::getPeriods,ExperimentScoringEntity::getExperimentGroupId)
+                .orderByDesc(ExperimentScoringEntity::getScoringCount)
                 .list();
     }
 

@@ -99,6 +99,8 @@ public class EvalJudgeScoreBiz {
     //region 期数翻转小组得分
     public Map<String,BigDecimalOptional> evalJudgeScore4Period(String experimentId,Integer period) {
         Map<String, BigDecimalOptional> rst = new HashMap<>();
+        ExperimentPersonCache.Instance().getGroups(experimentId).forEach(i->rst.put(i.getExperimentGroupId(),BigDecimalOptional.valueOf( MINJudgeScore)));
+
         List<ExperimentJudgeScoreLogEntity> rowsScoreLog = experimentJudgeScoreLogDao.getAllByPeriod(experimentId, period,
                 ExperimentJudgeScoreLogEntity::getExperimentGroupId,
                 ExperimentJudgeScoreLogEntity::getExperimentPersonId,
