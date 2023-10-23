@@ -115,7 +115,7 @@ public class ExperimentJudgeBiz {
             AssertUtil.justThrow(String.format("记录数据编制失败：%s", ex.getMessage()), ex);
         }
         //操作准确度得分
-        Map<String, BigDecimal> mapJudgeScores=evalJudgeScoreBiz.evalJudgeScore4Func(validator.getExperimentInstanceId(),validator.getExperimentPersonId(),
+        Map<String, BigDecimal[]> mapJudgeScores=evalJudgeScoreBiz.evalJudgeScore4Func(validator.getExperimentInstanceId(),validator.getExperimentPersonId(),
                 mapJudgeItems, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE);
 
         boolean succFlag = operateOrgFuncDao.tranSave(rowOrgFunc, Arrays.asList(rowOrgFuncSnap), false, () -> {
