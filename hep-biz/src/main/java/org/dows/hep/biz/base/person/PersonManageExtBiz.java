@@ -23,6 +23,7 @@ import org.dows.user.api.response.UserInstanceResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -84,6 +85,7 @@ public class PersonManageExtBiz {
         if (PERSON_MANAGE.equals(source)){
             userInstanceRequest.setName(userInstanceRequest.getName() + NAME_SUFFIX);
         }
+        userInstanceRequest.setDt(new Date());
         String newUserid = userInstanceApi.insertUserInstance(userInstanceRequest);
         UserExtinfoResponse userExtinfoResponse = userExtinfoApi.getUserExtinfoByUserId(oldUserId);
         UserExtinfoRequest userExtInfo = UserExtinfoRequest.builder()
