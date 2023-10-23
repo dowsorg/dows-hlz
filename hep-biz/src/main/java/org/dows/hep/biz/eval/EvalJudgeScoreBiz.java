@@ -101,6 +101,7 @@ public class EvalJudgeScoreBiz {
         Map<String, BigDecimalOptional> rst = new HashMap<>();
         ExperimentPersonCache.Instance().getGroups(experimentId).forEach(i->rst.put(i.getExperimentGroupId(),BigDecimalOptional.valueOf( MINJudgeScore)));
 
+        final boolean singleFag=rst.size()==1;
         List<ExperimentJudgeScoreLogEntity> rowsScoreLog = experimentJudgeScoreLogDao.getAllByPeriod(experimentId, period,
                 ExperimentJudgeScoreLogEntity::getExperimentGroupId,
                 ExperimentJudgeScoreLogEntity::getExperimentPersonId,
@@ -113,7 +114,8 @@ public class EvalJudgeScoreBiz {
         Map<String,Map<String,List<BigDecimal>>> mapGroupScore=new HashMap<>();
         rowsScoreLog.forEach(i->{
             mapGroupScore.computeIfAbsent(i.getExperimentGroupId(), k->new HashMap<>())
-                    .computeIfAbsent(String.format("%s-%s", i.getExperimentPersonId(),i.getIndicatorFuncId()), k->new ArrayList<>())
+                    .computeIfAbsent(String.format("%s-%s-%s", i.getExperimentPersonId(),i.getExperimentOrgId(),i.getIndicatorFuncId()), k->new ArrayList<>())
+                    //.add(ShareUtil.XObject.defaultIfNull(singleFag?i.getSingleScore():i.getScore(),BigDecimal.ZERO));
                     .add(ShareUtil.XObject.defaultIfNull(i.getScore(),BigDecimal.ZERO));
         });
         mapGroupScore.forEach((groupId,funcSocres)->{
