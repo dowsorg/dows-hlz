@@ -63,6 +63,9 @@ public class ExperimentJudgeScoreLogEntity implements CrudEntity {
     @Schema(title = "操作得分")
     private BigDecimal score;
 
+    @Schema(title = "单组操作得分")
+    private BigDecimal singleScore;
+
     @Schema(title = "操作得分详情")
     private String scoreJson;
 

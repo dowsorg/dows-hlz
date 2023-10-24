@@ -151,7 +151,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
     });
     experimentIndicatorJudgeHealthGuidanceReportRsService.saveOrUpdateBatch(experimentIndicatorJudgeHealthGuidanceReportRsEntityList);
     //操作准确度得分
-    Map<String, BigDecimal> mapJudgeScores=evalJudgeScoreBiz.evalJudgeScore4Func(exptValidator.getExperimentInstanceId(),exptValidator.getExperimentPersonId(),
+    Map<String, BigDecimal[]> mapJudgeScores=evalJudgeScoreBiz.evalJudgeScore4Func(exptValidator.getExperimentInstanceId(),exptValidator.getExperimentPersonId(),
             mapJudgeItems, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE);
 
 

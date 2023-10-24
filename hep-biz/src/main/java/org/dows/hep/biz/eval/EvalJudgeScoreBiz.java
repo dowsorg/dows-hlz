@@ -42,20 +42,27 @@ public class EvalJudgeScoreBiz {
         if(ShareUtil.XObject.anyEmpty(judgeItems,timePoint)){
             return true;
         }
-        Map<String, BigDecimal> mapJudgeScores=evalJudgeScore4Func(validator.getExperimentInstanceId(),validator.getExperimentPersonId(),
+        Map<String, BigDecimal[]> mapJudgeScores=evalJudgeScore4Func(validator.getExperimentInstanceId(),validator.getExperimentPersonId(),
                 judgeItems,expressionSource);
         return saveJudgeScore4Func(validator,operateFlowId,timePoint,mapJudgeScores);
 
     }
 
     public boolean saveJudgeScore4Func(ExptRequestValidator validator, String operateFlowId, ExperimentTimePoint timePoint,
-                                       Map<String,BigDecimal> mapJudgeScores){
+                                       Map<String,BigDecimal[]> mapJudgeScores){
         if(ShareUtil.XObject.anyEmpty(mapJudgeScores,timePoint)){
             return true;
         }
         validator.checkExperimentPerson()
                 .checkIndicatorFuncId();
-        final BigDecimal totalScore= mapJudgeScores.values().stream().reduce(BigDecimal.ZERO, BigDecimalUtil::add);
+        BigDecimalOptional totalScore=BigDecimalOptional.zero();
+        BigDecimalOptional totalSingleScore=BigDecimalOptional.zero();
+        for(BigDecimal[] item:mapJudgeScores.values()){
+            totalScore.add(item[0]);
+            totalSingleScore.add(item[1]);
+        }
+        totalSingleScore.div(BigDecimal.valueOf(mapJudgeScores.size()),SCALEScore);
+
         ExperimentJudgeScoreLogEntity rowScoreLog=new ExperimentJudgeScoreLogEntity()
                 .setAppId(validator.getAppId())
                 .setExperimentInstanceId(validator.getExperimentInstanceId())
@@ -67,30 +74,40 @@ public class EvalJudgeScoreBiz {
                 .setOperateFlowId(operateFlowId)
                 .setOperateTime(new Date())
                 .setOperateGameDay(Optional.ofNullable(timePoint.getGameDay()).orElse(null))
-                .setScore(totalScore)
+                .setScore(totalScore.getValue(SCALEScore))
+                .setSingleScore(totalSingleScore.getValue(SCALEScore))
                 .setScoreJson(Optional.ofNullable( JacksonUtil.toJsonSilence(mapJudgeScores,true))
                         .map(i->i.substring(0,Math.min(4000,i.length()))).orElse(""));
         return experimentJudgeScoreLogDao.saveOrUpdate(rowScoreLog);
 
     }
 
-    public Map<String, BigDecimal> evalJudgeScore4Func(String experimentId, String experimentPersonId,  Map<String,BigDecimal> judgeItems,EnumIndicatorExpressionSource expressionSource) {
+    public Map<String,  BigDecimal[]> evalJudgeScore4Func(String experimentId, String experimentPersonId, Map<String,BigDecimal> judgeItems, EnumIndicatorExpressionSource expressionSource) {
         if (ShareUtil.XObject.isEmpty(judgeItems)) {
             return Collections.emptyMap();
         }
-        Map<String, BigDecimal> rst = new HashMap<>();
+        Map<String, BigDecimal[]> rst = new HashMap<>();
         final SpelPersonContext context = new SpelPersonContext().setVariables(experimentPersonId, null, true);
         List<SpelInput> inputs = spelEngine.loadFromSpelCache()
                 .withReasonId(experimentId, experimentPersonId, judgeItems.keySet(), expressionSource.getSource(), EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE.getSource())
                 .getInput();
-        inputs.forEach(input->{
-            final String judgeItemId=input.getReasonId();
-            context.setVariable(EnumString.INPUT_GOAL.getStr(), judgeItems.getOrDefault(judgeItemId,BigDecimal.ONE));
+        inputs.forEach(input -> {
+            final String judgeItemId = input.getReasonId();
+            context.setVariable(EnumString.INPUT_GOAL.getStr(), judgeItems.getOrDefault(judgeItemId, BigDecimal.ONE));
             SpelEvalResult evalRst = spelEngine.loadWith(input).eval(context);
             if (ShareUtil.XObject.anyEmpty(evalRst, () -> evalRst.getValNumber())) {
                 return;
             }
-            rst.put(judgeItemId,evalRst.getValNumber());
+            BigDecimal socre = evalRst.getValNumber();
+            BigDecimal maxScore = BigDecimalUtil.ONEHundred;
+            if (ShareUtil.XObject.notEmpty(input.getMax()) && input.getMax().compareTo(maxScore) < 0) {
+                maxScore = input.getMax();
+            }
+            BigDecimal singleScore = BigDecimalOptional.valueOf(socre)
+                    .mul(BigDecimalUtil.ONEHundred)
+                    .div(maxScore, SCALEScore)
+                    .getValue();
+            rst.put(judgeItemId, new BigDecimal[]{socre,singleScore,maxScore});
         });
         return rst;
     }
@@ -100,8 +117,6 @@ public class EvalJudgeScoreBiz {
     public Map<String,BigDecimalOptional> evalJudgeScore4Period(String experimentId,Integer period) {
         Map<String, BigDecimalOptional> rst = new HashMap<>();
         ExperimentPersonCache.Instance().getGroups(experimentId).forEach(i->rst.put(i.getExperimentGroupId(),BigDecimalOptional.valueOf( MINJudgeScore)));
-
-        final boolean singleFag=rst.size()==1;
         List<ExperimentJudgeScoreLogEntity> rowsScoreLog = experimentJudgeScoreLogDao.getAllByPeriod(experimentId, period,
                 ExperimentJudgeScoreLogEntity::getExperimentGroupId,
                 ExperimentJudgeScoreLogEntity::getExperimentOrgId,
@@ -112,16 +127,18 @@ public class EvalJudgeScoreBiz {
         if(ShareUtil.XObject.isEmpty(rowsScoreLog)){
             return rst;
         }
-        Map<String,Map<String,List<BigDecimal>>> mapGroupScore=new HashMap<>();
-        rowsScoreLog.forEach(i->{
-            mapGroupScore.computeIfAbsent(i.getExperimentGroupId(), k->new HashMap<>())
-                    .computeIfAbsent(String.format("%s-%s-%s", i.getExperimentPersonId(),i.getExperimentOrgId(),i.getIndicatorFuncId()), k->new ArrayList<>())
-                    //.add(ShareUtil.XObject.defaultIfNull(singleFag?i.getSingleScore():i.getScore(),BigDecimal.ZERO));
-                    .add(ShareUtil.XObject.defaultIfNull(i.getScore(),BigDecimal.ZERO));
+        if(rst.size()==1){
+            return evalJudgeScore4PeriodSingle(rowsScoreLog);
+        }
+        Map<String, Map<String, List<BigDecimal>>> mapGroupScore = new HashMap<>();
+        rowsScoreLog.forEach(i -> {
+            mapGroupScore.computeIfAbsent(i.getExperimentGroupId(), k -> new HashMap<>())
+                    .computeIfAbsent(String.format("%s-%s-%s", i.getExperimentPersonId(), i.getExperimentOrgId(), i.getIndicatorFuncId()), k -> new ArrayList<>())
+                    .add(ShareUtil.XObject.defaultIfNull(i.getScore(), BigDecimal.ZERO));
         });
-        mapGroupScore.forEach((groupId,funcSocres)->{
-            BigDecimalOptional total=BigDecimalOptional.zero();
-            funcSocres.values().forEach(scores->total.add(getAvg(scores)));
+        mapGroupScore.forEach((groupId, funcSocres) -> {
+            BigDecimalOptional total = BigDecimalOptional.zero();
+            funcSocres.values().forEach(scores -> total.add(getAvg(scores)));
             rst.put(groupId, total);
         });
         BigDecimal minScore=null;
@@ -139,6 +156,34 @@ public class EvalJudgeScoreBiz {
         }
         return rst;
     }
+
+    public Map<String,BigDecimalOptional> evalJudgeScore4PeriodSingle(List<ExperimentJudgeScoreLogEntity> rowsScoreLog){
+        Map<String,List<BigDecimal>>[] dst=new Map[2];
+        dst[0]=new HashMap<>();
+        dst[1]=new HashMap<>();
+        int pos=0;
+        for(ExperimentJudgeScoreLogEntity item:rowsScoreLog){
+            dst[pos].computeIfAbsent(String.format("%s-%s-%s-%s", item.getExperimentGroupId(), item.getExperimentPersonId(), item.getExperimentOrgId(), item.getIndicatorFuncId()),
+                            k -> new ArrayList<>())
+                    .add(ShareUtil.XObject.defaultIfNull(item.getSingleScore(), BigDecimal.ZERO));
+        }
+        int loopNum=3;
+        while (loopNum-->0){
+            Map<String,List<BigDecimal>> vDst=dst[1-pos];
+            vDst.clear();
+            for(Map.Entry<String,List<BigDecimal>> item:dst[pos].entrySet()){
+                vDst.computeIfAbsent(item.getKey().substring(0,item.getKey().lastIndexOf("-")),x->new ArrayList<>())
+                        .add(getAvg(item.getValue()));
+            }
+            pos=1-pos;
+        }
+        Map<String,BigDecimalOptional> rst=new HashMap<>();
+        dst[pos].forEach((k,v)->rst.put(k, BigDecimalOptional.valueOf( getAvg(v))));
+        dst[0].clear();
+        dst[1].clear();
+        return rst;
+    }
+
 
     private BigDecimal getAvg(List<BigDecimal> scores){
         if(ShareUtil.XObject.isEmpty(scores)){
