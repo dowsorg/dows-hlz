@@ -122,7 +122,8 @@ public class EvalJudgeScoreBiz {
                 ExperimentJudgeScoreLogEntity::getExperimentOrgId,
                 ExperimentJudgeScoreLogEntity::getExperimentPersonId,
                 ExperimentJudgeScoreLogEntity::getIndicatorFuncId,
-                ExperimentJudgeScoreLogEntity::getScore
+                ExperimentJudgeScoreLogEntity::getScore,
+                ExperimentJudgeScoreLogEntity::getSingleScore
         );
         if(ShareUtil.XObject.isEmpty(rowsScoreLog)){
             return rst;
