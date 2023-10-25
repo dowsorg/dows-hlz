@@ -55,6 +55,16 @@ public class CaseIndicatorExpressionInfluenceDao extends BaseDao<CaseIndicatorEx
                 .list();
     }
 
+    public boolean delByIndicatorIds(Collection<String> indicatorIds){
+        if(ShareUtil.XObject.isEmpty(indicatorIds)){
+            return false;
+        }
+        return service.lambdaUpdate()
+                .eq(indicatorIds.size()==1, CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId,indicatorIds.iterator().next())
+                .in(indicatorIds.size()>1, CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId,indicatorIds)
+                .remove();
+    }
+
 
 
 

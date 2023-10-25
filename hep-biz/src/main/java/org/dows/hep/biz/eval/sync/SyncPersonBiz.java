@@ -282,7 +282,9 @@ public class SyncPersonBiz {
         }
 
         return caseIndicatorInstanceDao.tranSaveBatch(targetPack.getListIndicator(), false, true, ()->{
-
+            if(targetPack.getSetOldIndicatorIds().size()>0){
+                caseIndicatorInstanceDao.delByIds(targetPack.getSetOldIndicatorIds());
+            }
             if(removeCategoryRef){
                 String accountId=targetPack.getListIndicatorCategoryPrincipalRef().stream()
                         .map(CaseIndicatorCategoryPrincipalRefEntity::getPrincipalId)
@@ -312,9 +314,21 @@ public class SyncPersonBiz {
             }
 
             caseIndicatorCategoryService.saveOrUpdateBatch(targetPack.getListIndicaorCatgory());
+            if(targetPack.getSetOldIndicatorIds().size()>0){
+                caseIndicatorRuleDao.delByIndicatorIds(targetPack.getSetOldIndicatorIds());
+            }
             caseIndicatorRuleDao.tranSaveBatch(targetPack.getListIndicatorRule(),false,true);
+            if(targetPack.getSetOldIndicatorIds4Expression().size()>0){
+                caseIndicatorExpressionRefDao.delByReasonId(targetPack.getSetOldIndicatorIds(),true);
+            }
             caseIndicatorExpressionRefDao.tranSaveBatch(targetPack.getListExpressionRef(), false, true);
+            if(targetPack.getSetOldIndicatorIds4Expression().size()>0){
+                caseIndicatorExpressionDao.delByIds(targetPack.getSetOldIndicatorIds());
+            }
             caseIndicatorExpressionDao.tranSaveBatch(targetPack.getListExpression(), targetPack.getListExpressionItem(), false, true);
+            if(targetPack.getSetOldIndicatorIds().size()>0){
+                caseIndicatorExpressionInfluenceDao.delByIndicatorIds(targetPack.getSetOldIndicatorIds());
+            }
             caseIndicatorExpressionInfluenceDao.tranSaveBatch(targetPack.getListExpressionInfluence(),false,true);
             return true;
         });
