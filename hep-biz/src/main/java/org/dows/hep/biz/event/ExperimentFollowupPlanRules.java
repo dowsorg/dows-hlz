@@ -63,6 +63,7 @@ public class ExperimentFollowupPlanRules {
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
                 ExperimentOrgNoticeEntity::getEventActions
         );
+
         if (null == rowNotice) {
             rowNotice = experimentOrgNoticeBiz.createNotice(src, rowPerson, timePoint);
         }
