@@ -34,7 +34,6 @@ public class SyncTargetPack {
             return this;
         }
         return this.fillNewIds(syncCurrentPack, clearNewId)
-                .fillOldIds(sourcePack, syncCurrentPack)
                 .fillIndicatorCategory(sourcePack, syncCurrentPack)
                 .fillIndicatorCatoryRef(sourcePack, syncCurrentPack)
                 .fillIndicator(sourcePack, syncCurrentPack)
@@ -46,6 +45,7 @@ public class SyncTargetPack {
     }
     public SyncTargetPack coverData(SyncSourcePack sourcePack, SyncCurrentPack syncCurrentPack, boolean clearNewId) {
         return this.fillNewIds(syncCurrentPack, clearNewId)
+                .fillOldIds(sourcePack, syncCurrentPack)
                 .coverIndicatorCategory(sourcePack, syncCurrentPack)
                 .coverIndicatorCatoryRef(sourcePack, syncCurrentPack)
                 .coverIndicator(sourcePack, syncCurrentPack)
@@ -56,14 +56,15 @@ public class SyncTargetPack {
                 .coverExpressionInfluence(sourcePack, syncCurrentPack);
     }
     public SyncTargetPack coverData(SyncSourcePack sourcePack, SyncCurrentPack syncCurrentPack,  String indicatorId) {
-       return this.fillNewIds(syncCurrentPack, true)
+        return this.fillNewIds(syncCurrentPack, true)
+                .fillOldIds(sourcePack, syncCurrentPack, indicatorId)
                 //.coverIndicatorCategory(sourcePack, syncCurrentPack,indicatorCategoryId)
-                .coverIndicator(sourcePack, syncCurrentPack,indicatorId)
-                .coverIndicatorRule(sourcePack, syncCurrentPack,indicatorId)
-                .coverExpressionRef(sourcePack, syncCurrentPack,indicatorId)
-                .coverExpression(sourcePack, syncCurrentPack,indicatorId)
-                .coverExpressionItem(sourcePack, syncCurrentPack,indicatorId)
-                .coverExpressionInfluence(sourcePack, syncCurrentPack,indicatorId);
+                .coverIndicator(sourcePack, syncCurrentPack, indicatorId)
+                .coverIndicatorRule(sourcePack, syncCurrentPack, indicatorId)
+                .coverExpressionRef(sourcePack, syncCurrentPack, indicatorId)
+                .coverExpression(sourcePack, syncCurrentPack, indicatorId)
+                .coverExpressionItem(sourcePack, syncCurrentPack, indicatorId)
+                .coverExpressionInfluence(sourcePack, syncCurrentPack, indicatorId);
     }
     //endregion
     public SyncTargetPack fillNewIds(SyncCurrentPack syncCurrentPack, boolean clearFlag){
@@ -102,6 +103,16 @@ public class SyncTargetPack {
             }
         });
         setOldIndicatorIds4Expression.addAll(setOldIndicatorIds);
+        return this;
+    }
+    public SyncTargetPack fillOldIds(SyncSourcePack sourcePack,SyncCurrentPack currentPack,String indicatorId){
+        CaseIndicatorInstanceEntity indicator= currentPack.getCurIndicaors().get(indicatorId);
+        if(ShareUtil.XObject.anyEmpty(indicator,()->indicator.getIndicatorInstanceId())) {
+            return this;
+        }
+        if(!sourcePack.getMapExpressionRef().containsKey(indicatorId)){
+            setOldIndicatorIds4Expression.add(indicator.getCaseIndicatorInstanceId());
+        }
         return this;
     }
 

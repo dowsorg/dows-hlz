@@ -323,7 +323,7 @@ public class SyncPersonBiz {
             }
             caseIndicatorExpressionRefDao.tranSaveBatch(targetPack.getListExpressionRef(), false, true);
             if(targetPack.getSetOldIndicatorIds4Expression().size()>0){
-                caseIndicatorExpressionDao.delByIds(targetPack.getSetOldIndicatorIds());
+                caseIndicatorExpressionDao.delByIndicatorIds(targetPack.getSetOldIndicatorIds(),true);
             }
             caseIndicatorExpressionDao.tranSaveBatch(targetPack.getListExpression(), targetPack.getListExpressionItem(), false, true);
             if(targetPack.getSetOldIndicatorIds().size()>0){
