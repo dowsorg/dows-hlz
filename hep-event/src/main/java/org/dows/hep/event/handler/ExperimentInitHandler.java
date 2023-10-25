@@ -328,8 +328,12 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                 List<AccountInstanceResponse> instanceResponses = new ArrayList<>();
                 if (accountGroupResponses != null && accountGroupResponses.size() > 0) {
                     for (CaseAccountGroupResponse accountGroup : accountGroupResponses) {
+                        //机构未发布
+                        if (accountGroup.getStatus() != 1) {
+                            continue;
+                        }
                         AccountInstanceResponse accountInstanceByAccountId = accountInstanceApi.getAccountInstanceByAccountId(accountGroup.getAccountId());
-                        //人物发布状态
+                        //人物未发布
                         if (accountInstanceByAccountId.getStatus() != 1) {
                             continue;
                         }
