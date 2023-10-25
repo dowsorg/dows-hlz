@@ -240,6 +240,6 @@ public class OrgRest {
                              @RequestParam String caseInstanceId,
                              @RequestParam String accountId) throws ExecutionException, InterruptedException {
 //        return orgBiz.copyPerson(caseOrgId,caseInstanceId,accountId);
-        return personManageExtBiz.duplicateCaseOrgPerson(caseOrgId,caseInstanceId,accountId);
+        return personManageExtBiz.duplicateCaseOrgPerson(caseOrgId,caseInstanceId,accountId,true);
     }
 }
