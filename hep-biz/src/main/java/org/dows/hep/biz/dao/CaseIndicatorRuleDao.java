@@ -64,6 +64,16 @@ public class CaseIndicatorRuleDao extends BaseDao<CaseIndicatorRuleService, Case
                 .update();
     }
 
+    public boolean delByIndicatorIds(Collection<String> indicatorIds){
+        if(ShareUtil.XObject.isEmpty(indicatorIds)){
+            return false;
+        }
+        return service.lambdaUpdate()
+                .eq(indicatorIds.size()==1,CaseIndicatorRuleEntity::getVariableId,indicatorIds.iterator().next())
+                .in(indicatorIds.size()>1, CaseIndicatorRuleEntity::getVariableId,indicatorIds)
+                .remove();
+    }
+
 
 
 

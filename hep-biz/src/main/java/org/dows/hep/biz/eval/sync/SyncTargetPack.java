@@ -34,6 +34,7 @@ public class SyncTargetPack {
             return this;
         }
         return this.fillNewIds(syncCurrentPack, clearNewId)
+                .fillOldIds(sourcePack, syncCurrentPack)
                 .fillIndicatorCategory(sourcePack, syncCurrentPack)
                 .fillIndicatorCatoryRef(sourcePack, syncCurrentPack)
                 .fillIndicator(sourcePack, syncCurrentPack)
@@ -76,6 +77,31 @@ public class SyncTargetPack {
         syncCurrentPack.getNewIndicatorIds().forEach(i->mapNewId.computeIfAbsent(i, k -> idGenerator.nextIdStr()));
 
         syncCurrentPack.getMapExpressionRef().values().forEach(i->mapNewId.computeIfAbsent(i.getIndicatorExpressionId(), k -> idGenerator.nextIdStr()));
+        return this;
+    }
+
+    private final Set<String> setOldIndicatorIds=new HashSet<>();
+
+    private final Set<String> setOldIndicatorIds4Expression=new HashSet<>();
+    public SyncTargetPack fillOldIds(SyncSourcePack sourcePack,SyncCurrentPack currentPack){
+        currentPack.getCurIndicaors().forEach((k,v)->{
+            if(ShareUtil.XObject.isEmpty(v.getIndicatorInstanceId())){
+                return;
+            }
+            if(!sourcePack.getMapIndicator().containsKey(k)){
+                setOldIndicatorIds.add(v.getCaseIndicatorInstanceId());
+            }
+        });
+        currentPack.getMapExpressionRef().forEach((k,v)->{
+            CaseIndicatorInstanceEntity indicator= currentPack.getCurIndicaors().get(k);
+            if(ShareUtil.XObject.anyEmpty(indicator,()->indicator.getIndicatorInstanceId())) {
+                return;
+            }
+            if(!sourcePack.getMapExpressionRef().containsKey(k)){
+                setOldIndicatorIds4Expression.add(indicator.getCaseIndicatorInstanceId());
+            }
+        });
+        setOldIndicatorIds4Expression.addAll(setOldIndicatorIds);
         return this;
     }
 
