@@ -63,10 +63,12 @@ public class ExperimentFollowupPlanRules {
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
                 ExperimentOrgNoticeEntity::getEventActions
         );
+
         if (null == rowNotice) {
             rowNotice = experimentOrgNoticeBiz.createNotice(src, rowPerson, timePoint);
         }
-        rowNotice.setExperimentOrgId(rowPerson.getExperimentOrgId())
+        rowNotice.setExperimentOrgId(src.getExperimentOrgId())
+                .setExperimentGroupId(src.getExperimentGroupId())
                 .setPeriods(timePoint.getPeriod())
                 .setGameDay(timePoint.getGameDay())
                 .setNoticeSrcType(EnumExperimentOrgNoticeType.FOLLOWUP.getCode())

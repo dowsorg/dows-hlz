@@ -85,7 +85,7 @@ public class SyncCurrentPack {
 
     private final Map<String, CaseIndicatorExpressionEntity> mapExpression=new HashMap<>();
     public SyncCurrentPack fillExpression(CaseIndicatorExpressionEntity src){
-        String indicatorId=curCaseIndicatorIds.get(src.getPrincipalId());
+        String indicatorId=curCaseIndicatorIds.get(src.getCasePrincipalId());
         if(ShareUtil.XObject.isEmpty(indicatorId)){
             return this;
         }
