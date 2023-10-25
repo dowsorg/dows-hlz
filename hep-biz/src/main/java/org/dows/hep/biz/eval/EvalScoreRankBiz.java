@@ -267,8 +267,11 @@ public class EvalScoreRankBiz {
         kExperimentGroupIdVExperimentGraphRankGroupResponseMap.forEach((experimentGroupId, experimentGraphRankGroupResponse) -> {
             experimentGraphRankGroupResponseList.add(experimentGraphRankGroupResponse);
         });
-        experimentGraphRankGroupResponseList.sort(Comparator.comparing(ExperimentGraphRankGroupResponse::getRankNo)
-                .thenComparing(ExperimentGraphRankGroupResponse::getTotalScore).reversed());
+        //开始以后再排序
+        if (period > 0) {
+            experimentGraphRankGroupResponseList.sort(Comparator.comparing(ExperimentGraphRankGroupResponse::getRankNo)
+                    .thenComparing(ExperimentGraphRankGroupResponse::getTotalScore).reversed());
+        }
         return ExperimentGraphRankResponse
                 .builder()
                 .periods(period)
