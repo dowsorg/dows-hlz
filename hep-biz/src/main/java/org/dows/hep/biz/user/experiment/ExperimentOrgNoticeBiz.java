@@ -212,7 +212,7 @@ public class ExperimentOrgNoticeBiz {
 
     //region websocket
     public  Map<String,List<OrgNoticeResponse>>  getWebSocketNotice(String experimentInstanceId, List<ExperimentOrgNoticeEntity> src)  throws JsonProcessingException{
-        Set<String> groupIds=ShareUtil.XCollection.toSet(src, ExperimentOrgNoticeEntity::getExperimentOrgId);
+        Set<String> groupIds=ShareUtil.XCollection.toSet(src, ExperimentOrgNoticeEntity::getExperimentGroupId);
         List<ExperimentParticipatorEntity> rowsParticipator= CrudContextHolder.getBean(ExperimentParticipatorDao.class).getAccountIdsByGroupId(experimentInstanceId, groupIds,
                 ExperimentParticipatorEntity::getAccountId,
                 ExperimentParticipatorEntity::getExperimentGroupId,

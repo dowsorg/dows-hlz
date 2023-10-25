@@ -95,7 +95,7 @@ public class EvalScoreRankBiz {
                 .experimentId(experimentInstanceId)
                 .periods(periods)
                 .build());
-        Map<String, GroupCompetitiveScoreRsResponse> mapGroupScores=rsCalculateCompetitiveScoreRsResponse.getMapGroupScores();
+        Map<String, GroupCompetitiveScoreRsResponse> mapGroupScores = rsCalculateCompetitiveScoreRsResponse.getMapGroupScores();
 
 
         //C、医疗占比得分
@@ -114,7 +114,7 @@ public class EvalScoreRankBiz {
             });
         }
         //D.操作准确度得分
-        Map<String, BigDecimalOptional> mapJudgeSocre= evalJudgeScoreBiz.evalJudgeScore4Period(experimentInstanceId,periods);
+        Map<String, BigDecimalOptional> mapJudgeSocre = evalJudgeScoreBiz.evalJudgeScore4Period(experimentInstanceId, periods);
 
         List<ExperimentScoringEntity> experimentScoringEntityList = new ArrayList<>();
         experimentGroupEntityList.forEach(experimentGroupEntity -> {
@@ -128,7 +128,7 @@ public class EvalScoreRankBiz {
                 questionnaireScoreBigDecimal = BigDecimal.ZERO;
             }
             //健康竞赛分
-            GroupCompetitiveScoreRsResponse groupScore=  mapGroupScores.get(experimentGroupId);
+            GroupCompetitiveScoreRsResponse groupScore = mapGroupScores.get(experimentGroupId);
             BigDecimal groupCompetitiveScoreBigDecimal = Optional.ofNullable(groupScore)
                     .map(GroupCompetitiveScoreRsResponse::getGroupCompetitiveScore)
                     .orElse(null);
@@ -141,19 +141,19 @@ public class EvalScoreRankBiz {
                 groupIdVGroupMoneyScoreBigDecimal = BigDecimal.ZERO;
             }
             //操作准确度得分
-            BigDecimal groupOperateRightScore=mapJudgeSocre.getOrDefault(experimentGroupId,BigDecimalOptional.zero()).getValue(2);
+            BigDecimal groupOperateRightScore = mapJudgeSocre.getOrDefault(experimentGroupId, BigDecimalOptional.zero()).getValue(2);
 
             //权重
             BigDecimal knowledgeWeight = knowledgeWeightAtomicReference.get();
             BigDecimal healthIndexWeight = healthIndexWeightAtomicReference.get();
             BigDecimal medicalRatioWeight = medicalRatioWeightAtomicReference.get();
-            BigDecimal operateRightWeight=operateRightAtomicWeightReference.get();
+            BigDecimal operateRightWeight = operateRightAtomicWeightReference.get();
             //总分
             BigDecimal totalScoreBigDecimal = getWeightTotalScore(
                     knowledgeWeight, questionnaireScoreBigDecimal,
                     healthIndexWeight, groupCompetitiveScoreBigDecimal,
                     medicalRatioWeight, groupIdVGroupMoneyScoreBigDecimal,
-                    operateRightWeight,groupOperateRightScore
+                    operateRightWeight, groupOperateRightScore
             );
 
             //权重后得分
@@ -162,9 +162,9 @@ public class EvalScoreRankBiz {
             BigDecimal finalMedicalRatioScoreScore = groupIdVGroupMoneyScoreBigDecimal.multiply(medicalRatioWeight);
             BigDecimal finalOperateRightScore = groupOperateRightScore.multiply(operateRightWeight);
 
-            String hpScoreJson= JacksonUtil.toJsonSilence(Optional.ofNullable(groupScore)
+            String hpScoreJson = JacksonUtil.toJsonSilence(Optional.ofNullable(groupScore)
                     .map(GroupCompetitiveScoreRsResponse::getPersonScores)
-                    .orElse(null),true);
+                    .orElse(null), true);
             experimentScoringEntityList.add(ExperimentScoringEntity
                     .builder()
                     .experimentScoringId(idGenerator.nextIdStr())
@@ -204,7 +204,7 @@ public class EvalScoreRankBiz {
                 period = 1;
             }
         }
-        Map<String, ExperimentGroupEntity> kExperimentGroupIdVExperimentGroupEntityMap=experimentPersonCache.getMapGroups(experimentId);
+        Map<String, ExperimentGroupEntity> kExperimentGroupIdVExperimentGroupEntityMap = experimentPersonCache.getMapGroups(experimentId);
 
 
         //分组得分
@@ -241,6 +241,7 @@ public class EvalScoreRankBiz {
                             .setPercentKnowledgeScore("0")
                             .setPercentTreatmentPercentScore("0")
                             .setPercentOperateRightScore("0")
+                            .setTotalScore("0")
                     );
 
             ExperimentGraphRankGroupResponse experimentGraphRankGroupResponse = ExperimentGraphRankGroupResponse
@@ -267,8 +268,10 @@ public class EvalScoreRankBiz {
         kExperimentGroupIdVExperimentGraphRankGroupResponseMap.forEach((experimentGroupId, experimentGraphRankGroupResponse) -> {
             experimentGraphRankGroupResponseList.add(experimentGraphRankGroupResponse);
         });
+
         experimentGraphRankGroupResponseList.sort(Comparator.comparing(ExperimentGraphRankGroupResponse::getRankNo)
                 .thenComparing(ExperimentGraphRankGroupResponse::getTotalScore).reversed());
+
         return ExperimentGraphRankResponse
                 .builder()
                 .periods(period)
@@ -281,12 +284,11 @@ public class EvalScoreRankBiz {
         List<ExperimentTotalRankItemResponse> experimentTotalRankItemResponseList = new ArrayList<>();
         Map<Integer, ExperimentRankItemResponse> kPeriodVExperimentRankItemResponseMap = new HashMap<>();
 
-        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(ExperimentCacheKey.create("3", experimentId),false);
+        ExperimentSettingCollection exptColl = ExperimentSettingCache.Instance().getSet(ExperimentCacheKey.create("3", experimentId), false);
         AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(exptColl))
-                .throwMessage("未找到实验设置[实验id:%s]",experimentId);
+                .throwMessage("未找到实验设置[实验id:%s]", experimentId);
         AssertUtil.falseThenThrow(exptColl.hasSandMode())
-                .throwMessage("未找到沙盘设置[实验id:%s]",experimentId);
-
+                .throwMessage("未找到沙盘设置[实验id:%s]", experimentId);
 
 
         final Integer totalPeriods = exptColl.getPeriods();
@@ -302,7 +304,7 @@ public class EvalScoreRankBiz {
         Map<String, Map<Integer, ExperimentScoringEntity>> kExperimentGroupIdVKPeriodVExperimentScoringEntityMap = new HashMap<>();
         List<ExperimentScoringEntity> list = experimentScoringService.lambdaQuery()
                 .eq(ExperimentScoringEntity::getExperimentInstanceId, experimentId)
-                .ge(ExperimentScoringEntity::getPeriods,1)
+                .ge(ExperimentScoringEntity::getPeriods, 1)
                 .list();
         list.forEach(experimentScoringEntity -> {
             String experimentGroupId = experimentScoringEntity.getExperimentGroupId();
@@ -374,7 +376,7 @@ public class EvalScoreRankBiz {
         /**
          * 如果期数未满，那么不执行计算总分，直接返回对应的期数分值
          */
-        if (kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.size() < totalPeriods ) {
+        if (kPeriodVKExperimentGroupIdVExperimentScoringEntityMap.size() < totalPeriods) {
             return ExperimentRankResponse
                     .builder()
                     .totalPeriod(totalPeriods)
@@ -454,7 +456,7 @@ public class EvalScoreRankBiz {
                     .build());
         });
         /* runsix:sort */
-        experimentTotalRankItemResponseList.sort(Comparator.comparing(a -> Double.parseDouble(a.getAllPeriodsTotalScore()),Comparator.reverseOrder()));
+        experimentTotalRankItemResponseList.sort(Comparator.comparing(a -> Double.parseDouble(a.getAllPeriodsTotalScore()), Comparator.reverseOrder()));
 
         List<ExperimentRankingEntity> experimentRankingEntities = new ArrayList<>();
         for (int i = 0; i < experimentTotalRankItemResponseList.size(); i++) {
@@ -489,8 +491,7 @@ public class EvalScoreRankBiz {
         Integer periods = rsCalculateMoneyScoreRequestRs.getPeriods();
         String experimentId = rsCalculateMoneyScoreRequestRs.getExperimentId();
 
-        Map<String,ExperimentPersonEntity> mapPersons= experimentPersonCache.getMapPersons(experimentId);
-
+        Map<String, ExperimentPersonEntity> mapPersons = experimentPersonCache.getMapPersons(experimentId);
 
 
         if (mapPersons.isEmpty()) {
@@ -510,7 +511,7 @@ public class EvalScoreRankBiz {
 
         Map<String, BigDecimal> kExperimentOrgGroupIdVTotalMap = new HashMap<>();
         initMoneyByPeriods.forEach((experimentPersonId, money) -> {
-            String experimentOrgGroupId =Optional.ofNullable( mapPersons.get(experimentPersonId).getExperimentGroupId()).orElse("");
+            String experimentOrgGroupId = Optional.ofNullable(mapPersons.get(experimentPersonId).getExperimentGroupId()).orElse("");
             if (StringUtils.isBlank(experimentOrgGroupId)) {
                 return;
             }
@@ -543,10 +544,10 @@ public class EvalScoreRankBiz {
                 costTotal = BigDecimal.ZERO;
             }
             BigDecimal groupMoneyScore;
-            if(initTotal.compareTo(BigDecimal.ZERO)<=0){
-                groupMoneyScore=BigDecimal.ZERO;
-            }else{
-                groupMoneyScore= BigDecimal.valueOf(100).multiply(BigDecimal.ONE.subtract((costTotal.divide(initTotal, 2, RoundingMode.DOWN))));
+            if (initTotal.compareTo(BigDecimal.ZERO) <= 0) {
+                groupMoneyScore = BigDecimal.ZERO;
+            } else {
+                groupMoneyScore = BigDecimal.valueOf(100).multiply(BigDecimal.ONE.subtract((costTotal.divide(initTotal, 2, RoundingMode.DOWN))));
             }
 
             groupMoneyScoreRsResponseList.add(GroupMoneyScoreRsResponse
@@ -566,7 +567,7 @@ public class EvalScoreRankBiz {
             BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
             BigDecimal healthIndexWeight, BigDecimal healthIndexScore,
             BigDecimal medicalRatioWeight, BigDecimal medicalRatioScore,
-            BigDecimal operateRightWeight,BigDecimal operateRightScore
+            BigDecimal operateRightWeight, BigDecimal operateRightScore
     ) {
         BigDecimal finalKnowledgeScore = knowledgeScore.multiply(knowledgeWeight);
         BigDecimal finalHealthIndexScore = healthIndexScore.multiply(healthIndexWeight);

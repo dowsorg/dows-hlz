@@ -268,6 +268,10 @@ public class CaseIndicatorInstanceExtBiz {
             if (StringUtils.isNotBlank(caseExpressionItem.getIndicatorExpressionId())){
                 caseExpressionItem.setIndicatorExpressionId(checkNullNewId(caseExpressionItem.getIndicatorExpressionId(), kOldIdVNewIdMap));
             }
+            caseExpressionItem.setConditionValList(
+                    rsCaseIndicatorInstanceBiz.convertIndicatorInstanceIdList2Case(caseExpressionItem.getConditionValList(), kOldIdVNewIdMap));
+            caseExpressionItem.setResultValList(
+                    rsCaseIndicatorInstanceBiz.convertIndicatorInstanceIdList2Case(caseExpressionItem.getResultValList(), kOldIdVNewIdMap));
             caseExpressionItem.setId(null);
             caseExpressionItem.setDt(new Date());
         });
