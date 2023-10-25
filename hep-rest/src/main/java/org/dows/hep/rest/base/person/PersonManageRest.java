@@ -88,7 +88,7 @@ public class PersonManageRest {
     public PersonInstanceResponse copyPerson(@RequestParam @Validated String accountId,
                                              @RequestParam @Validated String source) throws ExecutionException, InterruptedException {
 //        return personManageBiz.copyPerson(accountId,source);
-        return personManageExtBiz.duplicatePerson(accountId,source);
+        return personManageExtBiz.duplicatePerson(accountId,source,true);
     }
 
     /**

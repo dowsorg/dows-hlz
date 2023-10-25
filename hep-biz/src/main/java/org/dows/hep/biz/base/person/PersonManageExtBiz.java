@@ -55,8 +55,8 @@ public class PersonManageExtBiz {
      * 返回机构人物新id
      */
     @DSTransactional
-    public String duplicateCaseOrgPerson(String caseOrgId, String caseInstanceId, String accountId) {
-        PersonInstanceResponse personInstanceResponse = duplicatePerson(accountId, ORG_PERSON);
+    public String duplicateCaseOrgPerson(String caseOrgId, String caseInstanceId, String accountId, boolean suffix ) {
+        PersonInstanceResponse personInstanceResponse = duplicatePerson(accountId, ORG_PERSON,suffix);
         if (personInstanceResponse == null) {
             throw new BizException("复制人物异常");
         }
@@ -69,7 +69,7 @@ public class PersonManageExtBiz {
      * 人物管理复制
      */
     @DSTransactional
-    public PersonInstanceResponse duplicatePerson(String accountId, String source) {
+    public PersonInstanceResponse duplicatePerson(String accountId, String source,boolean suffix) {
         //为空则人物是 人物管理复制
         if (StringUtils.isBlank(source)) {
             source = PERSON_MANAGE;
@@ -81,8 +81,8 @@ public class PersonManageExtBiz {
         UserInstanceResponse userInstanceResponse = userInstanceApi.getUserInstanceByUserId(oldUserId);
         UserInstanceRequest userInstanceRequest = new UserInstanceRequest();
         BeanUtils.copyProperties(userInstanceResponse, userInstanceRequest, new String[]{"id", "accountId"});
-        //只有人物管理复制时修要修改名称
-        if (PERSON_MANAGE.equals(source)){
+        //人名带后缀
+        if (suffix){
             userInstanceRequest.setName(userInstanceRequest.getName() + NAME_SUFFIX);
         }
         userInstanceRequest.setDt(new Date());
