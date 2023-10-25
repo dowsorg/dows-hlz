@@ -692,6 +692,9 @@ public class ExperimentManageBiz {
                         experimentPersonService.save(entity1);
                         experimentAccountIds.add(vo.getAccountId());
                     }
+                }else {
+                    log.info("案例机构:"+createExperiment.getCaseOrgId() +"有机构,没有人员;或者人员没有发布");
+                    throw new BizException("有机构,没有人员;或者人员没有发布");
                 }
                 //2.7、复制人物到新建的小组
                 experimentAccountIds.forEach(accountId -> {
