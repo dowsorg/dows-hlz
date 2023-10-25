@@ -68,6 +68,7 @@ public class SyncPersonBiz {
     private final XAccountInstanceApi xAccountInstanceApi;
 
 
+    //region 一键同步所有指标
     public boolean syncPersonIndicator(SyncIndicatorRequest req){
         SyncSourcePack sourcePack=loadSource();
         Set<String> baseAccountIds=loadAccountIds(false);
@@ -98,6 +99,20 @@ public class SyncPersonBiz {
         targetPack.clear();
         return rst;
     }
+    //endregion
+
+    //region 单个案例同步
+    public boolean syncOnePerson(SyncIndicatorRequest req){
+        return true;
+    }
+    //endregion
+
+    //region 单个指标同步
+    public boolean syncOneIndicator(SyncIndicatorRequest req){
+        return true;
+    }
+    //endreigon
+
 
     private Set<String> loadAccountIds(boolean orgPersonFlag){
         final String source=orgPersonFlag?"机构人物":"人物管理";
