@@ -60,6 +60,12 @@ public class ExperimentFollowupPlanRules {
         final boolean pushNoticeFlag = monitorOrgIds.contains(rowPerson.getExperimentOrgId());
         ExperimentOrgNoticeEntity rowNotice = experimentOrgNoticeDao.getTopFollowupNotice(src.getExperimentPersonId(),
                 ExperimentOrgNoticeEntity::getId,
+                ExperimentOrgNoticeEntity::getExperimentPersonId,
+                ExperimentOrgNoticeEntity::getAvatar,
+                ExperimentOrgNoticeEntity::getTitle,
+                ExperimentOrgNoticeEntity::getContent,
+                ExperimentOrgNoticeEntity::getTips,
+                ExperimentOrgNoticeEntity::getPersonName,
                 ExperimentOrgNoticeEntity::getExperimentOrgNoticeId,
                 ExperimentOrgNoticeEntity::getEventActions
         );
