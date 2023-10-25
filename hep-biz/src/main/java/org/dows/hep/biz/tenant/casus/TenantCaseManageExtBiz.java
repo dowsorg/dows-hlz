@@ -230,8 +230,8 @@ public class TenantCaseManageExtBiz {
             }
             casePersonEntityList.forEach(casePerson -> {
                 String oldAccountId = casePerson.getAccountId();
-
-                PersonInstanceResponse personInstanceResponse = personManageExtBiz.duplicatePerson(oldAccountId, ORG_PERSON);
+                //后台复制，不需要修改人物名称
+                PersonInstanceResponse personInstanceResponse = personManageExtBiz.duplicatePerson(oldAccountId, ORG_PERSON,false);
                 if (personInstanceResponse == null || StringUtils.isEmpty(personInstanceResponse.getAccountId())) {
                     throw new BizException("复制人物异常");
                 }

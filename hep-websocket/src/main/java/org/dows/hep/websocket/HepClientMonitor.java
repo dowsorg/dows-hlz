@@ -17,12 +17,12 @@ public class HepClientMonitor {
         // 定时扫描所有的Channel，关闭失效的Channel，整个实验结束时，触发该扫描，清除
 //        executorService.scheduleAtFixedRate(() -> {
 //            HepClientManager.scanNotActiveChannel();
-//        }, 3, 60, TimeUnit.SECONDS);
+//        }, 3, 60, TimeUnit.SECONDS);  心跳发送
 
         // 定时向所有客户端发送Ping消息
         executorService.scheduleAtFixedRate(() -> {
             HepClientManager.broadCastPing();
-        }, 3, 50, TimeUnit.SECONDS);
+        }, 3, 30, TimeUnit.SECONDS);
     }
 
     public void shutdown() {

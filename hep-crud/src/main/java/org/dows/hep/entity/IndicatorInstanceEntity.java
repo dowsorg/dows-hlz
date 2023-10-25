@@ -1,7 +1,5 @@
 package org.dows.hep.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -13,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudEntity;
+
+import java.util.Date;
 
 /**
  * 指标(IndicatorInstance)实体类
@@ -72,6 +72,8 @@ public class IndicatorInstanceEntity implements CrudEntity {
     @Schema(title = "描述")
     private String descr;
 
+    @Schema(title = "值类型 0-字符串 1-整数 2-小数")
+    private Integer valueType;
 
     @JsonIgnore
     @TableLogic

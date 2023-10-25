@@ -461,13 +461,13 @@ public abstract class BaseSubDao<LS extends MybatisCrudService<LE>, LE extends C
      * @param dftIfEmpty
      * @return
      */
-    public boolean delSubByLeadId(List<String> ids,boolean dftIfEmpty) {
+    public boolean delSubByLeadId(Collection<String> ids,boolean dftIfEmpty) {
         if (ShareUtil.XObject.isEmpty(ids)) {
             return dftIfEmpty;
         }
         final boolean oneFlag = ids.size() == 1;
         return subService.remove(Wrappers.<SE>lambdaQuery()
-                .eq(oneFlag, getColLeadId(), ids.get(0))
+                .eq(oneFlag, getColLeadId(), ids.iterator().next())
                 .in(!oneFlag, getColLeadId(), ids));
 
     }

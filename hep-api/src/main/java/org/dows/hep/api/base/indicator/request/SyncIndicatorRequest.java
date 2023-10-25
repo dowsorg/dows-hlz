@@ -18,4 +18,10 @@ public class SyncIndicatorRequest {
     @Schema(title = "appId")
     @ApiModelProperty(required = true)
     private String appId;
+
+    @Schema(title = "人物ID,同步单个人物/单个指标时必须")
+    private String accountId;
+
+    @Schema(title = "人物指标ID,同步单个指标时必须")
+    private String caseIndicatorId;
 }

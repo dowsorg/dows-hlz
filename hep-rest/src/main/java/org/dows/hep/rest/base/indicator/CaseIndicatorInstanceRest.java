@@ -7,9 +7,11 @@ import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.base.indicator.request.CaseCreateCopyToPersonRequestRs;
 import org.dows.hep.api.base.indicator.request.CreateOrUpdateCaseIndicatorInstanceRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCaseGetCoreRequest;
+import org.dows.hep.api.base.indicator.request.SyncIndicatorRequest;
 import org.dows.hep.api.base.indicator.response.CaseIndicatorInstanceCategoryResponseRs;
 import org.dows.hep.api.tenant.casus.request.UpdateIndicatorValueRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
+import org.dows.hep.biz.eval.sync.SyncPersonBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +27,8 @@ import java.util.concurrent.ExecutionException;
 @Tag(name = "案例管理", description = "案例管理")
 public class CaseIndicatorInstanceRest {
     private final CaseIndicatorInstanceBiz caseIndicatorInstanceBiz;
+
+    private final SyncPersonBiz syncPersonBiz;
 
     @Operation(summary = "根据人物id和appId查询出所有的指标")
     @GetMapping("v1/caseIndicator/indicatorInstance/getByPersonIdAndAppId")
@@ -82,5 +86,17 @@ public class CaseIndicatorInstanceRest {
     public Map<String, List<String>> getCoreByAccountIdList(@RequestBody RsCaseGetCoreRequest rsCaseGetCoreRequest) {
         List<String> accountIdList = rsCaseGetCoreRequest.getAccountIdList();
         return caseIndicatorInstanceBiz.getCoreByAccountIdList(accountIdList);
+    }
+
+    @Operation(summary = "指标同步-单个人物同步")
+    @PostMapping("v1/caseIndicator/indicatorInstance/syncOnePerson")
+    public Boolean syncOnePerson(@RequestBody @Validated SyncIndicatorRequest req) {
+        return syncPersonBiz.syncOnePerson(req);
+    }
+
+    @Operation(summary = "指标同步-单个指标同步")
+    @PostMapping("v1/caseIndicator/indicatorInstance/syncOneIndicator")
+    public Boolean syncOneIndicator(@RequestBody @Validated SyncIndicatorRequest req) {
+        return syncPersonBiz.syncOneIndicator(req);
     }
 }

@@ -150,13 +150,13 @@ public class CaseIndicatorExpressionRefDao extends BaseDao<CaseIndicatorExpressi
         return service.remove(Wrappers.<CaseIndicatorExpressionRefEntity>lambdaQuery()
                 .eq(CaseIndicatorExpressionRefEntity::getReasonId,reasonId));
     }
-    public boolean delByReasonId(List<String> ids,boolean dftIfEmpty){
+    public boolean delByReasonId(Collection<String> ids,boolean dftIfEmpty){
         if (ShareUtil.XObject.isEmpty(ids)) {
             return dftIfEmpty;
         }
         final boolean oneFlag = ids.size() == 1;
         return service.remove(Wrappers.<CaseIndicatorExpressionRefEntity>lambdaQuery()
-                .eq(oneFlag, CaseIndicatorExpressionRefEntity::getReasonId, ids.get(0))
+                .eq(oneFlag, CaseIndicatorExpressionRefEntity::getReasonId, ids.iterator().next())
                 .in(!oneFlag, CaseIndicatorExpressionRefEntity::getReasonId, ids));
     }
     public boolean delByExpressionId(List<String> ids, boolean dftIfEmpty) {

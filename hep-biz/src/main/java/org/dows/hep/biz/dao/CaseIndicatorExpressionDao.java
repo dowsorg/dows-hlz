@@ -108,4 +108,15 @@ public class CaseIndicatorExpressionDao extends BaseSubDao<CaseIndicatorExpressi
                 .select(cols)
                 .list();
     }
+
+    public boolean delByIndicatorIds(Collection<String> ids,boolean dftIfEmpty){
+        if (ShareUtil.XObject.isEmpty(ids)) {
+            return dftIfEmpty;
+        }
+        final boolean oneFlag = ids.size() == 1;
+        return service.lambdaUpdate()
+                .eq(oneFlag, CaseIndicatorExpressionEntity::getCasePrincipalId, ids.iterator().next())
+                .in(!oneFlag, CaseIndicatorExpressionEntity::getCasePrincipalId, ids)
+                .remove();
+    }
 }
