@@ -140,7 +140,6 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         if(missIds.size()>0) {
             logError("buildExpression", "miss exptIndicatorId. person:%s expression:%s missIds:%s names:%s vals:%s",
                     exptPersonId, rawExpression, String.join(",", missIds), names, vals);
-            return "";
         }
         return rawExpression;
     }
