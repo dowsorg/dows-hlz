@@ -3,9 +3,11 @@ package org.dows.hep.biz.eval.sync;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.entity.AccountInstance;
+import org.dows.hep.api.base.indicator.request.CaseRsCalculateHealthScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.SyncIndicatorRequest;
 import org.dows.hep.api.enums.EnumIndicatorCategory;
 import org.dows.hep.biz.dao.*;
+import org.dows.hep.biz.eval.EvalCaseHealthIndexBiz;
 import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.util.AssertUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -62,6 +64,7 @@ public class SyncPersonBiz {
 
     private final XAccountInstanceApi xAccountInstanceApi;
 
+    private final EvalCaseHealthIndexBiz evalCaseHealthIndexBiz;
 
     //region 一键同步所有指标
     public boolean syncAllPerson(SyncIndicatorRequest req){
@@ -107,6 +110,11 @@ public class SyncPersonBiz {
                 .coverData(sourcePack, syncCurrentPack, true);
         boolean rst=saveTarget(targetPack,true);
         targetPack.clear();
+        evalCaseHealthIndexBiz.evalCasePersonHealthIndex(CaseRsCalculateHealthScoreRequestRs
+                .builder()
+                .appId(APPId)
+                .accountId(req.getAccountId())
+                .build());
         return rst;
     }
     //endregion
@@ -128,6 +136,11 @@ public class SyncPersonBiz {
                 .coverData(sourcePack, currentPack, indicatorId);
         boolean rst=saveTarget(targetPack);
         targetPack.clear();
+        evalCaseHealthIndexBiz.evalCasePersonHealthIndex(CaseRsCalculateHealthScoreRequestRs
+                .builder()
+                .appId(APPId)
+                .accountId(req.getAccountId())
+                .build());
         return rst;
     }
     //endreigon
