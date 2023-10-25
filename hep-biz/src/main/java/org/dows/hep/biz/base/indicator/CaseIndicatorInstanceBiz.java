@@ -19,6 +19,7 @@ import org.dows.hep.api.tenant.casus.request.UpdateIndicatorValueRequest;
 import org.dows.hep.biz.eval.EvalCaseHealthIndexBiz;
 import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.util.RedissonUtil;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -777,6 +778,8 @@ public class CaseIndicatorInstanceBiz {
         Integer type = createOrUpdateCaseIndicatorInstanceRequestRs.getType();
         String min = createOrUpdateCaseIndicatorInstanceRequestRs.getMin();
         String max = createOrUpdateCaseIndicatorInstanceRequestRs.getMax();
+
+
         /* runsix:result */
         AtomicReference<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityAR = new AtomicReference<>();
         AtomicReference<CaseIndicatorCategoryRefEntity> caseIndicatorCategoryRefEntityAR = new AtomicReference<>();

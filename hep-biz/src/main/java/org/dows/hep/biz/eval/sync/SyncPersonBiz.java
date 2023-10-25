@@ -319,11 +319,11 @@ public class SyncPersonBiz {
             }
             caseIndicatorRuleDao.tranSaveBatch(targetPack.getListIndicatorRule(),false,true);
             if(targetPack.getSetOldIndicatorIds4Expression().size()>0){
-                caseIndicatorExpressionRefDao.delByReasonId(targetPack.getSetOldIndicatorIds(),true);
+                caseIndicatorExpressionRefDao.delByReasonId(targetPack.getSetOldIndicatorIds4Expression(),true);
             }
             caseIndicatorExpressionRefDao.tranSaveBatch(targetPack.getListExpressionRef(), false, true);
             if(targetPack.getSetOldIndicatorIds4Expression().size()>0){
-                caseIndicatorExpressionDao.delByIds(targetPack.getSetOldIndicatorIds());
+                caseIndicatorExpressionDao.delByIndicatorIds(targetPack.getSetOldIndicatorIds4Expression(),true);
             }
             caseIndicatorExpressionDao.tranSaveBatch(targetPack.getListExpression(), targetPack.getListExpressionItem(), false, true);
             if(targetPack.getSetOldIndicatorIds().size()>0){
