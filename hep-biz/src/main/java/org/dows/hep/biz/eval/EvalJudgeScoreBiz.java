@@ -106,6 +106,7 @@ public class EvalJudgeScoreBiz {
             BigDecimal singleScore = BigDecimalOptional.valueOf(socre)
                     .mul(BigDecimalUtil.ONEHundred)
                     .div(maxScore, SCALEScore)
+                    .max(BigDecimalUtil.ONEHundred)
                     .getValue();
             rst.put(judgeItemId, new BigDecimal[]{socre,singleScore,maxScore});
         });

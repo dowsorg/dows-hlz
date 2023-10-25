@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.tenant.casus.CaseSourceEnum;
 import org.dows.hep.api.tenant.casus.request.CaseInstanceCopyRequest;
 import org.dows.hep.api.tenant.casus.request.CaseInstancePageRequest;
@@ -56,6 +57,7 @@ public class TenantCaseManageRest {
     * @param
     * @return
     */
+    @Resubmit(duration = 3)
     @Operation(summary = "复制")
     @PostMapping("v1/tenantCasus/caseManage/copyCaseInstance")
     public String copyCaseInstance(@RequestBody CaseInstanceCopyRequest request) throws ExecutionException, InterruptedException {

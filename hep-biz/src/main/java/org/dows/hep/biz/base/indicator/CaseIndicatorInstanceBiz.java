@@ -778,7 +778,8 @@ public class CaseIndicatorInstanceBiz {
         Integer type = createOrUpdateCaseIndicatorInstanceRequestRs.getType();
         String min = createOrUpdateCaseIndicatorInstanceRequestRs.getMin();
         String max = createOrUpdateCaseIndicatorInstanceRequestRs.getMax();
-
+        Integer valueType=EnumIndicatorValueType.of(createOrUpdateCaseIndicatorInstanceRequestRs.getValueType())
+                .getCode();
 
         /* runsix:result */
         AtomicReference<CaseIndicatorInstanceEntity> caseIndicatorInstanceEntityAR = new AtomicReference<>();
@@ -804,6 +805,7 @@ public class CaseIndicatorInstanceBiz {
                 .core(core)
                 .food(food)
                 .type(type)
+                .valueType(valueType)
                 .build();
             AtomicInteger seqAtomicInteger = new AtomicInteger(1);
             caseIndicatorCategoryRefService.lambdaQuery()
@@ -856,6 +858,7 @@ public class CaseIndicatorInstanceBiz {
             caseIndicatorInstanceEntity.setUnit(unit);
             caseIndicatorInstanceEntity.setCore(core);
             caseIndicatorInstanceEntity.setFood(food);
+            caseIndicatorInstanceEntity.setValueType(valueType);
             rsCaseIndicatorInstanceBiz.checkCaseIndicatorInstanceIdInCaseIndicatorRuleEntity(caseIndicatorRuleEntityAR, caseIndicatorInstanceId);
             CaseIndicatorRuleEntity caseIndicatorRuleEntity = caseIndicatorRuleEntityAR.get();
             caseIndicatorRuleEntity.setMin(min);

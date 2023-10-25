@@ -159,6 +159,9 @@ public class IndicatorInstanceBiz{
         String min = createOrUpdateIndicatorInstanceRequestRs.getMin();
         String max = createOrUpdateIndicatorInstanceRequestRs.getMax();
         String def = createOrUpdateIndicatorInstanceRequestRs.getDef();
+        Integer valueType=EnumIndicatorValueType.of(createOrUpdateIndicatorInstanceRequestRs.getValueType())
+                .getCode();
+
         IndicatorInstanceEntity indicatorInstanceEntity = null;
         IndicatorCategoryRefEntity indicatorCategoryRefEntity = null;
         IndicatorRuleEntity indicatorRuleEntity = null;
@@ -181,6 +184,7 @@ public class IndicatorInstanceBiz{
                 .core(core)
                 .food(food)
                 .type(type)
+                .valueType(valueType)
                 .build();
             AtomicInteger seqAtomicInteger = new AtomicInteger(1);
             indicatorCategoryRefService.lambdaQuery()
@@ -236,6 +240,7 @@ public class IndicatorInstanceBiz{
             indicatorInstanceEntity.setUnit(unit);
             indicatorInstanceEntity.setCore(core);
             indicatorInstanceEntity.setFood(food);
+            indicatorInstanceEntity.setValueType(valueType);
             indicatorRuleEntity = indicatorRuleService.lambdaQuery()
                 .eq(IndicatorRuleEntity::getAppId, appId)
                 .eq(IndicatorRuleEntity::getVariableId, finalIndicatorInstanceId)
