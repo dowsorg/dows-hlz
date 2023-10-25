@@ -114,7 +114,7 @@ public class ExperimentManageBiz {
     public String allot(CreateExperimentRequest createExperiment, String accountId) {
         Long delay = createExperiment.getStartTime().getTime() - System.currentTimeMillis();
         if (delay < 0) {
-            throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!为确保实验正常初始化，开始时间至少大于当前时间1分钟");
+            throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!为确保实验正常初始化，开始时间不可早于当前时间");
         }
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
@@ -692,6 +692,9 @@ public class ExperimentManageBiz {
                         experimentPersonService.save(entity1);
                         experimentAccountIds.add(vo.getAccountId());
                     }
+                }else {
+                    log.info("案例机构:"+createExperiment.getCaseOrgId() +"有机构,没有人员;或者人员没有发布");
+                    throw new BizException("有机构,没有人员;或者人员没有发布");
                 }
                 //2.7、复制人物到新建的小组
                 experimentAccountIds.forEach(accountId -> {

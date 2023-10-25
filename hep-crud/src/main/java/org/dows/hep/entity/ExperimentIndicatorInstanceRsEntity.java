@@ -86,6 +86,9 @@ public class ExperimentIndicatorInstanceRsEntity implements CrudEntity {
   @Schema(title = "变化值")
   private Double changeVal;
 
+  @Schema(title = "值类型 0-字符串 1-整数 2-小数")
+  private Integer valueType;
+
   @JsonIgnore
   @TableLogic
   @TableField(fill = FieldFill.INSERT)

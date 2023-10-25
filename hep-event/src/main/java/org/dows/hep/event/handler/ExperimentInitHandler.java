@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.dows.account.api.AccountInstanceApi;
 import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.framework.api.util.ReflectUtil;
@@ -33,11 +34,11 @@ import org.dows.hep.biz.base.indicator.RsExperimentCalculateBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.eval.CopyPersonBiz;
 import org.dows.hep.biz.eval.EvalHealthIndexBiz;
+import org.dows.hep.biz.eval.ExperimentCacheExecutor;
 import org.dows.hep.biz.event.EventScheduler;
 import org.dows.hep.biz.request.ExperimentTaskParamsRequest;
 import org.dows.hep.biz.snapshot.SnapshotManager;
 import org.dows.hep.biz.snapshot.SnapshotRequest;
-import org.dows.hep.biz.eval.ExperimentCacheExecutor;
 import org.dows.hep.biz.tenant.experiment.ExperimentCaseInfoManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentManageBiz;
 import org.dows.hep.biz.tenant.experiment.ExperimentQuestionnaireManageBiz;
@@ -96,6 +97,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     private final ExperimentBeginTaskHandler experimentBeginTaskHandler;
 
     private final CopyPersonBiz copyPersonBiz;
+    private final AccountInstanceApi accountInstanceApi;
 
     @Override
     public void exec(ExperimentGroupSettingRequest request) throws ExecutionException, InterruptedException {
@@ -108,7 +110,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                     log.error("实验id:{} 在数据库不存在", experimentInstanceId);
                     throw new ExperimentInitHanlderException(String.format("初始化实验前端传过来的id:%s 对应的实验不存在", experimentInstanceId));
                 });
-        String appId  = experimentInstanceEntity.getAppId();
+        String appId = experimentInstanceEntity.getAppId();
         List<ExperimentSettingEntity> experimentSettingEntityList = experimentSettingService.lambdaQuery()
                 .eq(ExperimentSettingEntity::getExperimentInstanceId, experimentInstanceId)
                 .list();
@@ -145,7 +147,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         if (hasSandSettingAtomicBoolean.get()) {
             ExperimentSetting.SandSetting sandSetting = sandSettingAtomicReference.get();
             Integer periods = sandSetting.getPeriods();
-            if(ConfigExperimentFlow.SWITCH2SpelCache){
+            if (ConfigExperimentFlow.SWITCH2SpelCache) {
                 copyPersonBiz.rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs
                         .builder()
                         .appId(appId)
@@ -153,7 +155,7 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                         .caseInstanceId(caseInstanceId)
                         .periods(periods)
                         .build());
-            }else {
+            } else {
                 rsCopyBiz.rsCopyPersonIndicator(RsCopyPersonIndicatorRequestRs
                         .builder()
                         .appId(appId)
@@ -180,8 +182,8 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
         }
 
         //复制操作指标和突发事件
-        SnapshotManager.Instance().write( new SnapshotRequest(appId,experimentInstanceId), true);
-        if(hasSandSettingAtomicBoolean.get()){
+        SnapshotManager.Instance().write(new SnapshotRequest(appId, experimentInstanceId), true);
+        if (hasSandSettingAtomicBoolean.get()) {
             evalHealthIndexBiz.evalPersonHealthIndexOld(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
                     .builder()
                     .appId(appId)
@@ -189,11 +191,11 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                     .periods(0)
                     .funcType(EnumEvalFuncType.START)
                     .build());
-            if(ConfigExperimentFlow.SWITCH2SpelCache) {
+            if (ConfigExperimentFlow.SWITCH2SpelCache) {
                 ExperimentCacheExecutor.Instance().start(List.of(experimentInstanceId));
             }
         }
-        if(ConfigExperimentFlow.SWITCH2SysEvent){
+        if (ConfigExperimentFlow.SWITCH2SysEvent) {
             //启用新流程
             EventScheduler.Instance().scheduleSysEvent(appId, experimentInstanceId, 1);
         }
@@ -201,9 +203,8 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     }
 
 
-
     private void setExptSchemeExpireTask(AtomicReference<ExperimentSetting.SchemeSetting> schemeSettingAtomicReference, ExperimentGroupSettingRequest request) {
-        if(ConfigExperimentFlow.SWITCH2SysEvent){
+        if (ConfigExperimentFlow.SWITCH2SysEvent) {
             //启用新流程
             return;
         }
@@ -231,14 +232,13 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
     }
 
 
-
     /**
      * 实验开始定时器
      *
      * @param experimentGroupSettingRequest
      */
     public void setExperimentBeginTimerTask(ExperimentGroupSettingRequest experimentGroupSettingRequest) {
-        if(ConfigExperimentFlow.SWITCH2SysEvent){
+        if (ConfigExperimentFlow.SWITCH2SysEvent) {
             //启用新流程
             return;
         }
@@ -259,16 +259,16 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
             beginEntity.setExecuted(false);
         } else {
             beginEntity = ExperimentTaskScheduleEntity.builder()
-                            .experimentTaskTimerId(idGenerator.nextIdStr())
-                            .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
-                            .taskBeanCode(EnumExperimentTask.experimentBeginTask.getDesc())
-                            .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
+                    .experimentTaskTimerId(idGenerator.nextIdStr())
+                    .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
+                    .taskBeanCode(EnumExperimentTask.experimentBeginTask.getDesc())
+                    .taskParams(JSON.toJSONString(ExperimentTaskParamsRequest.builder()
                             .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())
                             .build()))
-                            .appId(experimentGroupSettingRequest.getAppId())
-                            .executeTime(experimentGroupSettingRequest.getStartTime())
-                            .executed(false)
-                            .build();
+                    .appId(experimentGroupSettingRequest.getAppId())
+                    .executeTime(experimentGroupSettingRequest.getStartTime())
+                    .executed(false)
+                    .build();
         }
         experimentTaskScheduleService.saveOrUpdate(beginEntity);
 
@@ -327,12 +327,21 @@ public class ExperimentInitHandler extends AbstractEventHandler implements Event
                 List<CaseAccountGroupResponse> accountGroupResponses = groupResponseIPage.getRecords();
                 List<AccountInstanceResponse> instanceResponses = new ArrayList<>();
                 if (accountGroupResponses != null && accountGroupResponses.size() > 0) {
-                    accountGroupResponses.forEach(accountGroup -> {
+                    for (CaseAccountGroupResponse accountGroup : accountGroupResponses) {
+                        //机构未发布
+                        if (accountGroup.getStatus() != 1) {
+                            continue;
+                        }
+                        AccountInstanceResponse accountInstanceByAccountId = accountInstanceApi.getAccountInstanceByAccountId(accountGroup.getAccountId());
+                        //人物未发布
+                        if (accountInstanceByAccountId.getStatus() != 1) {
+                            continue;
+                        }
                         AccountInstanceResponse instanceResponse = AccountInstanceResponse.builder()
                                 .accountId(accountGroup.getAccountId())
                                 .build();
                         instanceResponses.add(instanceResponse);
-                    });
+                    }
                 }
                 CreateExperimentRequest request = CreateExperimentRequest.builder()
                         .experimentInstanceId(experimentGroupSettingRequest.getExperimentInstanceId())

@@ -445,13 +445,13 @@ public abstract class BaseDao<S extends MybatisCrudService<E>,E extends CrudEnti
      * @param ids
      * @return
      */
-    public boolean delByIds(List<String> ids){
+    public boolean delByIds(Collection<String> ids){
         if(ShareUtil.XObject.isEmpty(ids)){
             return false;
         }
         final boolean oneFlag=ids.size()==1;
         return service.remove(Wrappers.<E>lambdaQuery()
-                .eq(oneFlag, getColId(),ids.get(0))
+                .eq(oneFlag, getColId(),ids.iterator().next())
                 .in(!oneFlag, getColId(),ids));
     }
 
