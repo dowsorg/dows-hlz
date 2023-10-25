@@ -66,7 +66,8 @@ public class ExperimentFollowupPlanRules {
         if (null == rowNotice) {
             rowNotice = experimentOrgNoticeBiz.createNotice(src, rowPerson, timePoint);
         }
-        rowNotice.setExperimentOrgId(src.getExperimentGroupId())
+        rowNotice.setExperimentOrgId(src.getExperimentOrgId())
+                .setExperimentGroupId(src.getExperimentGroupId())
                 .setPeriods(timePoint.getPeriod())
                 .setGameDay(timePoint.getGameDay())
                 .setNoticeSrcType(EnumExperimentOrgNoticeType.FOLLOWUP.getCode())
