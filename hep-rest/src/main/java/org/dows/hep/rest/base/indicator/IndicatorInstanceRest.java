@@ -7,7 +7,7 @@ import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.api.base.indicator.response.IndicatorInstanceCategoryResponseRs;
 import org.dows.hep.biz.base.indicator.IndicatorInstanceBiz;
-import org.dows.hep.biz.eval.SyncPersonBiz;
+import org.dows.hep.biz.eval.sync.SyncPersonBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,6 +68,6 @@ public class IndicatorInstanceRest {
     @Operation(summary = "一键同步")
     @PostMapping("v1/baseIndicator/indicatorInstance/syncAll")
     public Boolean syncAll(@RequestBody @Validated SyncIndicatorRequest req) {
-        return syncPersonBiz.syncPersonIndicator(req);
+        return syncPersonBiz.syncAllPerson(req);
     }
 }

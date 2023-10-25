@@ -11,7 +11,7 @@ import org.dows.hep.api.base.indicator.request.SyncIndicatorRequest;
 import org.dows.hep.api.base.indicator.response.CaseIndicatorInstanceCategoryResponseRs;
 import org.dows.hep.api.tenant.casus.request.UpdateIndicatorValueRequest;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
-import org.dows.hep.biz.eval.SyncPersonBiz;
+import org.dows.hep.biz.eval.sync.SyncPersonBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

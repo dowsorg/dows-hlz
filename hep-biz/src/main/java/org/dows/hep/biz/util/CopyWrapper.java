@@ -42,7 +42,9 @@ public class CopyWrapper<T> {
     }
 
     public <S> CopyWrapper<T> from(S src, Consumer<T> func,String... ignoreProperties) {
-        BeanUtil.copyProperties(src, coreObj, getOption(ignoreProperties));
+        if(null!=src) {
+            BeanUtil.copyProperties(src, coreObj, getOption(ignoreProperties));
+        }
         if (null != func) {
             func.accept(coreObj);
         }
