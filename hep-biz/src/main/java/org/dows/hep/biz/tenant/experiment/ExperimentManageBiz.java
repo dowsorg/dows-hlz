@@ -245,7 +245,8 @@ public class ExperimentManageBiz {
        }else{//或者人员没有发布
            Set<String> accountIds = list.stream().map(CasePersonEntity::getAccountId).collect(Collectors.toSet());
            List<AccountInstance> accountInstances = xAccountInstanceApi.getAccountInstancesByAccountIds(accountIds);
-          return CollectionUtils.isEmpty(accountInstances.stream().filter(accountInstance -> accountInstance.getStatus() != 1).toList());
+           List<AccountInstance> list1 = accountInstances.stream().filter(accountInstance -> accountInstance.getStatus() == 1).toList();
+           return CollectionUtils.isEmpty(list1);
        }
    }
 
