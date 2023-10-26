@@ -17,6 +17,7 @@ import org.dows.hep.biz.eval.data.EvalIndicatorValues;
 import org.dows.hep.biz.event.PersonBasedEventTask;
 import org.dows.hep.biz.operate.CostRequest;
 import org.dows.hep.biz.operate.OperateCostBiz;
+import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.spel.SpelEngine;
 import org.dows.hep.biz.spel.SpelPersonContext;
 import org.dows.hep.biz.spel.meta.SpelEvalResult;
@@ -77,6 +78,8 @@ public class EvalPersonBiz {
     private final SpelEngine spelEngine;
 
     private final EvalPersonMoneyBiz evalPersonMoneyBiz;
+
+    private final PersonIndicatorIdCache personIndicatorIdCache;
 
     public boolean initEvalPersonLog(List<ExperimentIndicatorValRsEntity> src){
         String experimentId="";
@@ -170,22 +173,6 @@ public class EvalPersonBiz {
             totalFeeAtomicReference.set(totalFeeAtomicReference.get().subtract(experimentIndicatorViewPhysicalExamRsEntity.getFee()));
         });
 
-        Map<String, ExperimentIndicatorInstanceRsEntity> kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
-        rsExperimentIndicatorInstanceBiz.populateKIndicatorInstanceIdVExperimentIndicatorInstanceMap(
-                kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, experimentPersonId, indicatorInstanceIdSet
-        );
-
-        Set<String> experimentIndicatorInstanceIdSet = new HashSet<>();
-        if (!indicatorInstanceIdSet.isEmpty()) {
-            indicatorInstanceIdSet.forEach(indicatorInstanceId -> {
-                ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
-                if (Objects.nonNull(experimentIndicatorInstanceRsEntity) && StringUtils.isNotBlank(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())) {
-                    experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
-                }
-            });
-        }
-
-
 
         List<ExperimentIndicatorViewPhysicalExamReportRsEntity> experimentIndicatorViewPhysicalExamReportRsEntityList = new ArrayList<>();
         SpelPersonContext context = new SpelPersonContext().setVariables(experimentPersonId, null);
@@ -196,11 +183,12 @@ public class EvalPersonBiz {
             String unit=null;
             int scale=2;
             AtomicReference<String> resultExplainAtomicReference = new AtomicReference<>("");
-            ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
+            //ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
+            ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity =personIndicatorIdCache.getIndicatorById(experimentPersonId,indicatorInstanceId);
             if (Objects.nonNull(experimentIndicatorInstanceRsEntity)) {
                 currentVal=evalHolder.getIndicatorVal(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(),false);
                 unit = experimentIndicatorInstanceRsEntity.getUnit();
-                scale=getScale(experimentIndicatorInstanceRsEntity.getIndicatorName());
+                scale=personIndicatorIdCache.getScale(experimentIndicatorInstanceRsEntity);
                 SpelEvalResult evalRst= spelEngine.loadFromSpelCache().withReasonId(experimentId, experimentPersonId,
                         experimentIndicatorInstanceRsEntity.getCaseIndicatorInstanceId(), EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
                         .eval(context);
@@ -303,7 +291,7 @@ public class EvalPersonBiz {
             totalFeeAtomicReference.set(totalFeeAtomicReference.get().subtract(experimentIndicatorViewSupportExamRsEntity.getFee()));
         });
 
-        Map<String, ExperimentIndicatorInstanceRsEntity> kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
+       /* Map<String, ExperimentIndicatorInstanceRsEntity> kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap = new HashMap<>();
         rsExperimentIndicatorInstanceBiz.populateKIndicatorInstanceIdVExperimentIndicatorInstanceMap(
                 kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap, experimentPersonId, indicatorInstanceIdSet
         );
@@ -316,7 +304,7 @@ public class EvalPersonBiz {
                     experimentIndicatorInstanceIdSet.add(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId());
                 }
             });
-        }
+        }*/
 
         List<ExperimentIndicatorViewSupportExamReportRsEntity> experimentIndicatorViewSupportExamReportRsEntityList = new ArrayList<>();
         SpelPersonContext context = new SpelPersonContext().setVariables(experimentPersonId, null);
@@ -328,11 +316,12 @@ public class EvalPersonBiz {
             int scale=2;
             AtomicReference<String> resultExplainAtomicReference = new AtomicReference<>("");
 
-            ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
+            //ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity = kIndicatorInstanceIdVExperimentIndicatorInstanceRsEntityMap.get(indicatorInstanceId);
+            ExperimentIndicatorInstanceRsEntity experimentIndicatorInstanceRsEntity =personIndicatorIdCache.getIndicatorById(experimentPersonId,indicatorInstanceId);
             if (Objects.nonNull(experimentIndicatorInstanceRsEntity)) {
                 currentVal=evalHolder.getIndicatorVal(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId(),false);
                 unit = experimentIndicatorInstanceRsEntity.getUnit();
-                scale=getScale(experimentIndicatorInstanceRsEntity.getIndicatorName());
+                scale=personIndicatorIdCache.getScale(experimentIndicatorInstanceRsEntity);
                 SpelEvalResult evalRst= spelEngine.loadFromSpelCache().withReasonId(experimentId, experimentPersonId,
                                 experimentIndicatorInstanceRsEntity.getCaseIndicatorInstanceId(), EnumIndicatorExpressionSource.INDICATOR_MANAGEMENT.getSource())
                         .eval(context);
@@ -401,39 +390,8 @@ public class EvalPersonBiz {
         operateCostBiz.saveCost(costRequest);
         experimentIndicatorViewSupportExamReportRsService.saveOrUpdateBatch(experimentIndicatorViewSupportExamReportRsEntityList);
     }
-    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压","心率");
-    private int getScale(String indciatorName){
-        return INDICTATORNameBloodPressure.contains(indciatorName)?0:2;
-    }
-    private BigDecimal getExperimentPersonRestitution(BigDecimal fee,String experimentPersonId){
-        //获取在该消费之前的保险购买记录并计算报销比例
-        List<OperateInsuranceEntity> insuranceEntityList = operateInsuranceService.lambdaQuery()
-                .eq(OperateInsuranceEntity::getExperimentPersonId, experimentPersonId)
-                .le(OperateInsuranceEntity::getIndate, new Date())
-                .ge(OperateInsuranceEntity::getExpdate, new Date())
-                .list();
-        //可能会存在多个机构购买情况，金钱要叠加
-        BigDecimal reimburse = new BigDecimal(0);
-        if (insuranceEntityList != null && insuranceEntityList.size() > 0) {
-            for (int j = 0; j < insuranceEntityList.size(); j++) {
-                //3.4、通过机构获取报销比例
-                ExperimentOrgEntity orgEntity = experimentOrgService.lambdaQuery()
-                        .eq(ExperimentOrgEntity::getExperimentOrgId, insuranceEntityList.get(j).getExperimentOrgId())
-                        .eq(ExperimentOrgEntity::getDeleted, false)
-                        .one();
-                if (orgEntity != null && !ReflectUtil.isObjectNull(orgEntity)) {
-                    CaseOrgFeeEntity feeEntity = caseOrgFeeService.lambdaQuery()
-                            .eq(CaseOrgFeeEntity::getCaseOrgId, orgEntity.getCaseOrgId())
-                            .eq(CaseOrgFeeEntity::getFeeCode, "BXF")
-                            .one();
-                    if (feeEntity != null && !ReflectUtil.isObjectNull(feeEntity)) {
-                        reimburse = reimburse.add(fee.multiply(BigDecimal.valueOf(feeEntity.getReimburseRatio())).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
-                    }
-                }
-            }
-        }
-        return reimburse;
-    }
+
+
 
 
     /**

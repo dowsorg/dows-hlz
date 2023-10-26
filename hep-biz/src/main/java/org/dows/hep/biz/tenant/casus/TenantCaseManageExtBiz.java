@@ -731,7 +731,8 @@ public class TenantCaseManageExtBiz {
     //查询题目集
     public List<QuestionSectionItemEntity> getQuestionItemByQuestionSectionId(String questionSectionId) {
         return questionSectionItemService.lambdaQuery()
-                .eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId).list();
+                .eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
+                .eq(QuestionSectionItemEntity::getDeleted,false).list();
     }
 
     public List<QuestionSectionItemEntity> getQuestionItemByQuestionSectionId(Set<String> questionSectionIdSet) {
@@ -742,13 +743,15 @@ public class TenantCaseManageExtBiz {
     //查询问题集
     public QuestionSectionEntity getByQuestionSectionId(String questionSectionId) {
         return questionSectionService.lambdaQuery()
-                .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionId).one();
+                .eq(QuestionSectionEntity::getQuestionSectionId, questionSectionId)
+                .eq(QuestionSectionEntity::getDeleted,false).one();
     }
 
     //查询方案设计
     public CaseSchemeEntity getByInstanceId(String caseInstanceId) {
         return caseSchemeService.lambdaQuery()
-                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId).one();
+                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId)
+                .eq(CaseSchemeEntity::getDeleted,false).one();
     }
 
     /**
