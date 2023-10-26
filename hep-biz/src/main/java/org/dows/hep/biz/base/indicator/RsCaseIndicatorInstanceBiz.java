@@ -260,6 +260,7 @@ public class RsCaseIndicatorInstanceBiz {
             .core(indicatorInstanceResponseRs.getCore())
             .type(indicatorInstanceResponseRs.getType())
             .descr(indicatorInstanceResponseRs.getDescr())
+            .valueType(indicatorInstanceResponseRs.getValueType())
             .build());
       });
     });

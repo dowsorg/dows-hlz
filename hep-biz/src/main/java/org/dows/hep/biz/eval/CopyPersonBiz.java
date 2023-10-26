@@ -160,6 +160,7 @@ public class CopyPersonBiz {
                                 .food(caseIndicatorInstanceEntity.getFood())
                                 .type(caseIndicatorInstanceEntity.getType())
                                 .descr(caseIndicatorInstanceEntity.getDescr())
+                                .valueType(caseIndicatorInstanceEntity.getValueType())
                                 .min(min)
                                 .max(max)
                                 .def(def)

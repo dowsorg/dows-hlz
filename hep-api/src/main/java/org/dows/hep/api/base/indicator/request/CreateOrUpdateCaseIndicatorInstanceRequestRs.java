@@ -60,4 +60,8 @@ public class CreateOrUpdateCaseIndicatorInstanceRequestRs implements Serializabl
   @Schema(title = "最大值")
   private String max;
 
+  @Schema(title = "值类型 0-字符串 1-整数 2-小数")
+  @ApiModelProperty(required = true)
+  private Integer valueType;
+
 }

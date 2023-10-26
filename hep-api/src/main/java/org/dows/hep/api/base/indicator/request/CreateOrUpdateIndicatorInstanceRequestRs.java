@@ -59,4 +59,8 @@ public class CreateOrUpdateIndicatorInstanceRequestRs implements Serializable {
 
   @Schema(title = "人物accountId")
   private String accountId;
+
+  @Schema(title = "值类型 0-字符串 1-整数 2-小数")
+  @ApiModelProperty(required = true)
+  private Integer valueType;
 }
