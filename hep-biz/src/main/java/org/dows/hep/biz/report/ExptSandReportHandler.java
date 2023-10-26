@@ -441,7 +441,7 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         List<ExptSandReportModel.ScoreInfo.PeriodScore> periodScores = new ArrayList<>();
         Map<Integer, ExperimentScoringEntity> periodMapScore = groupScoreList.stream()
                 .collect(Collectors.toMap(ExperimentScoringEntity::getPeriods, item -> item, (v1, v2) -> v1));
-        Map<Integer, Integer> periodMapRank = getPeriodRank(exptGroupId, exptData);
+        //Map<Integer, Integer> periodMapRank = getPeriodRank(exptGroupId, exptData);
         for (int i = 0; i < periods; i++) {
             Integer period = i + 1;
             ExperimentScoringEntity v = periodMapScore.get(period);
@@ -454,7 +454,8 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
                     .treatmentPercentScore(v.getTreatmentPercentScore())
                     .operateRightScore(v.getOperateRightScore())
                     .totalScore(v.getTotalScore())
-                    .totalRanking(String.valueOf(periodMapRank.get(period)))
+                    //.totalRanking(String.valueOf(periodMapRank.get(period)))
+                    .totalRanking(String.valueOf( v.getRankNo()))
                     .build();
             ExptSandReportModel.ScoreInfo.PeriodScore periodScore = ExptSandReportModel.ScoreInfo.PeriodScore.builder()
                     .periods(String.valueOf(i + 1))
@@ -513,14 +514,27 @@ public class ExptSandReportHandler implements ExptReportHandler<ExptSandReportHa
         //tKnowledgeScore = tKnowledgeScore.multiply(BigDecimal.valueOf(knowledgeWeight)).divide(BigDecimal.valueOf(100),2,RoundingMode.HALF_UP);
         //tTreatmentPercentScore = tTreatmentPercentScore.multiply(BigDecimal.valueOf(medicalRatioWeight)).divide(BigDecimal.valueOf(100),2,RoundingMode.HALF_UP);
 
-        Integer totalRank = getTotalRank(exptGroupId, exptData);
+        //Integer totalRank = getTotalRank(exptGroupId, exptData);
+        ExperimentTotalRankItemResponse groupRank=Optional.ofNullable(exptData.getExperimentRankResponse())
+                .map(ExperimentRankResponse::getExperimentTotalRankItemResponseList)
+                .orElse(new ArrayList<>())
+                .stream()
+                .filter(i->i.getExperimentGroupId().equals(exptGroupId))
+                .findFirst()
+                .orElse(new ExperimentTotalRankItemResponse()
+                        .setAllPeriodsTotalScore(BigDecimalUtil.formatRoundDecimal(tTotalScore, 2 ))
+                        .setRankingIndex(0));
+
+
         ExptSandReportModel.ScoreInfo.Score totalScore = ExptSandReportModel.ScoreInfo.Score.builder()
                 .healthIndexScore(BigDecimalUtil.formatRoundDecimal(tHealthIndexScore, 2 ))
                 .knowledgeScore(BigDecimalUtil.formatRoundDecimal(tKnowledgeScore, 2 ))
                 .treatmentPercentScore(BigDecimalUtil.formatRoundDecimal(tTreatmentPercentScore, 2 ))
                 .operateRightScore(BigDecimalUtil.formatRoundDecimal(tOperateRightScore, 2 ))
-                .totalScore(BigDecimalUtil.formatRoundDecimal(tTotalScore, 2 ))
-                .totalRanking(String.valueOf(totalRank))
+                //.totalScore(BigDecimalUtil.formatRoundDecimal(tTotalScore, 2 ))
+                //.totalRanking(String.valueOf(totalRank))
+                .totalScore(groupRank.getAllPeriodsTotalScore())
+                .totalRanking(String.valueOf( groupRank.getRankingIndex()))
                 .build();
 
         return ExptSandReportModel.ScoreInfo.builder()

@@ -5,6 +5,7 @@ import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.api.enums.EnumIndicatorDocType;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumIndicatorType;
+import org.dows.hep.api.enums.EnumIndicatorValueType;
 import org.dows.hep.biz.cache.BaseLoadingCache;
 import org.dows.hep.biz.dao.*;
 import org.dows.hep.biz.util.ShareUtil;
@@ -34,6 +35,8 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
     protected final static int CACHEInitCapacity=300;
     protected final static int CACHEMaxSize=1500;
     protected final static int CACHEExpireSeconds=60*60*24*7;
+
+    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压","心率");
 
     private PersonIndicatorIdCache(){
         super(CACHEInitCapacity,CACHEMaxSize,CACHEExpireSeconds,0);
@@ -140,6 +143,16 @@ public class PersonIndicatorIdCache extends BaseLoadingCache<String,PersonIndica
         }
         String exptIndicatorId=coll.getMapBaseCase2ExptId().getOrDefault(indicatorId, indicatorId);
         return coll.getMapExptIndicators().get(exptIndicatorId);
+    }
+
+    public int getScale(ExperimentIndicatorInstanceRsEntity src){
+        if(ShareUtil.XObject.isEmpty(src)){
+            return 2;
+        }
+        if(ShareUtil.XObject.notEmpty(src.getValueType())){
+            return EnumIndicatorValueType.of(src.getValueType()).getScale();
+        }
+        return INDICTATORNameBloodPressure.contains(src.getIndicatorName())?0:2;
     }
 
 

@@ -89,6 +89,7 @@ public class CopyPersonBiz {
         caseIndicatorInstanceService.lambdaQuery()
                 .eq(CaseIndicatorInstanceEntity::getAppId, appId)
                 .in(CaseIndicatorInstanceEntity::getPrincipalId, principalIdSet)
+                .isNotNull(CaseIndicatorInstanceEntity::getCaseIndicatorInstanceId)
                 .list()
                 .forEach(caseIndicatorInstanceEntity -> {
                     caseIndicatorInstanceIdSet.add(caseIndicatorInstanceEntity.getCaseIndicatorInstanceId());
