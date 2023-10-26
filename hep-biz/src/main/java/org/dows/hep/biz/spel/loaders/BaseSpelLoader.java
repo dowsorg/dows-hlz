@@ -138,7 +138,7 @@ public abstract class BaseSpelLoader implements ISpelLoad {
             rawExpression=rawExpression.replace(splitNames[i],splitVals[i]);
         }
         if(missIds.size()>0) {
-            logError("buildExpression", "miss exptIndicatorId. person:%s expression:%s missIds:%s names:%s vals:%s",
+            logError("SPELError", "miss exptIndicatorId. person:%s expression:%s missIds:%s names:%s vals:%s",
                     exptPersonId, rawExpression, String.join(",", missIds), names, vals);
         }
         return rawExpression;

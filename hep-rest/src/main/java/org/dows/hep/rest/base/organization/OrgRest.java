@@ -10,6 +10,7 @@ import org.dows.account.request.AccountGroupRequest;
 import org.dows.account.request.AccountOrgRequest;
 import org.dows.account.response.AccountOrgResponse;
 import org.dows.account.util.JwtUtil;
+import org.dows.hep.api.annotation.Resubmit;
 import org.dows.hep.api.enums.EnumToken;
 import org.dows.hep.api.tenant.casus.response.CaseAccountGroupResponse;
 import org.dows.hep.api.user.organization.request.CaseOrgRequest;
@@ -234,6 +235,7 @@ public class OrgRest {
     /**
      * 复制案例机构人物
      */
+    @Resubmit(duration = 3)
     @Operation(summary = "复制案例机构人物")
     @PostMapping("v1/baseOrg/org/copyPerson")
     public String copyPerson(@RequestParam String caseOrgId,
