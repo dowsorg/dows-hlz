@@ -246,8 +246,11 @@ public class ExperimentManageBiz {
         if (Objects.isNull(questionSection)){
             return true;
         }
-        List<QuestionSectionItemEntity> questionItemByQuestionSectionList = tenantCaseManageExtBiz.getQuestionItemByQuestionSectionId(oriEntity.getQuestionSectionId());
-        return CollectionUtils.isEmpty(questionItemByQuestionSectionList);
+        List<QuestionSectionItemEntity> questionItemList = tenantCaseManageExtBiz.getQuestionItemByQuestionSectionId(oriEntity.getQuestionSectionId());
+        Set<String> questionInstanceIdSet = questionItemList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).collect(Collectors.toSet());
+        //没有标题，可以理解为作文题
+        List<QuestionInstanceEntity> questionInstanceList = tenantCaseManageExtBiz.getQuestionInstanceList(questionInstanceIdSet);
+        return CollectionUtils.isEmpty(questionInstanceList);
     }
     /**
      * 增加机构人员校验
