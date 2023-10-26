@@ -97,6 +97,7 @@ public class CaseIndicatorInstanceBiz {
                 .core(caseIndicatorInstanceEntity.getCore())
                 .food(caseIndicatorInstanceEntity.getFood())
                 .descr(caseIndicatorInstanceEntity.getDescr())
+                .valueType(caseIndicatorInstanceEntity.getValueType())
                 .dt(caseIndicatorInstanceEntity.getDt())
                 .caseIndicatorExpressionResponseRsList(caseIndicatorExpressionResponseRsList)
                 .def(def)

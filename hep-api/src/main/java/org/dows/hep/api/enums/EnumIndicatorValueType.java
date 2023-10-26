@@ -11,6 +11,7 @@ import org.springframework.util.ObjectUtils;
 @AllArgsConstructor
 @Getter
 public enum EnumIndicatorValueType {
+    NONE(null,"默认值"),
     STRING(0,"字符串"),
     INTEGER(1,"整数"),
     DECIMAL(2,"小数"),
@@ -24,6 +25,6 @@ public enum EnumIndicatorValueType {
                 return item;
             }
         }
-        return STRING;
+        return NONE;
     }
 }

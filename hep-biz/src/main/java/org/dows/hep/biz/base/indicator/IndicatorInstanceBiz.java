@@ -76,6 +76,7 @@ public class IndicatorInstanceBiz{
             .core(indicatorInstanceEntity.getCore())
             .food(indicatorInstanceEntity.getFood())
             .type(indicatorInstanceEntity.getType())
+            .valueType(indicatorInstanceEntity.getValueType())
             .expression(indicatorInstanceEntity.getExpression())
             .rawExpression(indicatorInstanceEntity.getRawExpression())
             .descr(indicatorInstanceEntity.getDescr())
