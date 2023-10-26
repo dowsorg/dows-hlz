@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.account.api.*;
+import org.dows.account.entity.AccountInstance;
 import org.dows.account.request.*;
 import org.dows.account.response.*;
 import org.dows.framework.api.exceptions.BizException;
@@ -31,6 +32,7 @@ import org.dows.hep.api.tenant.experiment.response.ExperimentListResponse;
 import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.base.person.PersonManageBiz;
+import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.user.experiment.ExperimentGroupingBiz;
 import org.dows.hep.biz.util.PeriodsTimerUtil;
 import org.dows.hep.biz.util.ShareBiz;
@@ -48,6 +50,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -82,6 +85,7 @@ public class ExperimentManageBiz {
     private final UserInstanceApi userInstanceApi;
     private final UserExtinfoApi userExtinfoApi;
     private final AccountInstanceApi accountInstanceApi;
+    private final XAccountInstanceApi xAccountInstanceApi;
     private final CasePersonService casePersonService;
     private final ExperimentOrgService experimentOrgService;
     private final CaseOrgService caseOrgService;
@@ -115,6 +119,9 @@ public class ExperimentManageBiz {
         Long delay = createExperiment.getStartTime().getTime() - System.currentTimeMillis();
         if (delay < 0) {
             throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!为确保实验正常初始化，开始时间不可早于当前时间");
+        }
+        if (checkCasePerson(createExperiment.getCaseInstanceId())) {
+            throw new ExperimentException("实验设定的案例中,所有机构都没有实验操作人员，无法进行实验操作");
         }
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
@@ -224,6 +231,23 @@ public class ExperimentManageBiz {
         return experimentInstance.getExperimentInstanceId();
     }
 
+    /**
+     * 增加机构人员校验
+     */
+   private boolean checkCasePerson(String caseInstanceId){
+       List<CasePersonEntity> list = casePersonService.lambdaQuery()
+               .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId)
+               .eq(CasePersonEntity::getDeleted, false)
+               .list();
+       //一个人员都没有
+       if (CollectionUtils.isEmpty(list)){
+           return true;
+       }else{//或者人员没有发布
+           Set<String> accountIds = list.stream().map(CasePersonEntity::getAccountId).collect(Collectors.toSet());
+           List<AccountInstance> accountInstances = xAccountInstanceApi.getAccountInstancesByAccountIds(accountIds);
+          return CollectionUtils.isEmpty(accountInstances.stream().filter(accountInstance -> accountInstance.getStatus() != 1).toList());
+       }
+   }
 
     /**
      * @param
