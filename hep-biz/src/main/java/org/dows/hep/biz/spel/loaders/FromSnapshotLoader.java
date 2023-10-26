@@ -2,6 +2,7 @@ package org.dows.hep.biz.spel.loaders;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.biz.dao.SnapCaseIndicatorExpressionDao;
 import org.dows.hep.biz.dao.SnapCaseIndicatorExpressionItemDao;
 import org.dows.hep.biz.dao.SnapCaseIndicatorExpressionRefDao;
@@ -59,6 +60,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                 SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId,
                 SnapCaseIndicatorExpressionEntity::getCasePrincipalId,
                 SnapCaseIndicatorExpressionEntity::getType,
+                SnapCaseIndicatorExpressionEntity::getSource,
                 SnapCaseIndicatorExpressionEntity::getMaxIndicatorExpressionItemId,
                 SnapCaseIndicatorExpressionEntity::getMinIndicatorExpressionItemId
         );
@@ -71,6 +73,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
             logError("withReasonId", "more expressions. expereimentId:%s refExperimentId:%s reasonId:%s source:%s expressionIds:%s",
                     experimentId,refExperimentId4Expression,reasonId,source,String.join(",", expressionIds));
         }
+        rst.setSource(EnumIndicatorExpressionSource.of(rowsExpression.get(0).getSource()));
         final String expressionId=rowsExpression.get(0).getCaseIndicatorExpressionId();
         List<SnapCaseIndicatorExpressionItemEntity> rowsExpressionItem=snapCaseIndicatorExpressionItemDao.getByExpressionId(refExperimentId4Item,expressionId,
                 SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId,
@@ -82,6 +85,32 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                 SnapCaseIndicatorExpressionItemEntity::getResultValList,
                 SnapCaseIndicatorExpressionItemEntity::getSeq
         );
+
+        Map<String,String> mapMinXMaxIds=new HashMap<>();
+        rowsExpression.forEach(i->{
+            if(ShareUtil.XObject.notEmpty(i.getMinIndicatorExpressionItemId())){
+                mapMinXMaxIds.put(i.getMinIndicatorExpressionItemId(), i.getCaseIndicatorExpressionId());
+            }
+            if(ShareUtil.XObject.notEmpty(i.getMaxIndicatorExpressionItemId())){
+                mapMinXMaxIds.put(i.getMaxIndicatorExpressionItemId(), i.getCaseIndicatorExpressionId());
+            }
+        });
+        List<SnapCaseIndicatorExpressionItemEntity> rowsMinMaxExpressionItem=snapCaseIndicatorExpressionItemDao.getByExpressionItemId(refExperimentId4Item,mapMinXMaxIds.keySet(),
+                SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId,
+                SnapCaseIndicatorExpressionItemEntity::getIndicatorExpressionId,
+                SnapCaseIndicatorExpressionItemEntity::getConditionExpression,
+                SnapCaseIndicatorExpressionItemEntity::getConditionNameList,
+                SnapCaseIndicatorExpressionItemEntity::getConditionValList,
+                SnapCaseIndicatorExpressionItemEntity::getResultExpression,
+                SnapCaseIndicatorExpressionItemEntity::getResultNameList,
+                SnapCaseIndicatorExpressionItemEntity::getResultValList,
+                SnapCaseIndicatorExpressionItemEntity::getSeq
+        );
+        rowsMinMaxExpressionItem.forEach(i->{
+            i.setMinOrMax(true)
+                    .setIndicatorExpressionId(mapMinXMaxIds.get(i.getCaseIndicatorExpressionItemId()));
+        });
+        rowsExpressionItem.addAll(rowsMinMaxExpressionItem);
         return fillInput(rst,experimentPersonId,rowsExpression.get(0),rowsExpressionItem);
     }
 
@@ -212,6 +241,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                 SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId,
                 SnapCaseIndicatorExpressionEntity::getCasePrincipalId,
                 SnapCaseIndicatorExpressionEntity::getType,
+                SnapCaseIndicatorExpressionEntity::getSource,
                 SnapCaseIndicatorExpressionEntity::getMaxIndicatorExpressionItemId,
                 SnapCaseIndicatorExpressionEntity::getMinIndicatorExpressionItemId
         );
@@ -220,6 +250,7 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                     refValidator.getExperimentId(),refExperimentId4Expression,expressionId,source);
             return rst;
         }
+        rst.setSource(EnumIndicatorExpressionSource.of(rowExpression.getSource()));
         List<SnapCaseIndicatorExpressionItemEntity> rowsExpressionItem=snapCaseIndicatorExpressionItemDao.getByExpressionId(refExperimentId4Item,expressionId,
                 SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId,
                 SnapCaseIndicatorExpressionItemEntity::getConditionExpression,
@@ -230,6 +261,25 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                 SnapCaseIndicatorExpressionItemEntity::getResultValList,
                 SnapCaseIndicatorExpressionItemEntity::getSeq
         );
+        Map<String,String> mapMinXMaxIds=new HashMap<>();
+        if(ShareUtil.XObject.notEmpty(rowExpression.getMinIndicatorExpressionItemId())){
+            mapMinXMaxIds.put(rowExpression.getMinIndicatorExpressionItemId(), rowExpression.getCaseIndicatorExpressionId());
+        }
+        if(ShareUtil.XObject.notEmpty(rowExpression.getMaxIndicatorExpressionItemId())){
+            mapMinXMaxIds.put(rowExpression.getMaxIndicatorExpressionItemId(), rowExpression.getCaseIndicatorExpressionId());
+        }
+        List<SnapCaseIndicatorExpressionItemEntity> rowsMinMaxExpressionItem=snapCaseIndicatorExpressionItemDao.getByExpressionItemId(refExperimentId4Item,mapMinXMaxIds.keySet(),
+                SnapCaseIndicatorExpressionItemEntity::getCaseIndicatorExpressionItemId,
+                SnapCaseIndicatorExpressionItemEntity::getIndicatorExpressionId,
+                SnapCaseIndicatorExpressionItemEntity::getConditionExpression,
+                SnapCaseIndicatorExpressionItemEntity::getConditionNameList,
+                SnapCaseIndicatorExpressionItemEntity::getConditionValList,
+                SnapCaseIndicatorExpressionItemEntity::getResultExpression,
+                SnapCaseIndicatorExpressionItemEntity::getResultNameList,
+                SnapCaseIndicatorExpressionItemEntity::getResultValList,
+                SnapCaseIndicatorExpressionItemEntity::getSeq
+        );
+        rowsExpressionItem.addAll(rowsMinMaxExpressionItem);
         return fillInput(rst,experimentPersonId,rowExpression,rowsExpressionItem);
     }
     //endregion

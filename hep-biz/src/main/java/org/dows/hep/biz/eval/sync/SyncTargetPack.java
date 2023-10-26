@@ -33,7 +33,7 @@ public class SyncTargetPack {
         if(ShareUtil.XObject.allEmpty(syncCurrentPack.getNewIndicatorIds(), syncCurrentPack.getNewIndicaorCategoryIds())){
             return this;
         }
-        return this.fillNewIds(syncCurrentPack, clearNewId)
+        return this.fillNewIds(sourcePack,syncCurrentPack, clearNewId)
                 .fillIndicatorCategory(sourcePack, syncCurrentPack)
                 .fillIndicatorCatoryRef(sourcePack, syncCurrentPack)
                 .fillIndicator(sourcePack, syncCurrentPack)
@@ -44,7 +44,7 @@ public class SyncTargetPack {
                 .fillExpressionInfluence(sourcePack, syncCurrentPack);
     }
     public SyncTargetPack coverData(SyncSourcePack sourcePack, SyncCurrentPack syncCurrentPack, boolean clearNewId) {
-        return this.fillNewIds(syncCurrentPack, clearNewId)
+        return this.fillNewIds(sourcePack,syncCurrentPack, clearNewId)
                 .fillOldIds(sourcePack, syncCurrentPack)
                 .coverIndicatorCategory(sourcePack, syncCurrentPack)
                 .coverIndicatorCatoryRef(sourcePack, syncCurrentPack)
@@ -56,7 +56,7 @@ public class SyncTargetPack {
                 .coverExpressionInfluence(sourcePack, syncCurrentPack);
     }
     public SyncTargetPack coverData(SyncSourcePack sourcePack, SyncCurrentPack syncCurrentPack,  String indicatorId) {
-        return this.fillNewIds(syncCurrentPack, true)
+        return this.fillNewIds(sourcePack,syncCurrentPack, true)
                 .fillOldIds(sourcePack, syncCurrentPack, indicatorId)
                 //.coverIndicatorCategory(sourcePack, syncCurrentPack,indicatorCategoryId)
                 .coverIndicator(sourcePack, syncCurrentPack, indicatorId)
@@ -67,15 +67,17 @@ public class SyncTargetPack {
                 .coverExpressionInfluence(sourcePack, syncCurrentPack, indicatorId);
     }
     //endregion
-    public SyncTargetPack fillNewIds(SyncCurrentPack syncCurrentPack, boolean clearFlag){
+    public SyncTargetPack fillNewIds(SyncSourcePack sourcePack, SyncCurrentPack syncCurrentPack, boolean clearFlag){
         if(clearFlag){
             mapNewId.clear();
         }
         syncCurrentPack.getCurIndicaorCatgory().values().forEach(i->mapNewId.put(i.getIndicatorCategoryId(), i.getCaseIndicatorCategoryId()));
         syncCurrentPack.getNewIndicaorCategoryIds().forEach(i->mapNewId.computeIfAbsent(i, k -> idGenerator.nextIdStr()));
+        sourcePack.getMapIndicaorCatgory().values().forEach(i->mapNewId.computeIfAbsent(i.getIndicatorCategoryId(), k -> idGenerator.nextIdStr()));
 
         syncCurrentPack.getCurIndicaors().values().forEach(i->mapNewId.put(i.getIndicatorInstanceId(), i.getCaseIndicatorInstanceId()));
         syncCurrentPack.getNewIndicatorIds().forEach(i->mapNewId.computeIfAbsent(i, k -> idGenerator.nextIdStr()));
+        sourcePack.getMapIndicator().values().forEach(i->mapNewId.computeIfAbsent(i.getIndicatorInstanceId(), k -> idGenerator.nextIdStr()));
 
         syncCurrentPack.getMapExpressionRef().values().forEach(i->mapNewId.computeIfAbsent(i.getIndicatorExpressionId(), k -> idGenerator.nextIdStr()));
         return this;
@@ -162,6 +164,7 @@ public class SyncTargetPack {
                 .endFrom(src)
                 .setCaseIndicatorCategoryId(mapNewId.get(src.getIndicatorCategoryId()))
                 .setId(null)
+                .setDt(new Date())
         );
         return this;
     }
@@ -171,6 +174,7 @@ public class SyncTargetPack {
                 .setPrincipalId(syncCurrentPack.getAccountId())
                 .setIndicatorCategoryId(mapNewId.get(indicatorCategoryId))
                 .setCaseIndicatorCategoryPrincipalRefId(idGenerator.nextIdStr())
+                .setDt(new Date())
         );
         return this;
     }
@@ -205,6 +209,7 @@ public class SyncTargetPack {
                 .setIndicatorCategoryId(mapNewId.get(src.getIndicatorCategoryId()))
                 .setCaseIndicatorCategoryRefId(idGenerator.nextIdStr())
                 .setSeq(src.getSeq())
+                .setDt(new Date())
         );
         return this;
     }
@@ -257,7 +262,8 @@ public class SyncTargetPack {
                 .setCaseIndicatorInstanceId(mapNewId.get(src.getIndicatorInstanceId()))
                 .setIndicatorCategoryId(mapNewId.get(src.getIndicatorCategoryId()))
                 .setPrincipalId(syncCurrentPack.getAccountId())
-                .setId(null));
+                .setId(null)
+                .setDt(new Date()));
         return this;
     }
     //endregion
@@ -305,7 +311,8 @@ public class SyncTargetPack {
                 .setRuleType(EnumIndicatorRuleType.INDICATOR.getCode())
                 .setVariableId(mapNewId.get(src.getVariableId()))
                 .setCaseIndicatorRuleId(idGenerator.nextIdStr())
-                .setId(null));
+                .setId(null)
+                .setDt(new Date()));
         return this;
     }
     //endregion
@@ -350,7 +357,8 @@ public class SyncTargetPack {
                 .setReasonId(mapNewId.get(src.getReasonId()))
                 .setIndicatorExpressionId(mapNewId.computeIfAbsent(src.getIndicatorExpressionId(), v -> idGenerator.nextIdStr()))
                 .setCaseIndicatorExpressionRefId(idGenerator.nextIdStr())
-                .setId(null));
+                .setId(null)
+                .setDt(new Date()));
         return this;
     }
     //endregion
@@ -401,7 +409,8 @@ public class SyncTargetPack {
                 .setMaxIndicatorExpressionItemId(mapNewId.computeIfAbsent(src.getMaxIndicatorExpressionItemId(), k -> idGenerator.nextIdStr()))
                 .setMinIndicatorExpressionItemId(mapNewId.computeIfAbsent(src.getMinIndicatorExpressionItemId(), k -> idGenerator.nextIdStr()))
                 .setCaseIndicatorExpressionId(mapNewId.computeIfAbsent(src.getIndicatorExpressionId(), v -> idGenerator.nextIdStr()))
-                .setId(null));
+                .setId(null)
+                .setDt(new Date()));
         return this;
     }
     //endregion
@@ -486,7 +495,8 @@ public class SyncTargetPack {
                 .setIndicatorInstanceId(mapNewId.get(src.getIndicatorInstanceId()))
                 .setInfluenceIndicatorInstanceIdList(fillExperssionString(src.getInfluenceIndicatorInstanceIdList(), mapNewId))
                 .setInfluencedIndicatorInstanceIdList(fillExperssionString(src.getInfluencedIndicatorInstanceIdList(), mapNewId))
-                .setId(null));
+                .setId(null)
+                .setDt(new Date()));
         return this;
     }
 

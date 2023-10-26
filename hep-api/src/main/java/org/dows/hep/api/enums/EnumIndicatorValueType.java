@@ -11,13 +11,16 @@ import org.springframework.util.ObjectUtils;
 @AllArgsConstructor
 @Getter
 public enum EnumIndicatorValueType {
-    NONE(null,"默认值"),
-    STRING(0,"字符串"),
-    INTEGER(1,"整数"),
-    DECIMAL(2,"小数"),
+    NONE(null,"默认值",2),
+    STRING(0,"字符串",2),
+    INTEGER(1,"整数",0),
+    DECIMAL(2,"小数",2),
     ;
     private Integer code;
     private String name;
+
+    //小数点位数
+    private Integer scale;
 
     public static EnumIndicatorValueType of(Integer code){
         for(EnumIndicatorValueType item: EnumIndicatorValueType.values()){

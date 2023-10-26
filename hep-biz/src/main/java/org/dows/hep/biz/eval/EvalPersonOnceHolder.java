@@ -54,7 +54,7 @@ public class EvalPersonOnceHolder {
 
     private EvalPersonOnceData cacheData;
 
-    private static final Set<String> INDICTATORNameBloodPressure=Set.of("收缩压","舒张压","心率");
+
 
     //region holders
     public EvalPersonOnceHolder getLastHolder(){
@@ -291,7 +291,8 @@ public class EvalPersonOnceHolder {
             return;
         }
         final boolean isChanged=src.isChanged();
-        final int SCALE4Value=INDICTATORNameBloodPressure.contains(src.getIndicatorName())?0:2;
+        ExperimentIndicatorInstanceRsEntity cacheIndicator=PersonIndicatorIdCache.Instance().getIndicatorById(cacheKey.getExperimentPersonId(), src.getIndicatorId());
+        final int SCALE4Value=PersonIndicatorIdCache.Instance().getScale(cacheIndicator);
         BigDecimal changingVal=src.getChangingVal();
         if(ShareUtil.XObject.notEmpty(changingVal)
                 &&changingVal.compareTo(BigDecimal.ZERO)!=0){
@@ -301,7 +302,7 @@ public class EvalPersonOnceHolder {
                 src.setCurVal(BigDecimalOptional.valueOf(src.getCurVal()).add(changingVal).getString(SCALE4Value));
             }
         }
-        ExperimentIndicatorInstanceRsEntity cacheIndicator=PersonIndicatorIdCache.Instance().getIndicatorById(cacheKey.getExperimentPersonId(), src.getIndicatorId());
+
         if(ShareUtil.XObject.notEmpty(cacheIndicator)
                 &&ShareUtil.XObject.isNumber(src.getCurVal())){
             src.setCurVal(BigDecimalOptional.valueOf(src.getCurVal())
