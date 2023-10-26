@@ -121,7 +121,7 @@ public class ExperimentManageBiz {
             throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!为确保实验正常初始化，开始时间不可早于当前时间");
         }
         if (checkCasePerson(createExperiment.getCaseInstanceId())) {
-            throw new ExperimentException("实验设定的案例中,所有机构都没有实验操作人员，无法进行实验操作");
+            throw new ExperimentException("实验设定的案例中,所有机构都没有已发布人员");
         }
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
