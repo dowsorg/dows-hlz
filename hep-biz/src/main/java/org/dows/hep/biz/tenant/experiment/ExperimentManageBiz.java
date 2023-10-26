@@ -215,7 +215,7 @@ public class ExperimentManageBiz {
             // 方案设计模式
         } else if (null != schemeSetting) {
             if(checkCaseScheme(caseInstanceId)){
-                throw new ExperimentException("方案模式实验,案例没有方案设计");
+                throw new ExperimentException("方案模式实验,案例方案设计不合理");
             }
             // 验证时间
             schemeSetting.validateTime(createExperiment.getStartTime());
@@ -239,7 +239,15 @@ public class ExperimentManageBiz {
      */
     private boolean checkCaseScheme(String caseInstanceId){
         CaseSchemeEntity oriEntity = tenantCaseManageExtBiz.getByInstanceId(caseInstanceId);
-        return Objects.isNull(oriEntity);
+        if (Objects.isNull(oriEntity)){
+            return true;
+        }
+        QuestionSectionEntity questionSection = tenantCaseManageExtBiz.getByQuestionSectionId(oriEntity.getQuestionSectionId());
+        if (Objects.isNull(questionSection)){
+            return true;
+        }
+        List<QuestionSectionItemEntity> questionItemByQuestionSectionList = tenantCaseManageExtBiz.getQuestionItemByQuestionSectionId(oriEntity.getQuestionSectionId());
+        return CollectionUtils.isEmpty(questionItemByQuestionSectionList);
     }
     /**
      * 增加机构人员校验
