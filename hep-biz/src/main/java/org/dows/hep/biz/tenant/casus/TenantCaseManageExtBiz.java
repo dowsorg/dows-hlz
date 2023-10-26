@@ -748,7 +748,8 @@ public class TenantCaseManageExtBiz {
     //查询方案设计
     public CaseSchemeEntity getByInstanceId(String caseInstanceId) {
         return caseSchemeService.lambdaQuery()
-                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId).one();
+                .eq(CaseSchemeEntity::getCaseInstanceId, caseInstanceId)
+                .eq(CaseSchemeEntity::getDeleted,false).one();
     }
 
     /**
