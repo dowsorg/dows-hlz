@@ -33,6 +33,7 @@ import org.dows.hep.api.user.experiment.ExperimentESCEnum;
 import org.dows.hep.api.user.experiment.response.ExperimentStateResponse;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
+import org.dows.hep.biz.tenant.casus.TenantCaseManageExtBiz;
 import org.dows.hep.biz.user.experiment.ExperimentGroupingBiz;
 import org.dows.hep.biz.util.PeriodsTimerUtil;
 import org.dows.hep.biz.util.ShareBiz;
@@ -97,13 +98,12 @@ public class ExperimentManageBiz {
 
     private final AccountRoleApi accountRoleApi;
 
-
     private final PersonManageBiz personManageBiz;
 
     private final ExperimentTaskScheduleService experimentTaskScheduleService;
 
     private final ExperimentGroupingBiz experimentGroupingBiz;
-
+    private final TenantCaseManageExtBiz tenantCaseManageExtBiz;
     /**
      * @param
      * @return
@@ -120,8 +120,9 @@ public class ExperimentManageBiz {
         if (delay < 0) {
             throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!为确保实验正常初始化，开始时间不可早于当前时间");
         }
-        if (checkCasePerson(createExperiment.getCaseInstanceId())) {
-            throw new ExperimentException("实验设定的案例中,所有机构都没有实验操作人员，无法进行实验操作");
+        String caseInstanceId = createExperiment.getCaseInstanceId();
+        if (checkCasePerson(caseInstanceId)) {
+            throw new ExperimentException("实验设定的案例中,所有机构都没有已发布人员");
         }
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
@@ -143,7 +144,7 @@ public class ExperimentManageBiz {
                 .accountId(accountId)
                 .appointor(instanceResponse.getAccountName())
                 .experimentParticipatorIds(String.join(",", teacherIds))
-                .caseInstanceId(createExperiment.getCaseInstanceId())
+                .caseInstanceId(caseInstanceId)
                 .caseName(createExperiment.getCaseName())
                 .casePic(createExperiment.getCasePic())
                 .appointorName(instanceResponse.getUserName())
@@ -157,7 +158,7 @@ public class ExperimentManageBiz {
             ExperimentParticipatorEntity experimentParticipatorEntity = ExperimentParticipatorEntity.builder()
                     .experimentParticipatorId(idGenerator.nextIdStr())
                     .experimentInstanceId(experimentInstance.getExperimentInstanceId())
-                    .caseInstanceId(createExperiment.getCaseInstanceId())
+                    .caseInstanceId(caseInstanceId)
                     .experimentStartTime(createExperiment.getStartTime())
                     .experimentName(experimentInstance.getExperimentName())
                     .accountId(instance.getAccountId())
@@ -213,6 +214,9 @@ public class ExperimentManageBiz {
             PeriodsTimerUtil.buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities, idGenerator);
             // 方案设计模式
         } else if (null != schemeSetting) {
+            if(checkCaseScheme(caseInstanceId)){
+                throw new ExperimentException("方案模式实验,案例没有方案设计");
+            }
             // 验证时间
             schemeSetting.validateTime(createExperiment.getStartTime());
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
@@ -230,7 +234,13 @@ public class ExperimentManageBiz {
         experimentTimerService.saveBatch(experimentTimerEntities);
         return experimentInstance.getExperimentInstanceId();
     }
-
+    /**
+     * 方案模式必须要有方案设计
+     */
+    private boolean checkCaseScheme(String caseInstanceId){
+        CaseSchemeEntity oriEntity = tenantCaseManageExtBiz.getByInstanceId(caseInstanceId);
+        return Objects.isNull(oriEntity);
+    }
     /**
      * 增加机构人员校验
      */
