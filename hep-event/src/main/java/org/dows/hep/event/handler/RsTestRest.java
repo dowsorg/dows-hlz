@@ -3,7 +3,6 @@ package org.dows.hep.event.handler;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.base.indicator.request.ExperimentMonitorFollowupCheckRequestRs;
 import org.dows.hep.api.tenant.experiment.request.ExperimentGroupSettingRequest;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,10 +22,6 @@ public class RsTestRest {
   @Operation(summary = "手动掉实验接口")
   @PostMapping("v1/experimentIndicator/test")
   public void testExp(@RequestBody ExperimentGroupSettingRequest request) throws ExecutionException, InterruptedException {
-//    experimentInitHandler.exec(request);
-    experimentFollowupHandler.exec(ExperimentMonitorFollowupCheckRequestRs.builder()
-            .appId(request.getAppId())
-            .experimentId(request.getExperimentInstanceId())
-            .build());
+    experimentInitHandler.exec(request);
   }
 }

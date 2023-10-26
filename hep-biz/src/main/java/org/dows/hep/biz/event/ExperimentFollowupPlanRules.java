@@ -73,8 +73,8 @@ public class ExperimentFollowupPlanRules {
         if (null == rowNotice) {
             rowNotice = experimentOrgNoticeBiz.createNotice(src, rowPerson, timePoint);
         }
-        rowNotice.setExperimentOrgId(src.getExperimentOrgId())
-                .setExperimentGroupId(src.getExperimentGroupId())
+        rowNotice.setExperimentOrgId(rowPerson.getExperimentOrgId())
+                .setExperimentGroupId(rowPerson.getExperimentGroupId())
                 .setPeriods(timePoint.getPeriod())
                 .setGameDay(timePoint.getGameDay())
                 .setNoticeSrcType(EnumExperimentOrgNoticeType.FOLLOWUP.getCode())
@@ -86,11 +86,14 @@ public class ExperimentFollowupPlanRules {
                         .append(" push:").append(pushNoticeFlag)
                         .append(" },")
                         .toString());
-        if(pushNoticeFlag){
+       /* if(pushNoticeFlag){
             rowNotice.setNoticeTime(new Date())
                     .setReadState(0)
                     .setActionState(EnumEventActionState.TODO.getCode());
-        }
+        }*/
+        rowNotice.setNoticeTime(new Date())
+                .setReadState(0)
+                .setActionState(EnumEventActionState.TODO.getCode());
         final ExperimentOrgNoticeEntity saveNotice = rowNotice;
         if (!experimentFollowupPlanDao.tranSave(src, false, () -> experimentOrgNoticeBiz.upsert(saveNotice))) {
             return false;

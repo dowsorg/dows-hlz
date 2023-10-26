@@ -246,7 +246,9 @@ public class SyncTargetPack {
                 .setCore(src.getCore())
                 .setFood(src.getFood())
                 .setType(src.getType())
+                .setValueType(src.getValueType())
                 .setDescr(src.getDescr()));
+
         return this;
     }
     public SyncTargetPack addIndicator(IndicatorInstanceEntity src, SyncCurrentPack syncCurrentPack) {

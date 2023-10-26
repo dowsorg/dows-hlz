@@ -83,6 +83,7 @@ public class PersonManageRest {
     * @param
     * @return
     */
+    @Resubmit(duration = 3)
     @Operation(summary = "复制人物")
     @PostMapping("v1/basePerson/personManage/copyPerson")
     public PersonInstanceResponse copyPerson(@RequestParam @Validated String accountId,

@@ -1563,6 +1563,7 @@ public class RsCopyBiz {
                 .food(caseIndicatorInstanceEntity.getFood())
                 .type(caseIndicatorInstanceEntity.getType())
                 .descr(caseIndicatorInstanceEntity.getDescr())
+                .valueType(caseIndicatorInstanceEntity.getValueType())
                 .min(min)
                 .max(max)
                 .def(def)
