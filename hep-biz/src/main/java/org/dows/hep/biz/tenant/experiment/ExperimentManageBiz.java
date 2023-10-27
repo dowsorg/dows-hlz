@@ -121,9 +121,7 @@ public class ExperimentManageBiz {
             throw new ExperimentException("实验时间设置错误,实验开始时间小于当前时间!为确保实验正常初始化，开始时间不可早于当前时间");
         }
         String caseInstanceId = createExperiment.getCaseInstanceId();
-        if (checkCasePerson(caseInstanceId)) {
-            throw new ExperimentException("实验设定的案例中,所有机构都没有已发布人员");
-        }
+        checkCase(caseInstanceId);
         // 获取参与教师
         List<AccountInstanceResponse> teachers = createExperiment.getTeachers();
         Set<String> teacherIds = new HashSet<>();
@@ -214,9 +212,7 @@ public class ExperimentManageBiz {
             PeriodsTimerUtil.buildPeriods(experimentInstance, experimentSetting, experimentTimerEntities, idGenerator);
             // 方案设计模式
         } else if (null != schemeSetting) {
-            if(checkCaseScheme(caseInstanceId)){
-                throw new ExperimentException("方案模式实验,案例方案设计不合理");
-            }
+            checkCaseScheme(caseInstanceId);
             // 验证时间
             schemeSetting.validateTime(createExperiment.getStartTime());
             ExperimentSettingEntity experimentSettingEntity = ExperimentSettingEntity.builder()
@@ -234,40 +230,65 @@ public class ExperimentManageBiz {
         experimentTimerService.saveBatch(experimentTimerEntities);
         return experimentInstance.getExperimentInstanceId();
     }
+
+    /**
+     * 实验开启，案例校验
+     */
+    private void checkCase(String caseInstanceId){
+        checkCasePerson(caseInstanceId);
+        checkCaseOrg(caseInstanceId);
+    }
+    /**
+     * 机构以及机构功能检测
+     */
+    private void checkCaseOrg(String caseInstanceId) {
+        List<CaseOrgEntity> caseOrgList = tenantCaseManageExtBiz.getCaseOrgList(caseInstanceId);
+        if (CollectionUtils.isEmpty(caseOrgList)) {
+            throw new ExperimentException("实验机构设置异常,没有找到发布机构");
+        }
+        caseOrgList.forEach(caseOrg -> {
+            List<CaseOrgModuleEntity> caseOrgModuleList = tenantCaseManageExtBiz.getCaseOrgModuleList(caseOrg.getCaseOrgId());
+            if (CollectionUtils.isEmpty(caseOrgModuleList)) {
+                throw new ExperimentException("实验机构功能设置异常,没有找到" + caseOrg.getOrgName() + "机构功能");
+            }
+        });
+    }
+
     /**
      * 方案模式必须要有方案设计
      */
-    private boolean checkCaseScheme(String caseInstanceId){
+    private void checkCaseScheme(String caseInstanceId){
         CaseSchemeEntity oriEntity = tenantCaseManageExtBiz.getByInstanceId(caseInstanceId);
         if (Objects.isNull(oriEntity)){
-            return true;
+            throw new ExperimentException("方案模式实验,没有找到方案设计");
         }
         QuestionSectionEntity questionSection = tenantCaseManageExtBiz.getByQuestionSectionId(oriEntity.getQuestionSectionId());
         if (Objects.isNull(questionSection)){
-            return true;
+            throw new ExperimentException("方案模式实验,没有找到方案设计问卷");
         }
-        List<QuestionSectionItemEntity> questionItemList = tenantCaseManageExtBiz.getQuestionItemByQuestionSectionId(oriEntity.getQuestionSectionId());
-        Set<String> questionInstanceIdSet = questionItemList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).collect(Collectors.toSet());
-        //没有标题，可以理解为作文题
-        List<QuestionInstanceEntity> questionInstanceList = tenantCaseManageExtBiz.getQuestionInstanceList(questionInstanceIdSet);
-        return CollectionUtils.isEmpty(questionInstanceList);
+        List<QuestionSectionItemEntity> questionItemByQuestionSectionList = tenantCaseManageExtBiz.getQuestionItemByQuestionSectionId(oriEntity.getQuestionSectionId());
+        if (CollectionUtils.isEmpty(questionItemByQuestionSectionList)){
+            throw new ExperimentException("方案模式实验,没有找到方案设计问卷题目");
+        }
     }
     /**
      * 增加机构人员校验
      */
-   private boolean checkCasePerson(String caseInstanceId){
+   private void checkCasePerson(String caseInstanceId){
        List<CasePersonEntity> list = casePersonService.lambdaQuery()
                .eq(CasePersonEntity::getCaseInstanceId, caseInstanceId)
                .eq(CasePersonEntity::getDeleted, false)
                .list();
        //一个人员都没有
        if (CollectionUtils.isEmpty(list)){
-           return true;
+           throw new ExperimentException("实验人员异常,没有找到机构人员");
        }else{//或者人员没有发布
            Set<String> accountIds = list.stream().map(CasePersonEntity::getAccountId).collect(Collectors.toSet());
            List<AccountInstance> accountInstances = xAccountInstanceApi.getAccountInstancesByAccountIds(accountIds);
            List<AccountInstance> list1 = accountInstances.stream().filter(accountInstance -> accountInstance.getStatus() == 1).toList();
-           return CollectionUtils.isEmpty(list1);
+           if(CollectionUtils.isEmpty(list1)){
+               throw new ExperimentException("实验人员异常,没有找到机构已发布人员");
+           }
        }
    }
 
