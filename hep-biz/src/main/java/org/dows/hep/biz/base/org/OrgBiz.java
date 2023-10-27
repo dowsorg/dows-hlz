@@ -865,42 +865,27 @@ public class OrgBiz {
             //3.过滤
             list = list.stream().filter(org ->orgIds.contains(org.getOrgId())).toList();
         }
+        final int total=list.size();
+        request.setPageNo(Optional.ofNullable(request.getPageNo()).orElse(1));
+        List<CaseOrgEntity> pageRows = list.stream().skip((request.getPageNo() - 1) *
+                request.getPageSize()).limit(request.getPageSize()).collect(Collectors.toList());
+        List<CaseOrgResponse> pageRst = ShareUtil.XCollection.map(pageRows, i->{
+            CaseOrgResponse dst= CopyWrapper.create(CaseOrgResponse::new)
+                    .endFrom(i);
+            dst.setId(String.valueOf(i.getId()));
+            Optional.ofNullable(accountOrgGeoApi.getAccountOrgInfoByOrgId(i.getOrgId()))
+                    .ifPresent(geo->{
+                        dst.setOrgLongitude(geo.getOrgLongitude());
+                        dst.setOrgLatitude(geo.getOrgLatitude());
+                    });
+            return dst;
 
-        //组装分页
-        int pageSize = request.getPageSize();
-        Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
+        });
+        return new Page<CaseOrgResponse>().setRecords(pageRst)
+                .setTotal(total)
+                .setSize(request.getPageSize())
+                .setCurrent(request.getPageNo());
 
-        if (pageSize > list.size()) {
-            //不够分页，放全部
-            page.setSize(list.size());
-            page.setRecords(list);
-        }else{
-            int index = (request.getPageNo() - 1) * pageSize;
-            int maxIndex = index + pageSize;
-            if ( maxIndex > list.size()){
-                maxIndex = list.size();
-            }
-            page.setRecords(list.subList(index, maxIndex));
-        }
-        IPage<CaseOrgEntity> orgList = caseOrgService.page(page,caseOrgEntityWrapper);
-        //复制属性
-        IPage<CaseOrgResponse> pageVo = new Page<>();
-        BeanUtils.copyProperties(orgList, pageVo, new String[]{"records"});
-        List<CaseOrgResponse> voList = new ArrayList<>();
-        if (orgList.getRecords() != null && orgList.getRecords().size() > 0) {
-            orgList.getRecords().forEach(model -> {
-                CaseOrgResponse vo = new CaseOrgResponse();
-                BeanUtils.copyProperties(model, vo);
-                vo.setId(model.getId().toString());
-                //获取机构经纬度
-                AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(model.getOrgId());
-                vo.setOrgLongitude(orgGeoResponse.getOrgLongitude());
-                vo.setOrgLatitude(orgGeoResponse.getOrgLatitude());
-                voList.add(vo);
-            });
-        }
-        pageVo.setRecords(voList);
-        return pageVo;
     }
 
     /**
