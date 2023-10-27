@@ -17,7 +17,7 @@ services:
       - ./logs:/dows/saas/hep-admin/logs
       - ./configs:/dows/saas/hep-admin/configs
       - ./resources:/data/resources/images/hep
-      #- /dows/paas/apm/skywalking-agent-8.16.0:/dows/paas/apm/skywalking-agent
+      - /dows/paas/apm/skywalking-agent-8.16.0:/dows/paas/apm/skywalking-agent
     networks:
       - dev_net
 #    networks:
