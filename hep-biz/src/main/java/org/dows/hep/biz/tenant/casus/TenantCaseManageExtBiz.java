@@ -680,7 +680,8 @@ public class TenantCaseManageExtBiz {
 
     public List<CaseOrgModuleEntity> getCaseOrgModuleList(String caseOrgId) {
         return caseOrgModuleService.lambdaQuery()
-                .eq(CaseOrgModuleEntity::getCaseOrgId, caseOrgId).list();
+                .eq(CaseOrgModuleEntity::getCaseOrgId, caseOrgId)
+                .eq(CaseOrgModuleEntity::getDeleted,false).list();
     }
 
     //查询机构费用以及报销比例
@@ -692,7 +693,8 @@ public class TenantCaseManageExtBiz {
     //查询案例所属机构
     public List<CaseOrgEntity> getCaseOrgList(String caseInstanceId) {
         return caseOrgService.lambdaQuery()
-                .in(CaseOrgEntity::getCaseInstanceId, caseInstanceId).list();
+                .in(CaseOrgEntity::getCaseInstanceId, caseInstanceId)
+                .eq(CaseOrgEntity::getDeleted,false).list();
     }
 
     public List<QuestionOptionsEntity> getQuestionOptionsList1(Set<String> questionInstanceIdSet) {
