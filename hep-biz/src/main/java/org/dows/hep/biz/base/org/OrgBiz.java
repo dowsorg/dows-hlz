@@ -545,20 +545,18 @@ public class OrgBiz {
         CaseOrgEntity entity = caseOrgService.lambdaQuery()
                 .eq(CaseOrgEntity::getCaseOrgId, caseOrgId)
                 .eq(CaseOrgEntity::getDeleted, false)
-                .eq(CaseOrgEntity::getAppId, request.getAppId())
+                .eq(StringUtils.isNotBlank(request.getAppId()), CaseOrgEntity::getAppId,request.getAppId())
                 .one();
         //2、更新机构实例
         request.setOrgId(entity.getOrgId());
         Boolean flag1 = accountOrgApi.updateAccountOrgByOrgId(request);
         //3、更新案例机构实例
-        CaseOrgEntity entity1 = CaseOrgEntity.builder().orgName(request.getOrgName())
-                .scene(request.getProfile())
-                .handbook(request.getOperationManual())
-                .ver(ver)
-                .caseIdentifier(caseIdentifier)
-                .id(entity.getId())
-                .build();
-        boolean orgFlag = caseOrgService.updateById(entity1);
+        entity.setOrgName(request.getOrgName());
+        entity.setScene(request.getProfile());
+        entity.setHandbook(request.getOperationManual());
+        entity.setVer(ver);
+        entity.setCaseIdentifier(caseIdentifier);
+        boolean orgFlag = caseOrgService.updateById(entity);
         //4、更新机构地理信息
         if (request.getOrgLatitude() != null && request.getOrgLongitude() != null) {
             AccountOrgGeoRequest geoRequest = AccountOrgGeoRequest.builder()
