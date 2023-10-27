@@ -858,7 +858,7 @@ public class OrgBiz {
         if(request.getStatus() != null && request.getStatus() == 1) {
             list.forEach(caseOrgEntity -> {
                 AccountOrgResponse accountOrg = accountOrgApi.getAccountOrgByOrgId(caseOrgEntity.getOrgId(), "3");
-                if (accountOrg != null&&"1".equals(accountOrg.getStatus())) {
+                if (accountOrg != null&&null!=accountOrg.getStatus()&&accountOrg.getStatus().equals(1) ) {
                     orgIds.add(accountOrg.getOrgId());
                 }
             });
