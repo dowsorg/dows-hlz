@@ -89,7 +89,7 @@ public class OrgReportComposer {
                 funcs.add(func);
             });
         });
-        if(funcs.size()==0){
+        if(null==newNode &&funcs.size()==0){
             return rst;
         }
         final List<ExptOrgReportNodeVO> nodes = rst.getNodes();

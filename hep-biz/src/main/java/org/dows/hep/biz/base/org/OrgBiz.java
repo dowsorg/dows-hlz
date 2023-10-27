@@ -551,12 +551,18 @@ public class OrgBiz {
         request.setOrgId(entity.getOrgId());
         Boolean flag1 = accountOrgApi.updateAccountOrgByOrgId(request);
         //3、更新案例机构实例
-        entity.setOrgName(request.getOrgName());
-        entity.setScene(request.getProfile());
-        entity.setHandbook(request.getOperationManual());
-        entity.setVer(ver);
-        entity.setCaseIdentifier(caseIdentifier);
-        boolean orgFlag = caseOrgService.updateById(entity);
+        if(ShareUtil.XObject.anyNotEmpty(request.getOrgName(),request.getProfile(),request.getOperationManual(),
+                ver,caseIdentifier)) {
+            CaseOrgEntity entity1 = CaseOrgEntity.builder().orgName(request.getOrgName())
+                    .scene(request.getProfile())
+                    .handbook(request.getOperationManual())
+                    .ver(ver)
+                    .caseIdentifier(caseIdentifier)
+                    .id(entity.getId())
+                    .build();
+            boolean orgFlag = caseOrgService.updateById(entity1);
+        }
+
         //4、更新机构地理信息
         if (request.getOrgLatitude() != null && request.getOrgLongitude() != null) {
             AccountOrgGeoRequest geoRequest = AccountOrgGeoRequest.builder()
@@ -852,49 +858,34 @@ public class OrgBiz {
         if(request.getStatus() != null && request.getStatus() == 1) {
             list.forEach(caseOrgEntity -> {
                 AccountOrgResponse accountOrg = accountOrgApi.getAccountOrgByOrgId(caseOrgEntity.getOrgId(), "3");
-                if (accountOrg != null) {
+                if (accountOrg != null&&null!=accountOrg.getStatus()&&accountOrg.getStatus().equals(1) ) {
                     orgIds.add(accountOrg.getOrgId());
                 }
             });
             //3.过滤
             list = list.stream().filter(org ->orgIds.contains(org.getOrgId())).toList();
         }
+        final int total=list.size();
+        request.setPageNo(Optional.ofNullable(request.getPageNo()).orElse(1));
+        List<CaseOrgEntity> pageRows = list.stream().skip((request.getPageNo() - 1) *
+                request.getPageSize()).limit(request.getPageSize()).collect(Collectors.toList());
+        List<CaseOrgResponse> pageRst = ShareUtil.XCollection.map(pageRows, i->{
+            CaseOrgResponse dst= CopyWrapper.create(CaseOrgResponse::new)
+                    .endFrom(i);
+            dst.setId(String.valueOf(i.getId()));
+            Optional.ofNullable(accountOrgGeoApi.getAccountOrgInfoByOrgId(i.getOrgId()))
+                    .ifPresent(geo->{
+                        dst.setOrgLongitude(geo.getOrgLongitude());
+                        dst.setOrgLatitude(geo.getOrgLatitude());
+                    });
+            return dst;
 
-        //组装分页
-        int pageSize = request.getPageSize();
-        Page<CaseOrgEntity> page = new Page<>(request.getPageNo(), request.getPageSize());
+        });
+        return new Page<CaseOrgResponse>().setRecords(pageRst)
+                .setTotal(total)
+                .setSize(request.getPageSize())
+                .setCurrent(request.getPageNo());
 
-        if (pageSize > list.size()) {
-            //不够分页，放全部
-            page.setSize(list.size());
-            page.setRecords(list);
-        }else{
-            int index = (request.getPageNo() - 1) * pageSize;
-            int maxIndex = index + pageSize;
-            if ( maxIndex > list.size()){
-                maxIndex = list.size();
-            }
-            page.setRecords(list.subList(index, maxIndex));
-        }
-        IPage<CaseOrgEntity> orgList = caseOrgService.page(page,caseOrgEntityWrapper);
-        //复制属性
-        IPage<CaseOrgResponse> pageVo = new Page<>();
-        BeanUtils.copyProperties(orgList, pageVo, new String[]{"records"});
-        List<CaseOrgResponse> voList = new ArrayList<>();
-        if (orgList.getRecords() != null && orgList.getRecords().size() > 0) {
-            orgList.getRecords().forEach(model -> {
-                CaseOrgResponse vo = new CaseOrgResponse();
-                BeanUtils.copyProperties(model, vo);
-                vo.setId(model.getId().toString());
-                //获取机构经纬度
-                AccountOrgGeoResponse orgGeoResponse = accountOrgGeoApi.getAccountOrgInfoByOrgId(model.getOrgId());
-                vo.setOrgLongitude(orgGeoResponse.getOrgLongitude());
-                vo.setOrgLatitude(orgGeoResponse.getOrgLatitude());
-                voList.add(vo);
-            });
-        }
-        pageVo.setRecords(voList);
-        return pageVo;
     }
 
     /**
