@@ -80,6 +80,14 @@ public class ShareUtil {
             return isEmpty(obj) || isEmpty(func.get());
         }
 
+        public static boolean anyNotEmpty(Object... objs) {
+            if(isEmpty(objs)) return false;
+            for(Object item:objs){
+                if(notEmpty(item)) return true;
+            }
+            return false;
+        }
+
 
         public static boolean isNumber(Object obj){
             if(isEmpty(obj)){

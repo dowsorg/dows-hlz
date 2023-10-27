@@ -551,12 +551,18 @@ public class OrgBiz {
         request.setOrgId(entity.getOrgId());
         Boolean flag1 = accountOrgApi.updateAccountOrgByOrgId(request);
         //3、更新案例机构实例
-        entity.setOrgName(request.getOrgName());
-        entity.setScene(request.getProfile());
-        entity.setHandbook(request.getOperationManual());
-        entity.setVer(ver);
-        entity.setCaseIdentifier(caseIdentifier);
-        boolean orgFlag = caseOrgService.updateById(entity);
+        if(ShareUtil.XObject.anyNotEmpty(request.getOrgName(),request.getProfile(),request.getOperationManual(),
+                ver,caseIdentifier)) {
+            CaseOrgEntity entity1 = CaseOrgEntity.builder().orgName(request.getOrgName())
+                    .scene(request.getProfile())
+                    .handbook(request.getOperationManual())
+                    .ver(ver)
+                    .caseIdentifier(caseIdentifier)
+                    .id(entity.getId())
+                    .build();
+            boolean orgFlag = caseOrgService.updateById(entity1);
+        }
+
         //4、更新机构地理信息
         if (request.getOrgLatitude() != null && request.getOrgLongitude() != null) {
             AccountOrgGeoRequest geoRequest = AccountOrgGeoRequest.builder()
@@ -852,7 +858,7 @@ public class OrgBiz {
         if(request.getStatus() != null && request.getStatus() == 1) {
             list.forEach(caseOrgEntity -> {
                 AccountOrgResponse accountOrg = accountOrgApi.getAccountOrgByOrgId(caseOrgEntity.getOrgId(), "3");
-                if (accountOrg != null) {
+                if (accountOrg != null&&"1".equals(accountOrg.getStatus())) {
                     orgIds.add(accountOrg.getOrgId());
                 }
             });
