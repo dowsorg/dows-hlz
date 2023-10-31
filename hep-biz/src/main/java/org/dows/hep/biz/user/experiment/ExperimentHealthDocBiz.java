@@ -9,6 +9,7 @@ import org.dows.hep.api.user.experiment.vo.ExptIndicatorValPoint;
 import org.dows.hep.biz.dao.ExperimentIndicatorLogDao;
 import org.dows.hep.biz.eval.EvalPersonCache;
 import org.dows.hep.biz.eval.EvalPersonOnceHolder;
+import org.dows.hep.biz.eval.data.EvalIndicatorValues;
 import org.dows.hep.biz.eval.data.EvalPersonOnceData;
 import org.dows.hep.biz.eval.data.EvalRiskValues;
 import org.dows.hep.biz.event.ExperimentSettingCache;
@@ -103,13 +104,14 @@ public class ExperimentHealthDocBiz {
             );
         });
 
+        EvalIndicatorValues moneyValues=Optional.ofNullable( evalHolder.getMoneyValues()).orElse(new EvalIndicatorValues());
         ExptHealthDocInfoResponse rst=new ExptHealthDocInfoResponse();
         rst.setExperimentPersonId(experimentPersonId)
                 .setHealthIndex(Optional.ofNullable( evalHolder.getHealthPoint(false))
                         .orElse(evalHolder.getHealthPoint(true)))
                 .setMoney(evalHolder.getMoney(false))
                 .setLastMoney(evalHolder.getMoney(true))
-                .setMoneyScore(getMoneyScore(rst.getMoney(),rst.getLastMoney()))
+                .setMoneyScore(getMoneyScore(moneyValues.getCurVal(),moneyValues.getPeriodInitVal()))
                 .setRisks(ShareUtil.XCollection.toSet(evalData.getRisks(), EvalRiskValues::getRiskName))
                 .setTotalDays(exptColl.getTotalDays());
 
@@ -127,14 +129,20 @@ public class ExperimentHealthDocBiz {
         return rst;
     }
 
+
+
     private String getMoneyScore(String money,String lastMoney){
         if(ShareUtil.XObject.notNumber(money)
         ||ShareUtil.XObject.notNumber(lastMoney)) {
             return "-";
         }
         BigDecimal lastMoneyVal=BigDecimalUtil.tryParseDecimalElseNull(lastMoney);
+        if(lastMoneyVal.compareTo(BigDecimal.ZERO)<=0){
+            return "100%";
+        }
 
         return BigDecimalOptional.valueOf(lastMoneyVal).sub(BigDecimalUtil.tryParseDecimalElseNull(money))
+                .min(BigDecimal.ZERO)
                 .div(lastMoneyVal,2)
                 .mul(BigDecimalUtil.ONEHundred)
                 .min(BigDecimal.ZERO)

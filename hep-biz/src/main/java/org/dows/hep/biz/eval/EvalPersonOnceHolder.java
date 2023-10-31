@@ -117,6 +117,41 @@ public class EvalPersonOnceHolder {
         return Optional.ofNullable(values).map(i->lastFlag?i.getLastVal():i.getCurVal()).orElse("");
     }
 
+    public EvalIndicatorValues getMoneyValues() {
+        EvalPersonOnceData cached = cacheData;
+        if (!isValid(cached)) {
+            return null;
+        }
+        return getMoneyValues(cached.getHeader().getPeriods());
+    }
+    public EvalIndicatorValues getMoneyValues(Integer period) {
+        EvalPersonOnceData cached = cacheData;
+        if (!isValid(cached)) {
+            return null;
+        }
+        EvalIndicatorValues rst = cached.getMapPeriodMoney().get(period);
+        if (null == rst && period.equals(cached.getHeader().getPeriods())) {
+            rst = getSysIndicator(EnumIndicatorType.MONEY);
+            if (null != rst) {
+                cached.getMapPeriodMoney().put(period, rst);
+            }
+        }
+        return rst;
+    }
+
+    public EvalIndicatorValues syncMoney(){
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return null;
+        }
+        EvalIndicatorValues moneyVals=getSysIndicator(EnumIndicatorType.MONEY);
+        if(null==moneyVals){
+            return null;
+        }
+        cached.syncMoney(moneyVals);
+        return moneyVals;
+    }
+
     public EvalIndicatorValues getIndicator(String indicatorId){
         EvalPersonOnceData cached=get();
         if(null==cached){
@@ -137,6 +172,8 @@ public class EvalPersonOnceHolder {
         return cached.fillCurVal(mapCurVal, indicatorIds);
 
     }
+
+
     public List<EvalIndicatorValues> getChangedIndicators(){
         EvalPersonOnceData cached=cacheData;
         if(!isValid(cached)){
@@ -230,6 +267,7 @@ public class EvalPersonOnceHolder {
         saveToRD(cacheData);
         return true;
     }
+
 
 
     public boolean startSync(EvalPersonSyncRequest req) {
@@ -328,8 +366,8 @@ public class EvalPersonOnceHolder {
             return true;
         }
         data.setSyncState(EnumEvalSyncState.SYNCING);
-        syncIndicators(data);
-       /* data.setSyncState(EnumEvalSyncState.SYNCED2RD);
+       /* syncIndicators(data);
+        data.setSyncState(EnumEvalSyncState.SYNCED2RD);
         if (!saveToRD(data)) {
             data.setSyncState(EnumEvalSyncState.SYNCING);
         }*/
@@ -376,6 +414,7 @@ public class EvalPersonOnceHolder {
                 .setExperimentInstanceId(cacheKey.getExperimentInstanceId())
                 .setExperimentPersonId(cacheKey.getExperimentPersonId());
         logEval.setRisks(JacksonUtil.toJsonSilence(data.getRisks(), true));
+        logEval.setPeriodMoney(JacksonUtil.toJsonSilence(data.getMapPeriodMoney(), true));
         final List<EvalIndicatorValues> sortIndicators=data.getMapIndicators().values().stream()
                 .sorted(Comparator.comparing(i->Optional.ofNullable(i.getIndicatorName()).orElse("")))
                 .collect(Collectors.toList());
@@ -496,8 +535,10 @@ public class EvalPersonOnceHolder {
         );
 
         if(ShareUtil.XObject.notEmpty(rowLog.getRisks())) {
-            rst.setRisks(JacksonUtil.fromJsonSilence(rowLog.getRisks(), new TypeReference<>() {
-            }));
+            rst.setRisks(JacksonUtil.fromJsonSilence(rowLog.getRisks(), new TypeReference<>() {}));
+        }
+        if(ShareUtil.XObject.notEmpty(rowLog.getPeriodMoney())){
+            rst.getMapPeriodMoney().putAll(ShareUtil.XObject.defaultIfNull(JacksonUtil.fromJsonSilence(rowLog.getPeriodMoney(), new TypeReference<>() {}),Collections.emptyMap()));
         }
         ExperimentEvalLogContentEntity rowLogContent=experimentEvalLogDao.getByExperimentEvalLogId(rowLog.getExperimentEvalLogId(),
                 ExperimentEvalLogContentEntity::getIndicatorContent);

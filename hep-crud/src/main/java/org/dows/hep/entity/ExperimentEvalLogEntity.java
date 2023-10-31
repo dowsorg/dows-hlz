@@ -85,6 +85,9 @@ public class ExperimentEvalLogEntity implements CrudEntity {
     @Schema(title = "危险因素")
     private String risks;
 
+    @Schema(title = "每期资金")
+    private String periodMoney;
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

@@ -4,12 +4,14 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.enums.EnumEvalFuncType;
+import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
 import org.dows.hep.biz.eval.data.EvalPersonCacheKey;
 import org.dows.hep.biz.eval.data.EvalPersonOnceData;
 import org.dows.hep.biz.eval.data.EvalPersonSyncRequest;
 import org.dows.hep.biz.event.ExperimentSettingCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
+import org.dows.hep.biz.event.data.ExperimentSettingCollection;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.AssertUtil;
@@ -77,7 +79,13 @@ public class EvalPersonPointer {
             Optional.ofNullable(curHolder.getPresent())
                     .map(EvalPersonOnceData::getHeader)
                     .ifPresent(i->i.setFuncType(funcType));
+            if(funcType.isPeriodEnd()){
+                curHolder.syncMoney();
+            }
             nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, funcType);
+            if(funcType.isPeriodEnd()){
+                nextHolder.syncMoney();
+            }
             curEvalNo.incrementAndGet();
             curHolder.save();
             return true;
@@ -92,6 +100,10 @@ public class EvalPersonPointer {
         if(ShareUtil.XObject.isEmpty(cacheKey.getExperimentInstanceId())){
             Optional.ofNullable( PersonIndicatorIdCache.Instance().getPerson(cacheKey.getExperimentPersonId()))
                     .ifPresent(i->cacheKey.setExperimentInstanceId(i.getExperimentInstanceId()));
+        }
+        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(ExperimentCacheKey.create("3",cacheKey.getExperimentInstanceId()),false);
+        if(ShareUtil.XObject.isEmpty(exptColl)){
+            return false;
         }
         rlock.lock();
         try {
@@ -110,12 +122,16 @@ public class EvalPersonPointer {
             EvalPersonOnceHolder curHolder = getHolder(nextEvalNo);
             EvalPersonOnceData curData= curHolder.get(nextEvalNo,true);
             if(curHolder.isValid(curData)){
+                final EnumEvalFuncType funcType=getFuncType(curData.getHeader().getPeriods(), timePoint.getPeriod());
+                if(timePoint.getGameState()== EnumExperimentState.FINISH&&curData.getHeader().getPeriods()>exptColl.getPeriods()) {
+                    return true;
+                }
                 if(curData.isSyncing()) {
                     curHolder.save();
                 }
                 if(curData.isSynced()) {
                     nextEvalNo++;
-                    getHolder(nextEvalNo).putFrom(curData, nextEvalNo, getFuncType(curData.getHeader().getPeriods(), timePoint.getPeriod()));
+                    getHolder(nextEvalNo).putFrom(curData, nextEvalNo, funcType);
                     curEvalNo.set(nextEvalNo);
                     return true;
                 }

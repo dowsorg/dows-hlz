@@ -30,6 +30,9 @@ public class EvalPersonOnceData {
     @Schema(title = "健康指数计算过程")
     private List<RiskModelHealthIndexVO> evalRisks;
 
+    @Schema(title = "每期资金")
+    private final ConcurrentMap<Integer, EvalIndicatorValues> mapPeriodMoney=new ConcurrentHashMap<>();
+
     @Schema(title = "指标列表")
     private final ConcurrentMap<String,EvalIndicatorValues> mapIndicators=new ConcurrentHashMap<>();
 
@@ -69,6 +72,11 @@ public class EvalPersonOnceData {
         return true;
     }
 
+    public boolean syncMoney(EvalIndicatorValues moneyVals){
+        mapPeriodMoney.put(header.getPeriods(), moneyVals);
+        return true;
+    }
+
     public EvalPersonOnceData flip(int evalNo,EnumEvalFuncType funcType){
         EvalPersonOnceData rst=new EvalPersonOnceData();
         rst.setHeader(new Header()
@@ -81,7 +89,9 @@ public class EvalPersonOnceData {
                 .setMoney(header.getMoney())
                 .setLastMoney(header.getMoney())
                 .setEvalDay(header.getEvalDay())
+
         );
+        rst.getMapPeriodMoney().putAll(this.getMapPeriodMoney());
         rst.setRisks(ShareUtil.XCollection.map(risks,i->
                 CopyWrapper.create(EvalRiskValues::new).endFrom(i)));
         getMapIndicators().forEach((k,v)->rst.getMapIndicators().put(k, v.flip(funcType)));
@@ -173,6 +183,7 @@ public class EvalPersonOnceData {
         @Schema(title = "医疗占比")
         private String moneyScore;
 
+
         public int getLastDays(){
             if(ShareUtil.XObject.isEmpty(evalDay)){
                 return 1;
@@ -193,11 +204,11 @@ public class EvalPersonOnceData {
             sb.append(", evalingTime=").append(evalingTime);
             sb.append(", evaledTime=").append(evaledTime);
             sb.append(", lastEvalDay=").append(lastEvalDay);
-            sb.append(", healthIndex='").append(healthIndex).append('\'');
-            sb.append(", lastHealthIndex='").append(lastHealthIndex).append('\'');
-            sb.append(", money='").append(money).append('\'');
-            sb.append(", lastMoney='").append(lastMoney).append('\'');
-            sb.append(", moneyScore='").append(moneyScore).append('\'');
+            sb.append(", healthIndex='").append(healthIndex);
+            sb.append(", lastHealthIndex='").append(lastHealthIndex);
+            sb.append(", money='").append(money);
+            sb.append(", lastMoney='").append(lastMoney);
+            sb.append(", moneyScore='").append(moneyScore);
             sb.append('}');
             return sb.toString();
         }

@@ -58,6 +58,10 @@ public class EvalScoreRankBiz {
 
     private final EvalJudgeScoreBiz evalJudgeScoreBiz;
 
+    private final EvalPersonMoneyBiz evalPersonMoneyBiz;
+
+    private final int SCALEScore=2;
+
 
     @Transactional(rollbackFor = Exception.class)
     public void saveOrUpd(String experimentInstanceId, Integer periods) {
@@ -99,20 +103,8 @@ public class EvalScoreRankBiz {
 
 
         //C、医疗占比得分
-        Map<String, BigDecimal> kExperimentGroupIdVGroupMoneyScoreMap = new HashMap<>();
-        RsCalculateMoneyScoreRsResponse rsCalculateMoneyScoreRsResponse = this.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
-                .builder()
-                .experimentId(experimentInstanceId)
-                .periods(periods)
-                .build());
-        List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = rsCalculateMoneyScoreRsResponse.getGroupMoneyScoreRsResponseList();
-        if (Objects.nonNull(groupMoneyScoreRsResponseList) && !groupMoneyScoreRsResponseList.isEmpty()) {
-            groupMoneyScoreRsResponseList.forEach(groupMoneyScoreRsResponse -> {
-                String experimentGroupId = groupMoneyScoreRsResponse.getExperimentGroupId();
-                BigDecimal groupMoneyScore = groupMoneyScoreRsResponse.getGroupMoneyScore();
-                kExperimentGroupIdVGroupMoneyScoreMap.put(experimentGroupId, groupMoneyScore);
-            });
-        }
+        Map<String, BigDecimalOptional> mapMoneyScore =evalPersonMoneyBiz.evalMoneyScore4Period(experimentInstanceId,periods);
+
         //D.操作准确度得分
         Map<String, BigDecimalOptional> mapJudgeSocre = evalJudgeScoreBiz.evalJudgeScore4Period(experimentInstanceId, periods);
 
@@ -136,12 +128,10 @@ public class EvalScoreRankBiz {
                 groupCompetitiveScoreBigDecimal = BigDecimal.ZERO;
             }
             //医疗得分
-            BigDecimal groupIdVGroupMoneyScoreBigDecimal = kExperimentGroupIdVGroupMoneyScoreMap.get(experimentGroupId);
-            if (Objects.isNull(groupIdVGroupMoneyScoreBigDecimal)) {
-                groupIdVGroupMoneyScoreBigDecimal = BigDecimal.ZERO;
-            }
+            BigDecimal groupIdVGroupMoneyScoreBigDecimal = mapMoneyScore.getOrDefault(experimentGroupId,BigDecimalOptional.zero()).getValue(SCALEScore);
+
             //操作准确度得分
-            BigDecimal groupOperateRightScore = mapJudgeSocre.getOrDefault(experimentGroupId, BigDecimalOptional.zero()).getValue(2);
+            BigDecimal groupOperateRightScore = mapJudgeSocre.getOrDefault(experimentGroupId, BigDecimalOptional.zero()).getValue(SCALEScore);
 
             //权重
             BigDecimal knowledgeWeight = knowledgeWeightAtomicReference.get();
@@ -486,6 +476,22 @@ public class EvalScoreRankBiz {
                 .build();
     }
 
+
+
+    private BigDecimal getWeightTotalScore(
+            BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
+            BigDecimal healthIndexWeight, BigDecimal healthIndexScore,
+            BigDecimal medicalRatioWeight, BigDecimal medicalRatioScore,
+            BigDecimal operateRightWeight, BigDecimal operateRightScore
+    ) {
+        BigDecimal finalKnowledgeScore = knowledgeScore.multiply(knowledgeWeight);
+        BigDecimal finalHealthIndexScore = healthIndexScore.multiply(healthIndexWeight);
+        BigDecimal finalMedicalRatioScoreScore = medicalRatioScore.multiply(medicalRatioWeight);
+        BigDecimal finalOperateRightScore = operateRightScore.multiply(operateRightWeight);
+        return finalKnowledgeScore.add(finalHealthIndexScore).add(finalMedicalRatioScoreScore).add(finalOperateRightScore)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+    }
+
     public RsCalculateMoneyScoreRsResponse rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs rsCalculateMoneyScoreRequestRs) {
         List<GroupMoneyScoreRsResponse> groupMoneyScoreRsResponseList = new ArrayList<>();
         Integer periods = rsCalculateMoneyScoreRequestRs.getPeriods();
@@ -561,19 +567,5 @@ public class EvalScoreRankBiz {
                 .builder()
                 .groupMoneyScoreRsResponseList(groupMoneyScoreRsResponseList)
                 .build();
-    }
-
-    private BigDecimal getWeightTotalScore(
-            BigDecimal knowledgeWeight, BigDecimal knowledgeScore,
-            BigDecimal healthIndexWeight, BigDecimal healthIndexScore,
-            BigDecimal medicalRatioWeight, BigDecimal medicalRatioScore,
-            BigDecimal operateRightWeight, BigDecimal operateRightScore
-    ) {
-        BigDecimal finalKnowledgeScore = knowledgeScore.multiply(knowledgeWeight);
-        BigDecimal finalHealthIndexScore = healthIndexScore.multiply(healthIndexWeight);
-        BigDecimal finalMedicalRatioScoreScore = medicalRatioScore.multiply(medicalRatioWeight);
-        BigDecimal finalOperateRightScore = operateRightScore.multiply(operateRightWeight);
-        return finalKnowledgeScore.add(finalHealthIndexScore).add(finalMedicalRatioScoreScore).add(finalOperateRightScore)
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
     }
 }
