@@ -1,10 +1,12 @@
 package org.dows.hep.biz.eval.codec;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.eval.data.EnumEvalSyncState;
 import org.dows.hep.biz.eval.data.EvalIndicatorValues;
 import org.dows.hep.biz.eval.data.EvalPersonOnceData;
 import org.dows.hep.biz.eval.data.EvalRiskValues;
+import org.dows.hep.biz.util.JacksonUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.redisson.api.RMap;
 import org.springframework.stereotype.Component;
@@ -33,6 +35,7 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
     public final static String HASHKey4Header="__header";
     public final static String HASHkey4Risks="__risks";
 
+    public final static String HASHkey4Money="__money";
     final static String SPLITRisks="~~";
 
     @Override
@@ -50,6 +53,9 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
             if(HASHkey4Risks.equals(k)){
                 rst.setRisks(toRisks(v));
                 return;
+            }
+            if(HASHkey4Money.equals(k)){
+                rst.getMapPeriodMoney().putAll(ShareUtil.XObject.defaultIfNull(JacksonUtil.fromJsonSilence(v, new TypeReference<>() {}),Collections.emptyMap()));
             }
             EvalIndicatorValues obj=EvalIndicatorValuesCodec.Instance().fromRDString(v);
             if(null==obj){
@@ -71,6 +77,9 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
         }
         if (null != obj.getRisks()) {
             rst.put(HASHkey4Risks, fromRisks(obj.getRisks()));
+        }
+        if(null!=obj.getMapPeriodMoney()){
+            rst.put(HASHkey4Money, JacksonUtil.toJsonSilence(obj.getMapPeriodMoney(),true));
         }
         if (null != obj.getMapIndicators()) {
             obj.getMapIndicators().values().forEach(item -> rst.put(item.getIndicatorId(),
@@ -167,5 +176,7 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
                     .append(toString(obj.getMoneyScore()))
             ;
         }
+
+
     }
 }

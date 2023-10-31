@@ -5,8 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.dao.OperateCostDao;
+import org.dows.hep.biz.eval.data.EvalIndicatorValues;
+import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
+import org.dows.hep.entity.ExperimentPersonEntity;
 import org.dows.hep.entity.OperateCostEntity;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Component;
@@ -27,6 +30,61 @@ public class EvalPersonMoneyBiz {
     private final IdGenerator idGenerator;
 
     private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
+
+    private final ExperimentPersonCache experimentPersonCache;
+
+    public Map<String, BigDecimalOptional> evalMoneyScore4Period(String experimentId,Integer periods) {
+        Map<String, BigDecimalOptional> rst = new HashMap<>();
+        Map<String, ExperimentPersonEntity> mapPersons = experimentPersonCache.getMapPersons(experimentId);
+        if (mapPersons.isEmpty()) {
+            return rst;
+        }
+        Map<String,BigDecimalOptional> mapInit=new HashMap<>();
+        Map<String,BigDecimalOptional> mapCur=new HashMap<>();
+        mapPersons.values().forEach(person->{
+            String groupId=person.getExperimentGroupId();
+            String personId=person.getExperimentPersonId();
+            rst.putIfAbsent(groupId, BigDecimalOptional.zero());
+            EvalIndicatorValues moneyValues=Optional.ofNullable(EvalPersonCache.Instance().getCurHolder(personId))
+                    .map(i->i.getMoneyValues())
+                    .orElse(null);
+            if(null==moneyValues){
+                return;
+            }
+            mapInit.computeIfAbsent(groupId, k->BigDecimalOptional.create())
+                    .add(BigDecimalUtil.tryParseDecimalElseZero( moneyValues.getPeriodInitVal()));
+            mapCur.computeIfAbsent(groupId, k->BigDecimalOptional.create())
+                    .add(BigDecimalUtil.tryParseDecimalElseZero( moneyValues.getCurVal()));
+
+        });
+        rst.forEach((k,v)->{
+            v.setValue(getMoneyScore( Optional.ofNullable(mapCur.get(k)).map(i->i.getValue(SCALE)).orElse(BigDecimal.ZERO),
+                    Optional.ofNullable(mapInit.get(k)).map(i->i.getValue(SCALE)).orElse(BigDecimal.ZERO)));
+        });
+        mapInit.clear();
+        mapCur.clear();
+        return rst;
+    }
+    private final int SCALE = 2;
+    private BigDecimal getMoneyScore(BigDecimal money,BigDecimal lastMoney) {
+
+        if (ShareUtil.XObject.anyEmpty(money, lastMoney)) {
+            return BigDecimal.ZERO;
+        }
+        if (lastMoney.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        if(money.compareTo(lastMoney)>=0){
+            return BigDecimalUtil.ONEHundred;
+        }
+        return BigDecimalOptional.valueOf(money)
+                .min(BigDecimal.ZERO)
+                .div(lastMoney, SCALE)
+                .mul(BigDecimalUtil.ONEHundred)
+                .min(BigDecimal.ZERO)
+                .max(BigDecimalUtil.ONEHundred)
+                .getValue(SCALE);
+    }
 
     @DSTransactional
     public boolean saveRefunds(String experimentId,Integer period, Set<String> experimentPersonIds){

@@ -202,6 +202,8 @@ public class ExperimentOrgInterveneBiz{
             mealTime = EnumFoodMealTime.of(item.getMealTime());
             AssertUtil.trueThenThrow(mealTime == EnumFoodMealTime.NONE)
                     .throwMessage("不存在的餐次");
+            AssertUtil.trueThenThrow(BigDecimalUtil.tryParseDecimalElseZero(item.getWeight()).compareTo(BigDecimal.ZERO) <= 0)
+                    .throwMessage(String.format("请输入[%s]的有效数量", item.getInstanceName()));
             //生成食材描述
             if(EnumFoodDetailType.MATERIAL==detailType){
                 item.setMaterialsDesc(String.format("%s100g",item.getInstanceName()));

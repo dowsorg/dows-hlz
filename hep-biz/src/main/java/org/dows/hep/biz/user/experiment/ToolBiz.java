@@ -3,7 +3,6 @@ package org.dows.hep.biz.user.experiment;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.uim.AccountInfo;
-import org.dows.hep.api.base.indicator.request.RsCalculateMoneyScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
 import org.dows.hep.api.base.indicator.request.RsCalculatePersonRequestRs;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
@@ -39,6 +38,8 @@ public class ToolBiz {
     private final EvalScoreRankBiz evalScoreRankBiz;
 
     private final EvalJudgeScoreBiz evalJudgeScoreBiz;
+
+    private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
     public String ping(){
         String exptId="393869331617943552";
@@ -112,11 +113,9 @@ public class ToolBiz {
         evalJudgeScoreBiz.evalJudgeScore4Period(req.getExperimentId(),req.getPeriods());
     }
     public void evalPeriodMoneyScore(RsCalculatePeriodsRequest req){
-        evalScoreRankBiz.rsCalculateMoneyScore(RsCalculateMoneyScoreRequestRs
-                .builder()
-                .experimentId(req.getExperimentId())
-                .periods(req.getPeriods())
-                .build());
+
+        evalPersonMoneyBiz.evalMoneyScore4Period(req.getExperimentId(),req.getPeriods());
+
     }
 
     public void raiseevent(RsCalculatePersonRequestRs req)  {

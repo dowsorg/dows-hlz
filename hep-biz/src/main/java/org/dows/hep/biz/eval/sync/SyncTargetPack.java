@@ -282,7 +282,7 @@ public class SyncTargetPack {
         return this;
     }
     public SyncTargetPack coverIndicatorRule(SyncSourcePack sourcePack, SyncCurrentPack syncCurrentPack) {
-        sourcePack.getMapIndicatorRule().forEach((indicatorId,src)->coverIndicatorRule(src, syncCurrentPack,indicatorId));
+        sourcePack.getMapIndicatorRule().forEach((indicatorId,src)->coverIndicatorRule(src, syncCurrentPack,indicatorId,false));
         return this;
     }
     public SyncTargetPack coverIndicatorRule(SyncSourcePack sourcePack, SyncCurrentPack syncCurrentPack, String indicatorId) {
@@ -290,9 +290,9 @@ public class SyncTargetPack {
         if (ShareUtil.XObject.isEmpty(src)) {
             return this;
         }
-        return coverIndicatorRule(src, syncCurrentPack,indicatorId);
+        return coverIndicatorRule(src, syncCurrentPack,indicatorId,true);
     }
-    public SyncTargetPack coverIndicatorRule(IndicatorRuleEntity src, SyncCurrentPack syncCurrentPack, String indicatorId) {
+    public SyncTargetPack coverIndicatorRule(IndicatorRuleEntity src, SyncCurrentPack syncCurrentPack, String indicatorId,boolean coverDef) {
         CaseIndicatorRuleEntity dst = syncCurrentPack.getMapIndicatorRule().get(indicatorId);
         if (ShareUtil.XObject.isEmpty(dst)) {
             return addIndicatorRule(src);
@@ -300,7 +300,7 @@ public class SyncTargetPack {
         listIndicatorRule.add(dst.setRuleType(src.getRuleType())
                 .setMin(src.getMin())
                 .setMax(src.getMax())
-                .setDef(src.getDef())
+                .setDef(coverDef?src.getDef():dst.getDef())
                 .setDescr(src.getDescr())
         );
         return this;
