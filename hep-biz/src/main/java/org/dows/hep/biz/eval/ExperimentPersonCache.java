@@ -200,7 +200,7 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
             rst.mapOrgs.put(i.getExperimentOrgId(),i);
         });
         rst.getSetMonitorOrgId().addAll(experimentOrgModuleBiz.getMonitorOrgIds(rst.mapOrgs.keySet()));
-        return cotinueLoad(key,rst);
+        return continueLoad(key,rst);
     }
 
     @Override
@@ -212,7 +212,7 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
     }
 
     @Override
-    protected CacheData cotinueLoad(ExperimentCacheKey key, CacheData curVal) {
+    protected CacheData continueLoad(ExperimentCacheKey key, CacheData curVal) {
         if(ShareUtil.XObject.isEmpty(curVal)){
            return curVal;
         }

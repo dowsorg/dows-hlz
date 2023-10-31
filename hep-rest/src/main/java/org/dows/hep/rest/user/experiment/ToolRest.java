@@ -86,6 +86,13 @@ public class ToolRest {
         toolBiz.evalPeriodJudgeScore(req);
     }
 
+    @Operation(summary = "期末翻转-医疗占比得分")
+    @PostMapping("v1/tool/evalPeriodMoneyScore")
+
+    public void evalPeriodMoneyScore(RsCalculatePeriodsRequest req){
+        toolBiz.evalPeriodMoneyScore(req);
+    }
+
     @Operation(summary = "条件事件触发")
     @PostMapping("v1/tool/raiseevent")
     public void raiseevent(@RequestBody RsCalculatePersonRequestRs req)  {

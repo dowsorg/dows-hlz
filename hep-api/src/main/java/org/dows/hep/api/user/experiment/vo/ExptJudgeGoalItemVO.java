@@ -35,4 +35,7 @@ public class ExptJudgeGoalItemVO {
 
     @Schema(title = "目标值")
     private String value;
+
+    @Schema(title = "值类型 0-字符串 1-整数 2-小数")
+    private Integer valueType;
 }

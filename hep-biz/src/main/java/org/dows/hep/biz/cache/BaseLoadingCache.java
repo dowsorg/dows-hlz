@@ -40,7 +40,7 @@ public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
         V rst = cache.get(key);
         if (isCompleted(rst))
             return rst;
-        rst = cotinueLoad(key,rst);
+        rst = wrapContinueLoad(key,rst);
         if(!checkCompleted||isCompleted(rst)) {
             cache.put(key, rst);
         }
@@ -49,17 +49,36 @@ public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
     public V setGet(K key,boolean checkCompleted)
     {
         LoadingCache<K,V> cache=loadingCache();
-        V rst = load(key);
+        V rst = wrapContinueLoad(key,load(key));
         if(!checkCompleted||isCompleted(rst)) {
             cache.put(key, rst);
         }
         return rst;
     }
     protected V wrapLoad(K key){
+        StringBuilder sb=new StringBuilder();
+        long ts=logCostTime(sb,"loadStart");
         try{
             return load(key);
         }catch (Exception ex){
             return exceptionally(key, ex);
+        }finally {
+            ts=logCostTime(sb,"loadEnd",ts);
+            log.info(sb.toString());
+            sb.setLength(0);
+        }
+    }
+    protected V wrapContinueLoad(K key,V curVal){
+        StringBuilder sb=new StringBuilder();
+        long ts=logCostTime(sb,"continueStart");
+        try{
+            return continueLoad(key,curVal);
+        }catch (Exception ex){
+            return exceptionally(key, ex);
+        }finally {
+            ts=logCostTime(sb,"continueEnd",ts);
+            log.info(sb.toString());
+            sb.setLength(0);
         }
     }
     //endregion
@@ -74,9 +93,19 @@ public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
     protected boolean isCompleted(V val){
         return null!=val;
     }
-    protected V cotinueLoad(K key,V curVal){
+    protected V continueLoad(K key, V curVal){
         return curVal;
     }
     //endregion
+
+    private long logCostTime(StringBuilder sb,String start){
+        sb.append(this.getClass().getName()).append("--").append(start);
+        return System.currentTimeMillis();
+    }
+    private long logCostTime(StringBuilder sb,String func,long ts){
+        long newTs=System.currentTimeMillis();
+        sb.append(" ").append(func).append(":").append((newTs - ts));
+        return newTs;
+    }
 
 }
