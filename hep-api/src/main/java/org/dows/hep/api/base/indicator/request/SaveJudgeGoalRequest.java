@@ -41,4 +41,7 @@ public class SaveJudgeGoalRequest {
     private List<String> judgeRuleExpresssions;
     @Schema(title = "关联指标公式id列表")
     private List<IndicatorExpressionVO> effectExpresssions;
+
+    @Schema(title = "值类型 0-字符串 1-整数 2-小数")
+    private Integer valueType;
 }
