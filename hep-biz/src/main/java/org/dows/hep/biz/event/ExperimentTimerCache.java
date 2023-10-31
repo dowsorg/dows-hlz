@@ -127,7 +127,7 @@ public class ExperimentTimerCache extends BaseLoadingCache<ExperimentCacheKey, E
 
 
     @Override
-    protected CacheData cotinueLoad(ExperimentCacheKey key, CacheData curVal) {
+    protected CacheData continueLoad(ExperimentCacheKey key, CacheData curVal) {
         if (null == curVal
                 || curVal.hasSandMode && null == curVal.getSandStartTime()) {
             return load(key);

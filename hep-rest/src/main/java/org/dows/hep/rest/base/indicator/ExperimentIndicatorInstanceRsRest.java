@@ -61,6 +61,11 @@ public class ExperimentIndicatorInstanceRsRest {
   public List<EchartsDataResonse> statGenderRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
     return experimentIndicatorInstanceRsBiz.statGenderRate(experimentIndicatorInstanceRequest);
   }
+  @Operation(summary = "实验人物BMI统计")
+  @PostMapping("v1/experimentIndicator/bmiRate/stat")
+  public List<EchartsDataResonse> statBmiRate(@RequestBody ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+    return experimentIndicatorInstanceRsBiz.statBmiRate(experimentIndicatorInstanceRequest);
+  }
 
   @Operation(summary = "实验某个小组的平均健康指数，会把上一期排名给它")
   @GetMapping("v1/experimentIndicator/healthPoint/average")

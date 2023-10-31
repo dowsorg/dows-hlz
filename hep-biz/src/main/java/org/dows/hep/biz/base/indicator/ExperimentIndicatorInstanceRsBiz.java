@@ -1,6 +1,9 @@
 package org.dows.hep.biz.base.indicator;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.TreeRangeMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +29,7 @@ import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.biz.util.AssertUtil;
+import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.EchartsUtils;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
@@ -136,6 +140,53 @@ public class ExperimentIndicatorInstanceRsBiz {
         return experimentIndicatorValRsEntity;
     }
 
+    public List<EchartsDataResonse> statBmiRate(ExperimentIndicatorInstanceRequest experimentIndicatorInstanceRequest) {
+        List<EchartsDataResonse> statList = new ArrayList<>();
+        List<ExperimentPersonEntity> persons=experimentPersonCache.getPersonsByOrgId(experimentIndicatorInstanceRequest.getExperimentInstanceId(),
+                experimentIndicatorInstanceRequest.getExperimentOrgId());
+        if(ShareUtil.XObject.isEmpty(persons)){
+            return statList;
+        }
+        List<BigDecimal> bmiList=new ArrayList<>();
+        persons.forEach(i-> {
+            String indicatorId=Optional.ofNullable( personIndicatorIdCache.getBmiIndicator(i.getExperimentPersonId()))
+                            .map(ExperimentIndicatorInstanceRsEntity::getExperimentIndicatorInstanceId)
+                                    .orElse("");
+            if(ShareUtil.XObject.isEmpty(indicatorId)){
+                bmiList.add(BigDecimal.ZERO);
+                return;
+            }
+            bmiList.add(Optional.ofNullable( EvalPersonCache.Instance().getCurHolder(i.getExperimentInstanceId(), i.getExperimentPersonId()))
+                    .map(v->v.getIndicator(indicatorId))
+                    .map(EvalIndicatorValues::getCurVal)
+                    .map(BigDecimalUtil::tryParseDecimalElseNull)
+                    .orElse(BigDecimal.ZERO));
+
+        });
+        RangeMap<Double,EchartsDataResonse> rangeMap= TreeRangeMap.create();
+        statList.add(new EchartsDataResonse("体重偏轻",0L));
+        statList.add(new EchartsDataResonse("体重正常",0L));
+        statList.add(new EchartsDataResonse("超重",0L));
+        statList.add(new EchartsDataResonse("肥胖",0L));
+        rangeMap.put(Range.closedOpen(Double.MIN_VALUE, 18.5d),statList.get(0));
+        rangeMap.put(Range.closedOpen(18.5d, 23.9d),statList.get(1));
+        rangeMap.put(Range.closedOpen(23.9d, 27.9d),statList.get(2));
+        rangeMap.put(Range.closedOpen(27.9d, Double.MAX_VALUE),statList.get(3));
+        bmiList.forEach(val->{
+            EchartsDataResonse dst=rangeMap.get(val.doubleValue());
+            if(ShareUtil.XObject.isEmpty(dst)){
+                return;
+            }
+            dst.setCount(dst.getCount()+1);
+        });
+        rangeMap.clear();
+        statList.forEach(i->{
+            i.setPer(String.format("%.2f", (float)i.getCount() /bmiList.size()));
+        });
+
+        statList = EchartsUtils.sum100(statList);
+        return statList;
+    }
     /**
      * @param
      * @return
