@@ -12,7 +12,7 @@ import java.util.Arrays;
 @AllArgsConstructor
 @Getter
 public enum EnumExperimentGroupStatus {
-  NONE(0,"",""),
+  NONE(-1,"",""),
   GROUP_RENAME(0, "团队命名","未分配"),
   ASSIGN_FUNC(1, "分配方案设计目录",""),
   SCHEMA(2, "小组进行方案设计",""),
