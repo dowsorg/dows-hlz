@@ -79,8 +79,8 @@ public class EvalPersonMoneyBiz {
         }
         return BigDecimalOptional.valueOf(money)
                 .min(BigDecimal.ZERO)
-                .div(lastMoney, SCALE)
                 .mul(BigDecimalUtil.ONEHundred)
+                .div(lastMoney, SCALE)
                 .min(BigDecimal.ZERO)
                 .max(BigDecimalUtil.ONEHundred)
                 .getValue(SCALE);
