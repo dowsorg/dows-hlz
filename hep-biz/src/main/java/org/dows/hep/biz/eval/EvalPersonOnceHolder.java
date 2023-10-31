@@ -315,9 +315,9 @@ public class EvalPersonOnceHolder {
             return null;
         }
         List<EvalIndicatorValues> changed=getChangedIndicators(data);
-        if(ShareUtil.XObject.notEmpty(changed)){
+        /*if(ShareUtil.XObject.notEmpty(changed)){
             changed.forEach(item->syncIndicator(item));
-        }
+        }*/
         syncHeaderIndicator(data);
         data.getOldMap(true);
         return changed;
@@ -366,7 +366,8 @@ public class EvalPersonOnceHolder {
             return true;
         }
         data.setSyncState(EnumEvalSyncState.SYNCING);
-       /* syncIndicators(data);
+        syncIndicators(data);
+       /*
         data.setSyncState(EnumEvalSyncState.SYNCED2RD);
         if (!saveToRD(data)) {
             data.setSyncState(EnumEvalSyncState.SYNCING);

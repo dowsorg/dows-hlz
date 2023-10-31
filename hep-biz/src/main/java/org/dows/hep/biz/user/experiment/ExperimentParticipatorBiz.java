@@ -278,7 +278,9 @@ public class ExperimentParticipatorBiz {
                 response.setState(instanceEntity.getState());
                 response.setStateDescr(response.getStateDescr());
                 response.setGroupState(groupEntity.getGroupState());
-                response.setGroupStateStr(EnumExperimentGroupStatus.of(groupEntity.getGroupState()).getCastDescr());
+                if(instanceEntity.getState()==EnumExperimentState.PREPARE.getState()) {
+                    response.setGroupStateStr(EnumExperimentGroupStatus.of(groupEntity.getGroupState()).getCastDescr());
+                }
                 List<ExperimentParticipatorEntity> participatorEntityList = experimentParticipatorService.lambdaQuery()
                         .eq(ExperimentParticipatorEntity::getExperimentGroupId, response.getExperimentGroupId())
                         .list();

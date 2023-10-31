@@ -143,8 +143,8 @@ public class ExperimentHealthDocBiz {
 
         return BigDecimalOptional.valueOf(lastMoneyVal).sub(BigDecimalUtil.tryParseDecimalElseNull(money))
                 .min(BigDecimal.ZERO)
-                .div(lastMoneyVal,2)
                 .mul(BigDecimalUtil.ONEHundred)
+                .div(lastMoneyVal,2)
                 .min(BigDecimal.ZERO)
                 .max(BigDecimalUtil.ONEHundred)
                 .getString(2)
