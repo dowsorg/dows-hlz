@@ -12,6 +12,7 @@ import org.dows.hep.biz.dao.TreatItemDao;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
 import org.dows.hep.biz.snapshot.SnapshotRefCache;
 import org.dows.hep.biz.snapshot.SnapshotRequestHolder;
+import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.JacksonUtil;
 import org.dows.hep.biz.util.ShareUtil;
@@ -45,6 +46,7 @@ public enum CategCacheFactory {
             final String appId=rst.get(0).getAppId();
             rst.addAll(ShareUtil.XCollection.map(CrudContextHolder.getBean(SportItemDao.class)
                     .listByCondition(new FindSportRequest(),
+                    SportItemEntity::getStrengthMet,
                     SportItemEntity::getInterveneCategId,
                     SportItemEntity::getSportItemId,
                     SportItemEntity::getSportItemName),row->CategVO.builder()
@@ -52,6 +54,7 @@ public enum CategCacheFactory {
                     .categName(row.getSportItemName())
                     .categPid(row.getInterveneCategId())
                     .appId(appId)
+                    .spec(BigDecimalUtil.formatRoundDecimal( row.getStrengthMet(),2))
                     .build()));
             return rst;
         }

@@ -182,6 +182,7 @@ public class ExperimentIndicatorInstanceRsBiz {
         rangeMap.clear();
         statList.forEach(i->{
             i.setPer(String.format("%.2f", (float)i.getCount() /bmiList.size()));
+            i.setCount((long)bmiList.size());
         });
 
         statList = EchartsUtils.sum100(statList);
