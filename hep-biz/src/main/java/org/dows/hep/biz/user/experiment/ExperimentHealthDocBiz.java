@@ -106,12 +106,13 @@ public class ExperimentHealthDocBiz {
 
         EvalIndicatorValues moneyValues=Optional.ofNullable( evalHolder.getMoneyValues()).orElse(new EvalIndicatorValues());
         ExptHealthDocInfoResponse rst=new ExptHealthDocInfoResponse();
+        String curMoney=evalHolder.getMoney(false);
         rst.setExperimentPersonId(experimentPersonId)
                 .setHealthIndex(Optional.ofNullable( evalHolder.getHealthPoint(false))
                         .orElse(evalHolder.getHealthPoint(true)))
                 .setMoney(evalHolder.getMoney(false))
                 .setLastMoney(evalHolder.getMoney(true))
-                .setMoneyScore(getMoneyScore(moneyValues.getCurVal(),moneyValues.getPeriodInitVal()))
+                .setMoneyScore(getMoneyScore(curMoney,moneyValues.getPeriodInitVal()))
                 .setRisks(ShareUtil.XCollection.toSet(evalData.getRisks(), EvalRiskValues::getRiskName))
                 .setTotalDays(exptColl.getTotalDays());
 
