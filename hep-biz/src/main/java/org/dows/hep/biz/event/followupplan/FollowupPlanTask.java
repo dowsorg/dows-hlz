@@ -167,14 +167,15 @@ public class FollowupPlanTask extends BaseEventTask {
             if(!item.isTriggering()){
                 continue;
             }
-            item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item));
             item.setTriggering(calcTriggeringTime(stat, exptColl, item.getTodoDay()));
+            item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item));
             if (null == item.getDoingTime()) {
                 continue;
             }
             LocalDateTime triggeringTime =item.getDoingTime();
             if(triggeringTime.compareTo(ldtNow)<0){
                 triggeringTime =calcTriggeringTime(stat, exptColl, item.getNextTodoDay());
+                item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item.saveNextTodoDay()));
             }
             if (triggeringTime.compareTo(nextTime) < 0) {
                 nextTime = triggeringTime;
@@ -202,11 +203,7 @@ public class FollowupPlanTask extends BaseEventTask {
         final ExperimentFollowupPlanEntity entity=row.getEntity();
         final int dueDays=Math.max(30,entity.getDueDays());
         final int setAtDay=entity.getSetAtDay();
-        int nowTodoDay=entity.getTodoDay();
-        if(nowTodoDay<=timePoint.getGameDay()){
-            nowTodoDay=nowTodoDay+dueDays;
-        }
-        final int curDay=Math.max(timePoint.getGameDay(), nowTodoDay);
+        final int curDay=Math.max(timePoint.getGameDay(), entity.getTodoDay());
         final int curTimes=Math.max(0,(curDay-setAtDay)/dueDays);
         int nextTodoDay=0;
         for(int i=1;i<10;i++){
