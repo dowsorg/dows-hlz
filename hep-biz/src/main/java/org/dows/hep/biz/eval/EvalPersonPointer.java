@@ -82,6 +82,7 @@ public class EvalPersonPointer {
             if(funcType.isPeriodEnd()){
                 curHolder.syncMoney();
             }
+            curHolder.syncIndicators();
             nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, funcType);
             if(funcType.isPeriodEnd()){
                 nextHolder.syncMoney();

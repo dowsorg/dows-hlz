@@ -1,6 +1,7 @@
 package org.dows.hep.biz.util;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -42,7 +43,8 @@ public class JacksonUtil {
                 .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
                 .configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                .setDateFormat(new SimpleDateFormat(dateFormat));
+                .setDateFormat(new SimpleDateFormat(dateFormat))
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
     public static ObjectMapper createOnlyFieldsMapper(String dateFormat) {
         return createCommonObjectMapper(dateFormat)

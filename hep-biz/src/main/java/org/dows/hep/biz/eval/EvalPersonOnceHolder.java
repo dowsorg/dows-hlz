@@ -118,14 +118,14 @@ public class EvalPersonOnceHolder {
     }
 
     public EvalIndicatorValues getMoneyValues() {
-        EvalPersonOnceData cached = cacheData;
+        EvalPersonOnceData cached = get();
         if (!isValid(cached)) {
             return null;
         }
         return getMoneyValues(cached.getHeader().getPeriods());
     }
     public EvalIndicatorValues getMoneyValues(Integer period) {
-        EvalPersonOnceData cached = cacheData;
+        EvalPersonOnceData cached = get();
         if (!isValid(cached)) {
             return null;
         }
@@ -309,7 +309,9 @@ public class EvalPersonOnceHolder {
         return true;
 
     }
-
+    public List<EvalIndicatorValues> syncIndicators(){
+        return syncIndicators(get());
+    }
     public List<EvalIndicatorValues> syncIndicators(EvalPersonOnceData data){
         if(ShareUtil.XObject.isEmpty(data)){
             return null;
@@ -366,8 +368,9 @@ public class EvalPersonOnceHolder {
             return true;
         }
         data.setSyncState(EnumEvalSyncState.SYNCING);
-        syncIndicators(data);
+
        /*
+        syncIndicators(data);
         data.setSyncState(EnumEvalSyncState.SYNCED2RD);
         if (!saveToRD(data)) {
             data.setSyncState(EnumEvalSyncState.SYNCING);
