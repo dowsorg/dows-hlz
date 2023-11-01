@@ -200,9 +200,13 @@ public class FollowupPlanTask extends BaseEventTask {
     Integer calcNextTodoDay(FollowupPlanRunStat stat,ExperimentSettingCollection exptColl,FollowupPlanRow row){
         final ExperimentTimePoint timePoint=stat.curTimePoint.get();
         final ExperimentFollowupPlanEntity entity=row.getEntity();
-        final int curDay=Math.max(timePoint.getGameDay(), entity.getTodoDay());
-        final int setAtDay=entity.getSetAtDay();
         final int dueDays=Math.max(30,entity.getDueDays());
+        final int setAtDay=entity.getSetAtDay();
+        int nowTodoDay=entity.getTodoDay();
+        if(nowTodoDay<=timePoint.getGameDay()){
+            nowTodoDay=nowTodoDay+dueDays;
+        }
+        final int curDay=Math.max(timePoint.getGameDay(), nowTodoDay);
         final int curTimes=Math.max(0,(curDay-setAtDay)/dueDays);
         int nextTodoDay=0;
         for(int i=1;i<10;i++){
