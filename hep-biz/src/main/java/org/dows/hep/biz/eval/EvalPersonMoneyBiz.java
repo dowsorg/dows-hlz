@@ -46,7 +46,7 @@ public class EvalPersonMoneyBiz {
             String personId=person.getExperimentPersonId();
             rst.putIfAbsent(groupId, BigDecimalOptional.zero());
             EvalIndicatorValues moneyValues=Optional.ofNullable(EvalPersonCache.Instance().getCurHolder(personId))
-                    .map(i->i.getMoneyValues())
+                    .map(i->i.getMoneyValues(periods))
                     .orElse(null);
             if(null==moneyValues){
                 return;

@@ -72,7 +72,7 @@ public class HepOrgOperateRest {
     public Boolean transferPerson(@RequestBody TransferPersonelRequest transferPersonelRequest,
                                   @RequestParam String operateAccountId,
                                   @RequestParam String operateAccountName,
-                                  @RequestParam Integer periods
+                                  @RequestParam String periods
     ) {
         return hepOrgOperateBiz.transferPerson(transferPersonelRequest,operateAccountId,operateAccountName,periods);
     }
