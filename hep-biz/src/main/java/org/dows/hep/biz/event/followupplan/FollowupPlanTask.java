@@ -167,9 +167,9 @@ public class FollowupPlanTask extends BaseEventTask {
             if(!item.isTriggering()){
                 continue;
             }
-            item.setTriggering(calcTriggeringTime(stat, exptColl, item));
-            /*item.setTriggering(calcTriggeringTime(stat, exptColl, item.getTodoDay()));
-            item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item));*/
+            //item.setTriggering(calcTriggeringTime(stat, exptColl, item));
+            item.setTriggering(calcTriggeringTime(stat, exptColl, item.getTodoDay()));
+            item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item));
             if (null == item.getDoingTime()) {
                 continue;
             }
@@ -232,6 +232,9 @@ public class FollowupPlanTask extends BaseEventTask {
             if(curDay<nextTodoDay){
                 break;
             }
+        }
+        if(row.getTodoDay()<= timePoint.getGameDay()){
+            nextTodoDay+=dueDays;
         }
         if(nextTodoDay<=exptColl.getTotalDays()){
             return nextTodoDay;
