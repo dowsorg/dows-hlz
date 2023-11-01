@@ -69,5 +69,8 @@ public class CategVO {
     @Schema(title = "子类别json")
     private List<CategVO> childs;
 
+    @Schema(title = "扩展")
+    private String spec;
+
 
 }

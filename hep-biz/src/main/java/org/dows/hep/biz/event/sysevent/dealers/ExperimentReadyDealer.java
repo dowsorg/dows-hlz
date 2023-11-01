@@ -65,6 +65,7 @@ public class ExperimentReadyDealer extends BaseEventDealer {
 
         List<ExperimentTimerEntity> rowsTimer=null;
         if(exptColl.hasSandMode()) {
+
             Map<Integer, ExperimentTimerEntity> mapTimers = experimentTimerDao.getMapByExperimentId(appId, experimentInstanceId, null,
                     ExperimentTimerEntity::getId,
                     ExperimentTimerEntity::getExperimentTimerId,
@@ -78,20 +79,24 @@ public class ExperimentReadyDealer extends BaseEventDealer {
                     ExperimentTimerEntity::getPeriodInterval,
                     ExperimentTimerEntity::getState);
             final Date now = new Date();
+            final long restart=now.getTime()+mapTimers.get(1).getPeriodInterval();
+            final long duration=restart-mapTimers.get(1).getStartTime().getTime();
+
+
             mapTimers.values().forEach(item -> {
-                // 暂停开始时间
+               /* // 暂停开始时间
                 long pst = item.getPauseTime().getTime();
                 // 暂停时长 = 暂停结束时间 - 暂停开始时间
                 long duration = now.getTime() - pst;
                 // 重新开始时间[暂停推迟后的开始时间]
-                long rs = now.getTime() + item.getPeriodInterval();
+                long rs = now.getTime() + item.getPeriodInterval();*/
 
                 item.setStartTime(DateUtil.date(item.getStartTime().getTime() + duration))
                         .setEndTime(DateUtil.date(item.getEndTime().getTime() + duration))
                         .setPaused(false)
                         .setPauseDuration(duration)
                         .setPeriodTimer(0L)
-                        .setRestartTime(DateUtil.date(rs))
+                        .setRestartTime(DateUtil.date(restart))
                         .setState(EnumExperimentState.ONGOING.getState());
             });
             rowsTimer=mapTimers.values().stream().toList();

@@ -71,7 +71,6 @@ public class CaseIndicatorInstanceResponseRs implements Serializable {
   @Schema(title = "指标顺序")
   private Integer seq;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
   @Schema(title = "值类型 0-字符串 1-整数 2-小数")
   private Integer valueType;
 }
