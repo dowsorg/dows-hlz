@@ -311,6 +311,7 @@ public class ExperimentParticipatorBiz {
                 response.setParticipatorList(participatorResponseList);
             });
         }
+        list.sort(Comparator.comparingInt(i->Optional.ofNullable(i.getGroupNo()).map(Integer::valueOf).orElse(0)));
         pageInfo.setList(list);
         return pageInfo;
     }
