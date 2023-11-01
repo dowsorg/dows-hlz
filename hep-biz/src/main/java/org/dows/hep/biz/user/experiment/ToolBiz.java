@@ -6,17 +6,13 @@ import org.dows.framework.api.uim.AccountInfo;
 import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
 import org.dows.hep.api.base.indicator.request.RsCalculatePersonRequestRs;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
-import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.biz.eval.*;
 import org.dows.hep.biz.event.PersonBasedEventTask;
-import org.dows.hep.biz.spel.SpelEngine;
-import org.dows.hep.biz.spel.SpelPersonContext;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.websocket.HepClientManager;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,22 +38,7 @@ public class ToolBiz {
     private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
     public String ping(){
-        String exptId="393869331617943552";
-        String exptPersonId="393869335258599424";
-        String caseEventId="393190502746427392";
-        SpelPersonContext context = new SpelPersonContext().setVariables(exptPersonId, 1);
-        //Object val= spelContext.lookupVariable("388930656673075362");
-
-        boolean rst= SpelEngine.Instance().loadFromSnapshot()
-                .withReasonId(exptId, exptPersonId, caseEventId,
-                        EnumIndicatorExpressionSource.EMERGENCY_TRIGGER_CONDITION.getSource())
-                .check(context);
-        SpelEngine.Instance().loadFromSnapshot()
-                .withReasonId(exptId, exptPersonId, List.of(caseEventId),
-                        EnumIndicatorExpressionSource.EMERGENCY_TRIGGER_CONDITION.getSource())
-                .check(context);
-
-        return "1022";
+        return "1102";
     }
 
     public String getWebSocketState(String exptId){
