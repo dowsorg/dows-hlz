@@ -20,6 +20,7 @@ import org.dows.hep.biz.eval.ExperimentPersonCache;
 import org.dows.hep.biz.event.data.ExperimentCacheKey;
 import org.dows.hep.biz.spel.PersonIndicatorIdCache;
 import org.dows.hep.biz.util.AssertUtil;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentPersonEntity;
 import org.dows.hep.entity.OperateTransfersEntity;
 import org.dows.hep.service.ExperimentPersonService;
@@ -105,7 +106,7 @@ public class HepOrgOperateBiz {
     public Boolean transferPerson(TransferPersonelRequest request,
                                   String operateAccountId,
                                   String operateAccountName,
-                                  Integer periods
+                                  String periods
                                   ) {
         Boolean flag = false;
         //1、通过实验账户ID找到用户ID
@@ -145,7 +146,7 @@ public class HepOrgOperateBiz {
                     .operateAccountId(operateAccountId)
                     .operateAccountName(operateAccountName)
                     .descr(request.getDescr())
-                    .periods(periods)
+                    .periods(ShareUtil.XObject.isNumber( periods)?Integer.valueOf(periods):null)
                     .build();
             flag = operateTransfersService.save(operateTransfersEntity);
             //5、更改实验账户所属机构
