@@ -39,6 +39,8 @@ public class Categ4ExptVO {
     @Schema(title = "排序号")
     private Integer seq;
 
+    @Schema(title = "扩展")
+    private String spec;
 
 
     @Schema(title = "子类别json")
