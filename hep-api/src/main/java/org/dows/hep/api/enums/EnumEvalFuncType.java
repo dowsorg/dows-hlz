@@ -29,6 +29,9 @@ public enum EnumEvalFuncType {
         return funcType==START
                 ||funcType==PERIODEnd;
     }
+    public boolean isPeriodEnd(){
+        return this==PERIODEnd;
+    }
     public static EnumEvalFuncType of(Integer code){
         return Arrays.stream( EnumEvalFuncType.values())
                 .filter(i->i.getCode().equals(code))

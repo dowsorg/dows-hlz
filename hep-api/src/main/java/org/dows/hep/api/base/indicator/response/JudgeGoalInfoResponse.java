@@ -41,6 +41,9 @@ public class JudgeGoalInfoResponse {
     @Schema(title = "状态 0-停用 1-启用")
     private Integer state;
 
+    @Schema(title = "值类型 0-字符串 1-整数 2-小数")
+    private Integer valueType;
+
     @Schema(title = "判断规则-指标公式")
     private List<IndicatorExpressionResponseRs> indicatorExpressionResponseRsList;
 

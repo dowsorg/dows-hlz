@@ -59,7 +59,7 @@ public class ExperimentCacheExecutor {
                 try{
                     ExperimentSettingCache.Instance().getSet(key, true);
                     Set<String> personIds= ExperimentPersonCache.Instance().getPersondIdSet(experimentId, null);
-                    personIds.forEach(personId-> PersonIndicatorIdCache.Instance().loadingCache().get(personId));
+                    personIds.forEach(personId-> PersonIndicatorIdCache.Instance().setGet(personId,false));
                     ExperimentSpelCache.Instance().loadingCache().get(key);
 
                 }catch (Exception ex){

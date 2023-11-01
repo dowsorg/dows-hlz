@@ -39,6 +39,8 @@ public class ToolBiz {
 
     private final EvalJudgeScoreBiz evalJudgeScoreBiz;
 
+    private final EvalPersonMoneyBiz evalPersonMoneyBiz;
+
     public String ping(){
         String exptId="393869331617943552";
         String exptPersonId="393869335258599424";
@@ -109,6 +111,11 @@ public class ToolBiz {
 
     public void evalPeriodJudgeScore(RsCalculatePeriodsRequest req){
         evalJudgeScoreBiz.evalJudgeScore4Period(req.getExperimentId(),req.getPeriods());
+    }
+    public void evalPeriodMoneyScore(RsCalculatePeriodsRequest req){
+
+        evalPersonMoneyBiz.evalMoneyScore4Period(req.getExperimentId(),req.getPeriods());
+
     }
 
     public void raiseevent(RsCalculatePersonRequestRs req)  {
