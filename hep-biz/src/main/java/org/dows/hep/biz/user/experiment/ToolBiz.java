@@ -38,7 +38,7 @@ public class ToolBiz {
     private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
     public String ping(){
-        return "1102";
+        return "1102-a";
     }
 
     public String getWebSocketState(String exptId){
