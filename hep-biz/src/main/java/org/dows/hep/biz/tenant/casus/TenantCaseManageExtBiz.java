@@ -142,14 +142,12 @@ public class TenantCaseManageExtBiz {
 
         //试卷选中的题目
         List<QuestionSectionItemEntity> questionSectionItemList = getQuestionItemByQuestionSectionId(questionSectionIdSet);
-        Set<String> questionInstanceIdSet = questionSectionItemList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).collect(Collectors.toSet());
 
         //试卷与机构分配关系
         List<CaseOrgQuestionnaireEntity> caseOrgQuestionnaireList = getCaseOrgQuestionnaire(oriCaseInstanceId);
 
         allOldIdSet.addAll(questionnaireIdSet);
         allOldIdSet.addAll(questionSectionIdSet);
-        allOldIdSet.addAll(questionInstanceIdSet);
         Map<String, String> kOldIdVNewIdMap = new HashMap<>();
         CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
                 rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
