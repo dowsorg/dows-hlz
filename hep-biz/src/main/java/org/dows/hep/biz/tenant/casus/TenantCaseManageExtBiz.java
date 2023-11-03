@@ -142,45 +142,17 @@ public class TenantCaseManageExtBiz {
 
         //试卷选中的题目
         List<QuestionSectionItemEntity> questionSectionItemList = getQuestionItemByQuestionSectionId(questionSectionIdSet);
-        Set<String> questionInstanceIdSet = questionSectionItemList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).collect(Collectors.toSet());
-
-        //试题实例
-        List<QuestionInstanceEntity> questionInstanceList = getQuestionInstanceList(questionInstanceIdSet);
-
-        //试题答案
-        List<QuestionAnswersEntity> questionAnswersList = getQuestionAnswersList(questionInstanceIdSet);
-
-        Set<String> questionOptionsIdSet = questionAnswersList.stream().map(QuestionAnswersEntity::getQuestionOptionsId).collect(Collectors.toSet());
-        //试题选项
-        List<QuestionOptionsEntity> questionOptionsList = getQuestionOptionsList1(questionInstanceIdSet);
 
         //试卷与机构分配关系
         List<CaseOrgQuestionnaireEntity> caseOrgQuestionnaireList = getCaseOrgQuestionnaire(oriCaseInstanceId);
 
         allOldIdSet.addAll(questionnaireIdSet);
         allOldIdSet.addAll(questionSectionIdSet);
-        allOldIdSet.addAll(questionOptionsIdSet);
-        allOldIdSet.addAll(questionInstanceIdSet);
         Map<String, String> kOldIdVNewIdMap = new HashMap<>();
         CompletableFuture<Void> cfPopulateKOldIdVNewIdMap = CompletableFuture.runAsync(() ->
                 rsUtilBiz.populateKOldIdVNewIdMap(kOldIdVNewIdMap, allOldIdSet));
         cfPopulateKOldIdVNewIdMap.get();
         kOldIdVNewIdMap.putAll(kOldCaseOrgIdVNewCaseOrgIdMap);
-
-        CompletableFuture<Void> getQuestionOptionsListCF = CompletableFuture.runAsync(() -> {
-            getQuestionOptionsList(questionOptionsList, kOldIdVNewIdMap);
-            questionOptionsService.saveOrUpdateBatch(questionOptionsList);
-        });
-
-        CompletableFuture<Void> getQuestionAnswersListCF = CompletableFuture.runAsync(() -> {
-            getQuestionAnswersList(questionAnswersList, kOldIdVNewIdMap);
-            questionAnswersService.saveOrUpdateBatch(questionAnswersList);
-        });
-
-        CompletableFuture<Void> getQuestionInstanceListCF = CompletableFuture.runAsync(() -> {
-            getAllQuestionInstanceList(questionInstanceList, kOldIdVNewIdMap);
-            questionInstanceService.saveOrUpdateBatch(questionInstanceList);
-        });
 
         CompletableFuture<Void> getQuestionSectionItemListCF = CompletableFuture.runAsync(() -> {
             getQuestionItemList(questionSectionItemList, kOldIdVNewIdMap);
@@ -197,8 +169,7 @@ public class TenantCaseManageExtBiz {
             caseOrgQuestionnaireService.saveOrUpdateBatch(caseOrgQuestionnaireList);
         });
 
-        CompletableFuture.allOf(getQuestionOptionsListCF, getQuestionAnswersListCF, getQuestionInstanceListCF,
-                getQuestionSectionItemListCF, getCaseQuestionnaireListCF, getCaseOrgQuestionnaireListCF).get();
+        CompletableFuture.allOf(getQuestionSectionItemListCF, getCaseQuestionnaireListCF, getCaseOrgQuestionnaireListCF).get();
 
     }
 
@@ -607,7 +578,6 @@ public class TenantCaseManageExtBiz {
             questionItem.setQuestionSectionId(checkNullNewId(questionItem.getQuestionSectionId(), kOldIdVNewIdMap));
             questionItem.setQuestionInstanceId(checkNullNewId(questionItem.getQuestionInstanceId(), kOldIdVNewIdMap));
         });
-        System.out.println(questionItemList);
     }
 
     private boolean checkNull(Object oldList, Map<String, String> kOldIdVNewIdMap, String newId) {
