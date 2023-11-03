@@ -232,10 +232,10 @@ public class EventBiz{
                         || null == (categVO = cache.getById(appId,saveEvent.getEventCategId())))
                 .throwMessage("事件类别不存在");
         EnumEventTriggerType triggerType=EnumEventTriggerType.of(saveEvent.getTriggerType());
-        AssertUtil.trueThenThrow(triggerType==EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getEffectExpresssions()))
+      /*  AssertUtil.trueThenThrow(triggerType==EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getEffectExpresssions()))
                         .throwMessage("条件触发时不支持定义影响的指标");
         AssertUtil.trueThenThrow(triggerType!=EnumEventTriggerType.CONDITION&&ShareUtil.XCollection.notEmpty(saveEvent.getConditionExpresssionIds()))
-                .throwMessage("时间触发时不支持定义触发条件");
+                .throwMessage("时间触发时不支持定义触发条件");*/
         AssertUtil.trueThenThrow(triggerType!=EnumEventTriggerType.CONDITION&& EnumEventTriggerSpan.of(saveEvent.getTriggerSpan())==EnumEventTriggerSpan.NONE)
                 .throwMessage("请选择正确的触发时间段");
 
