@@ -380,7 +380,7 @@ public class CaseIndicatorInstanceExtBiz {
         if (StringUtils.isBlank(id) || "0".equals(id)) {
             return id;
         }
-        return kOldIdVNewIdMap.get(id);
+        return kOldIdVNewIdMap.get(id) == null ?id:kOldIdVNewIdMap.get(id);
     }
 
 }

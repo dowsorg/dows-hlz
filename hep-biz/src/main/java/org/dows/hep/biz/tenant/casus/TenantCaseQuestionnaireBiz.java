@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.dows.framework.api.exceptions.BizException;
 import org.dows.hep.api.base.question.QuestionCategGroupEnum;
 import org.dows.hep.api.base.question.QuestionESCEnum;
@@ -30,12 +31,10 @@ import org.dows.hep.biz.base.question.QuestionSectionBiz;
 import org.dows.hep.biz.base.question.QuestionSectionItemBiz;
 import org.dows.hep.biz.tenant.casus.handler.CaseQuestionnaireFactory;
 import org.dows.hep.biz.tenant.casus.handler.CaseQuestionnaireHandler;
-import org.dows.hep.entity.CaseInstanceEntity;
-import org.dows.hep.entity.CaseQuestionnaireEntity;
-import org.dows.hep.entity.QuestionSectionEntity;
-import org.dows.hep.entity.QuestionSectionItemEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseQuestionnaireService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -70,7 +69,7 @@ public class TenantCaseQuestionnaireBiz {
         if (BeanUtil.isEmpty(caseQuestionnaire)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
-
+        this.checkQuestionnaireRequest(caseQuestionnaire);
         CaseQuestionnaireEntity caseQuestionnaireEntity = convertRequest2Entity(caseQuestionnaire);
         caseQuestionnaireService.saveOrUpdate(caseQuestionnaireEntity);
 
@@ -171,10 +170,17 @@ public class TenantCaseQuestionnaireBiz {
 
         // get entity
         CaseQuestionnaireEntity entity = getById(caseQuestionnaireId);
+        CaseQuestionnaireResponse  caseQuestionnaireResponse = new CaseQuestionnaireResponse();
         if (BeanUtil.isEmpty(entity)) {
-            return new CaseQuestionnaireResponse();
+            return  caseQuestionnaireResponse;
         }
-        return BeanUtil.copyProperties(entity, CaseQuestionnaireResponse.class);
+
+        List<CaseQuestionnaireRequest.RandomMode> randomModeList = new ArrayList<>();
+        this.convertRandomModeList(randomModeList, entity.getQuestionSectionId());
+        BeanUtil.copyProperties(entity, caseQuestionnaireResponse);
+        caseQuestionnaireResponse.setRandomModeList(randomModeList);
+        return caseQuestionnaireResponse;
+
     }
 
     /**
@@ -370,6 +376,100 @@ public class TenantCaseQuestionnaireBiz {
         return questionSectionBiz.disabledSectionQuestion(questionSectionId, questionSectionItemId);
     }
 
+    //校验题目
+    private CaseQuestionnaireRequest checkQuestionnaireRequest(CaseQuestionnaireRequest request) {
+        List<CaseQuestionnaireRequest.RandomMode> randomModeList = request.getRandomModeList();
+        if (CollectionUtils.isEmpty(randomModeList)) {
+            return request;
+        }
+        Set<String> questionCategIdSet = randomModeList.stream().map(CaseQuestionnaireRequest.RandomMode::getL2CategId).collect(Collectors.toSet());
+        List<QuestionInstanceEntity> questionInstanceList = questionInstanceBiz.listByQuestionCategIds(questionCategIdSet);
+        Map<String, List<QuestionInstanceEntity>> questionCategIdMap = questionInstanceList.stream().collect(Collectors.groupingBy(QuestionInstanceEntity::getQuestionCategId));
+        // questionCategId
+        Map<String, CaseQuestionnaireRequest.RandomMode> maxNumRandomModeMap = new HashMap<>();
+        questionCategIdMap.forEach((questionCategId, questionInstanceChildList) -> {
+            CaseQuestionnaireRequest.RandomMode randomMode = new CaseQuestionnaireRequest.RandomMode();
+            this.convertRandomMode(questionCategId, randomMode, questionInstanceChildList);
+            maxNumRandomModeMap.put(questionCategId, randomMode);
+        });
+        List<CaseQuestionnaireRequest.RandomMode> resultRandomModeList = new ArrayList<>();
+        Map<String, CaseQuestionnaireRequest.RandomMode> resultRandomModeMap = new HashMap<>();
+        for (CaseQuestionnaireRequest.RandomMode randomMode : randomModeList) {
+            //知识类别
+            String questionCategId = randomMode.getL2CategId();
+            //题目类型-数量
+            Map<QuestionTypeEnum, Integer> numMap = randomMode.getNumMap();
+            if (resultRandomModeMap.containsKey(questionCategId)) {
+                Map<QuestionTypeEnum, Integer> maxNumMap = maxNumRandomModeMap.get(questionCategId).getNumMap();
+                Map<QuestionTypeEnum, Integer> resultNumMap = resultRandomModeMap.get(questionCategId).getNumMap();
+                this.countNum(resultNumMap, maxNumMap, numMap);
+            } else {
+                resultRandomModeMap.put(questionCategId, randomMode);
+            }
+        }
+        resultRandomModeMap.forEach((questionCategId, randomMode) ->
+                resultRandomModeList.add(randomMode)
+        );
+
+        request.setRandomModeList(resultRandomModeList);
+        return request;
+    }
+
+    private void countNum(Map<QuestionTypeEnum, Integer> resultNumMap, Map<QuestionTypeEnum, Integer> maxNumMap, Map<QuestionTypeEnum, Integer> numMap) {
+        if (CollectionUtils.isEmpty(numMap)) {
+            return;
+        }
+        numMap.forEach((typeEum, num) -> {
+            int maxNum = maxNumMap.get(typeEum);
+            int result = resultNumMap.get(typeEum);
+            resultNumMap.put(typeEum, Math.min(num + result, maxNum));
+        });
+    }
+
+    private void convertRandomModeList(List<CaseQuestionnaireRequest.RandomMode> randomModeList, String questionSectionId) {
+        if (StringUtils.isBlank(questionSectionId)) {
+            return;
+        }
+        List<QuestionSectionItemEntity> questionSectionItemEntityList = questionSectionItemBiz.queryBySectionId(questionSectionId);
+        Set<String> questionInstanceIdSet = questionSectionItemEntityList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).collect(Collectors.toSet());
+
+        List<QuestionInstanceEntity> questionInstanceList = questionInstanceBiz.listByIds(questionInstanceIdSet);
+        Map<String, List<QuestionInstanceEntity>> questionCategIdMap = questionInstanceList.stream().collect(Collectors.groupingBy(QuestionInstanceEntity::getQuestionCategId));
+        this.convertRandomModeList(randomModeList, questionCategIdMap);
+    }
+
+    private void convertRandomModeList(List<CaseQuestionnaireRequest.RandomMode> randomModeList, Map<String, List<QuestionInstanceEntity>> questionCategIdMap) {
+        if (CollectionUtils.isEmpty(questionCategIdMap) || randomModeList == null) {
+            return;
+        }
+        questionCategIdMap.forEach((questionCategId, questionInstanceChildList) -> {
+            CaseQuestionnaireRequest.RandomMode randomMode = new CaseQuestionnaireRequest.RandomMode();
+            this.convertRandomMode(questionCategId, randomMode, questionInstanceChildList);
+            randomModeList.add(randomMode);
+        });
+    }
+
+    private void convertRandomMode(String questionCategId, CaseQuestionnaireRequest.RandomMode randomMode, List<QuestionInstanceEntity> questionInstanceChildList) {
+        if (StringUtils.isBlank(questionCategId) || randomMode == null) {
+            return;
+        }
+        QuestionCategoryEntity questionCategory = questionCategBiz.getById(questionCategId);
+        randomMode.setL2CategId(questionCategId);
+        randomMode.setL1CategId(questionCategory.getQuestionCategPid());
+        Map<QuestionTypeEnum, Integer> numMap = new HashMap<>();
+        this.convertNumMap(numMap, questionInstanceChildList);
+        randomMode.setNumMap(numMap);
+    }
+
+    private void convertNumMap(Map<QuestionTypeEnum, Integer> numMap, List<QuestionInstanceEntity> questionInstanceChildList) {
+        if (CollectionUtils.isEmpty(questionInstanceChildList) || numMap == null) {
+            return;
+        }
+        questionInstanceChildList.stream().collect(Collectors.groupingBy(QuestionInstanceEntity::getQuestionType))
+                .forEach((questionType, list) ->
+                        numMap.put(QuestionTypeEnum.getByCode(questionType), list.size())
+                );
+    }
     private CaseQuestionnaireEntity convertRequest2Entity(CaseQuestionnaireRequest request) {
         if (BeanUtil.isEmpty(request)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);

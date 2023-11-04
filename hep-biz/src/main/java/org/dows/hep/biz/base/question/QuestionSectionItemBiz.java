@@ -103,6 +103,14 @@ public class QuestionSectionItemBiz {
                 .list();
     }
 
+    public List<QuestionSectionItemEntity> queryBySectionId(String questionSectionId) {
+        return questionSectionItemService.lambdaQuery()
+                .eq(QuestionSectionItemEntity::getEnabled, QuestionEnabledEnum.ENABLED.getCode())
+                .eq(QuestionSectionItemEntity::getDeleted, false)
+                .eq(QuestionSectionItemEntity::getQuestionSectionId, questionSectionId)
+                .list();
+    }
+
     /**
      * @param
      * @return

@@ -6,6 +6,7 @@ import org.dows.hep.api.base.indicator.response.ExperimentIndicatorJudgeHealthPr
 import org.dows.hep.api.base.indicator.response.FirstHealthProblemTabRsResponse;
 import org.dows.hep.api.base.indicator.response.SecondHealthProblemTabRsResponse;
 import org.dows.hep.api.enums.EnumString;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorJudgeHealthProblemRsEntity;
 import org.dows.hep.service.ExperimentIndicatorJudgeHealthProblemRsService;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,9 @@ public class ExperimentIndicatorJudgeHealthProblemRsBiz {
         .forEach(experimentIndicatorJudgeHealthProblemRsEntity -> {
           String indicatorCategoryIdArray = experimentIndicatorJudgeHealthProblemRsEntity.getIndicatorCategoryIdArray();
           List<String> indicatorCategoryIdList = Arrays.stream(indicatorCategoryIdArray.split(EnumString.COMMA.getStr())).collect(Collectors.toList());
+          if(ShareUtil.XObject.isEmpty(indicatorCategoryIdList)||indicatorCategoryIdList.size()<2){
+              return;
+          }
           String indicatorCategoryNameArray = experimentIndicatorJudgeHealthProblemRsEntity.getIndicatorCategoryNameArray();
           String firstIndicatorCategoryId = indicatorCategoryIdList.get(0);
           String secondIndicatorCategoryId = indicatorCategoryIdList.get(1);

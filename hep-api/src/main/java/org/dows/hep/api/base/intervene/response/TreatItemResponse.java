@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.math.BigDecimal;
+
 /**
 * @description 
 *
@@ -49,6 +51,12 @@ public class TreatItemResponse{
 
     @Schema(title = "费用")
     private String fee;
+
+    @Schema(title = "用量下限")
+    private BigDecimal minWeight;
+
+    @Schema(title = "用量上限")
+    private BigDecimal maxWeight;
 
     @Schema(title = "状态 0-启用 1-停用")
     private Integer state;
