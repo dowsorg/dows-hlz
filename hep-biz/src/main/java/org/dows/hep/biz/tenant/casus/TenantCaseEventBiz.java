@@ -156,10 +156,10 @@ public class TenantCaseEventBiz {
                         || null == (categVO = getCategCache().getById(appId, saveCaseEvent.getEventCategId())))
                 .throwMessage("事件类别不存在");
         EnumEventTriggerType triggerType = EnumEventTriggerType.of(saveCaseEvent.getTriggerType());
-        AssertUtil.trueThenThrow(triggerType == EnumEventTriggerType.CONDITION && ShareUtil.XCollection.notEmpty(saveCaseEvent.getEffectExpresssions()))
+      /*  AssertUtil.trueThenThrow(triggerType == EnumEventTriggerType.CONDITION && ShareUtil.XCollection.notEmpty(saveCaseEvent.getEffectExpresssions()))
                 .throwMessage("条件触发时不支持定义影响的指标");
         AssertUtil.trueThenThrow(triggerType != EnumEventTriggerType.CONDITION && ShareUtil.XCollection.notEmpty(saveCaseEvent.getConditionExpresssionIds()))
-                .throwMessage("时间触发时不支持定义触发条件");
+                .throwMessage("时间触发时不支持定义触发条件");*/
         AssertUtil.trueThenThrow(triggerType != EnumEventTriggerType.CONDITION && EnumEventTriggerSpan.of(saveCaseEvent.getTriggerSpan()) == EnumEventTriggerSpan.NONE)
                 .throwMessage("请选择正确的触发时间段");
 

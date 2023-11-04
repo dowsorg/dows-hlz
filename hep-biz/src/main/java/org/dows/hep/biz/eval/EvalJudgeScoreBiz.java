@@ -164,10 +164,12 @@ public class EvalJudgeScoreBiz {
         dst[0]=new HashMap<>();
         dst[1]=new HashMap<>();
         int pos=0;
-        for(ExperimentJudgeScoreLogEntity item:rowsScoreLog){
+        for(ExperimentJudgeScoreLogEntity item:rowsScoreLog) {
             dst[pos].computeIfAbsent(String.format("%s-%s-%s-%s", item.getExperimentGroupId(), item.getExperimentPersonId(), item.getExperimentOrgId(), item.getIndicatorFuncId()),
                             k -> new ArrayList<>())
-                    .add(ShareUtil.XObject.defaultIfNull(item.getSingleScore(), BigDecimal.ZERO));
+                    .add(BigDecimalOptional.valueOf(item.getSingleScore())
+                            .min(BigDecimal.ZERO)
+                            .getValue(SCALEScore));
         }
         int loopNum=3;
         while (loopNum-->0){

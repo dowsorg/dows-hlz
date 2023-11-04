@@ -79,6 +79,13 @@ public class TreatItemEntity implements CrudEntity {
     @Schema(title = "状态 0-启用 1-停用")
     private Integer state;
 
+    @Schema(title = "用量下限")
+    private BigDecimal minWeight;
+
+    @Schema(title = "用量上限")
+    private BigDecimal maxWeight;
+
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
