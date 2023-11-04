@@ -69,7 +69,7 @@ public class TenantCaseQuestionnaireBiz {
         if (BeanUtil.isEmpty(caseQuestionnaire)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
-
+        this.checkQuestionnaireRequest(caseQuestionnaire);
         CaseQuestionnaireEntity caseQuestionnaireEntity = convertRequest2Entity(caseQuestionnaire);
         caseQuestionnaireService.saveOrUpdate(caseQuestionnaireEntity);
 
@@ -427,7 +427,7 @@ public class TenantCaseQuestionnaireBiz {
     }
 
     private void convertRandomModeList(List<CaseQuestionnaireRequest.RandomMode> randomModeList, String questionSectionId) {
-        if (StringUtils.isNotBlank(questionSectionId)) {
+        if (StringUtils.isBlank(questionSectionId)) {
             return;
         }
         List<QuestionSectionItemEntity> questionSectionItemEntityList = questionSectionItemBiz.queryBySectionId(questionSectionId);
@@ -450,7 +450,7 @@ public class TenantCaseQuestionnaireBiz {
     }
 
     private void convertRandomMode(String questionCategId, CaseQuestionnaireRequest.RandomMode randomMode, List<QuestionInstanceEntity> questionInstanceChildList) {
-        if (StringUtils.isNotBlank(questionCategId) || randomMode == null) {
+        if (StringUtils.isBlank(questionCategId) || randomMode == null) {
             return;
         }
         QuestionCategoryEntity questionCategory = questionCategBiz.getById(questionCategId);
