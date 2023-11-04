@@ -6,8 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
+import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
 
 import java.util.Date;
+import java.util.List;
 
 /**
 * @description 
@@ -52,5 +54,8 @@ public class CaseQuestionnaireResponse{
     @JsonIgnore
     @Schema(title = "时间戳")
     private Date dt;
+
+    @Schema(title = "随机添加方式")
+    private List<CaseQuestionnaireRequest.RandomMode> randomModeList;
 
 }
