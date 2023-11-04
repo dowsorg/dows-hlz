@@ -8,6 +8,8 @@ import org.dows.hep.api.base.indicator.request.RsCalculatePersonRequestRs;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
 import org.dows.hep.biz.eval.*;
 import org.dows.hep.biz.event.PersonBasedEventTask;
+import org.dows.hep.biz.spel.SpelInvoker;
+import org.dows.hep.biz.spel.SpelPersonContext;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.websocket.HepClientManager;
 import org.springframework.stereotype.Service;
@@ -38,8 +40,62 @@ public class ToolBiz {
     private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
     public String ping(){
+        String exptId="396527169049858048";
+       /* ExperimentCacheKey exptKey=ExperimentCacheKey.create("3", exptId);
+        ExperimentSettingCollection exptColl= ExperimentSettingCache.Instance().getSet(exptKey,true);
+        LocalDateTime ldtNow=LocalDateTime.of(2023, 11, 2, 20, 31,47);
+        ExperimentTimePoint timePoint= ExperimentSettingCache.getTimePointByRealTimeSilence(exptColl, exptKey, ldtNow, true);
+
+        LocalDateTime nextTime= calcTriggeringTime(timePoint,exptColl,139);
+        nextTime= calcTriggeringTime(timePoint,exptColl,139);
+        int todoDay=139;
+        Integer nextDay=calcNextTodoDay(timePoint,exptColl,30,109, 139);
+        nextDay=calcNextTodoDay(timePoint,exptColl,30,109, 139);
+        nextDay=calcNextTodoDay(timePoint,exptColl,30,109, 139);*/
+
+        SpelPersonContext spelContext = new SpelPersonContext().setVariables("396527224976707584", 1);
+        String eventId="368233096589479940";
+        boolean triggered=SpelInvoker.Instance().checkEventCondition(exptId, "396527224976707584",
+                eventId, spelContext);
+        triggered=SpelInvoker.Instance().checkEventCondition(exptId, "396527224976707584",
+                eventId, spelContext);
+
+
         return "1102-c";
     }
+
+   /* LocalDateTime calcTriggeringTime(ExperimentTimePoint timePoint, ExperimentSettingCollection exptColl, Integer todoDays){
+        if(ShareUtil.XObject.anyEmpty(timePoint,todoDays)){
+            return null;
+        }
+        if(exptColl.getTotalDays()< todoDays){
+            return null;
+        }
+        if(todoDays<= timePoint.getGameDay()){
+            return timePoint.getRealTime();
+        }
+        Integer rawSeconds=  exptColl.getRawSecondsByGameDay(todoDays);
+        return exptColl.getSandStartTime().plusSeconds(rawSeconds+timePoint.getCntPauseSeconds());
+
+    }
+    Integer calcNextTodoDay(ExperimentTimePoint timePoint, ExperimentSettingCollection exptColl, int dueDays,int setAtDay,int todoDay){
+        int curDay=Math.max(timePoint.getGameDay(), todoDay);
+        final int curTimes=Math.max(0,(curDay-setAtDay)/dueDays);
+        int nextTodoDay=0;
+        for(int i=1;i<10;i++){
+            nextTodoDay=setAtDay+(curTimes+i)*dueDays;
+            if(curDay<nextTodoDay){
+                break;
+            }
+        }
+        if(todoDay<= timePoint.getGameDay()){
+            nextTodoDay+=dueDays;
+        }
+        if(nextTodoDay<=exptColl.getTotalDays()){
+            return nextTodoDay;
+        }
+        return null;
+    }*/
 
     public String getWebSocketState(String exptId){
         Map<Channel, AccountInfo> map=null;

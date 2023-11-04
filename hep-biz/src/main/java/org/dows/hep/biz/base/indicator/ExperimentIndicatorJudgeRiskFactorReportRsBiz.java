@@ -138,7 +138,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
   }
 
   public List<ExperimentRiskFactorReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId, Integer periods) {
-    String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
+    String operateFlowId = ShareBiz.checkExistingOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
     if(ShareUtil.XObject.isEmpty(operateFlowId)){
       return Collections.emptyList();
     }

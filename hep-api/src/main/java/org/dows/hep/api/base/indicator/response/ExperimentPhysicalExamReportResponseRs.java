@@ -17,6 +17,13 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class ExperimentPhysicalExamReportResponseRs implements Serializable {
+
+  @Schema(title = "第一层目录id")
+  private String indicatorCategoryId;
+
+  @Schema(title = "第一层目录名称")
+  private String indicatorCategoryName;
+  
   @Schema(title = "体格检查名称")
   private String name;
 

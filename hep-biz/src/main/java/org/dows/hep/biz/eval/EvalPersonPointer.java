@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.dows.framework.crud.api.CrudContextHolder;
 import org.dows.hep.api.enums.EnumEvalFuncType;
-import org.dows.hep.api.enums.EnumExperimentState;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
 import org.dows.hep.biz.eval.data.EvalPersonCacheKey;
 import org.dows.hep.biz.eval.data.EvalPersonOnceData;
@@ -84,7 +83,7 @@ public class EvalPersonPointer {
             }
             curHolder.syncIndicators();
             nextHolder.putFrom(curHolder.getPresent(), nextEvalNo, funcType);
-            if(funcType.isPeriodEnd()){
+            if(funcType.isNewPeriod()){
                 nextHolder.syncMoney();
             }
             curEvalNo.incrementAndGet();
@@ -124,7 +123,8 @@ public class EvalPersonPointer {
             EvalPersonOnceData curData= curHolder.get(nextEvalNo,true);
             if(curHolder.isValid(curData)){
                 final EnumEvalFuncType funcType=getFuncType(curData.getHeader().getPeriods(), timePoint.getPeriod());
-                if(timePoint.getGameState()== EnumExperimentState.FINISH&&curData.getHeader().getPeriods()>exptColl.getPeriods()) {
+                if(curData.getHeader().getPeriods()>exptColl.getPeriods()) {
+                    curEvalNo.set(nextEvalNo);
                     return true;
                 }
                 if(curData.isSyncing()) {

@@ -1,10 +1,5 @@
 package org.dows.hep.biz.base.indicator;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,15 +7,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.dows.edw.HepOperateTypeEnum;
 import org.dows.edw.domain.HepHealthExamination;
 import org.dows.edw.domain.HepHealthTherapy;
-import org.dows.edw.repository.HepOperateGetRepository;
-import org.dows.edw.repository.HepOperateSetRepository;
 import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.ExperimentSupportExamCheckRequestRs;
 import org.dows.hep.api.base.indicator.request.RsChangeMoneyRequest;
 import org.dows.hep.api.base.indicator.response.ExperimentSupportExamReportResponseRs;
-import org.dows.hep.api.edw.request.HepOperateGetRequest;
-import org.dows.hep.api.edw.request.HepOperateSetRequest;
 import org.dows.hep.api.config.ConfigExperimentFlow;
+import org.dows.hep.api.edw.request.HepOperateGetRequest;
 import org.dows.hep.api.enums.EnumIndicatorExpressionField;
 import org.dows.hep.api.enums.EnumIndicatorExpressionScene;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
@@ -81,13 +73,15 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
       return null;
     }
     return ExperimentSupportExamReportResponseRs
-        .builder()
-        .name(experimentIndicatorViewSupportExamReportRsEntity.getName())
-        .fee(experimentIndicatorViewSupportExamReportRsEntity.getFee())
-        .currentVal(experimentIndicatorViewSupportExamReportRsEntity.getCurrentVal())
-        .unit(experimentIndicatorViewSupportExamReportRsEntity.getUnit())
-        .resultExplain(experimentIndicatorViewSupportExamReportRsEntity.getResultExplain())
-        .build();
+            .builder()
+            .name(experimentIndicatorViewSupportExamReportRsEntity.getName())
+            .fee(experimentIndicatorViewSupportExamReportRsEntity.getFee())
+            .currentVal(experimentIndicatorViewSupportExamReportRsEntity.getCurrentVal())
+            .unit(experimentIndicatorViewSupportExamReportRsEntity.getUnit())
+            .resultExplain(experimentIndicatorViewSupportExamReportRsEntity.getResultExplain())
+            .indicatorCategoryId(experimentIndicatorViewSupportExamReportRsEntity.getIndicatorCategoryId())
+            .indicatorCategoryName(experimentIndicatorViewSupportExamReportRsEntity.getIndicatorCategoryName())
+            .build();
   }
 
   public List<ExperimentSupportExamReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId, Integer periods) {
@@ -118,7 +112,7 @@ public class ExperimentIndicatorViewSupportExamReportRsBiz {
               .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getIndicatorFuncId, indicatorFuncId)
               .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getExperimentPersonId, experimentPersonId)
               .eq(ExperimentIndicatorViewSupportExamReportRsEntity::getOperateFlowId, operateFlowId)
-              .orderByDesc(ExperimentIndicatorViewSupportExamReportRsEntity::getDt)
+              .orderByDesc(ExperimentIndicatorViewSupportExamReportRsEntity::getDt,ExperimentIndicatorViewSupportExamReportRsEntity::getIndicatorCategoryId)
               .list()
               .stream()
               .map(ExperimentIndicatorViewSupportExamReportRsBiz::experimentSupportExamReport2ResponseRs)

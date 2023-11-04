@@ -98,7 +98,7 @@ public class PersonBasedEventTask extends BaseEventTask{
                 if(!lockFlag){
                     continue;
                 }
-                SpelPersonContext spelContext = new SpelPersonContext().setVariables(group.getExperimentPersonId(), timePoint.getPeriod());
+                SpelPersonContext spelContext = new SpelPersonContext(true).setVariables(group.getExperimentPersonId(), timePoint.getPeriod());
                 for (ExperimentEventEntity event : group.getEventItems()) {
                     if (null != event.getTriggerTime()) {
                         cntTriggered++;
