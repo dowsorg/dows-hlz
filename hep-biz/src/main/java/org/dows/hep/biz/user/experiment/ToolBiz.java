@@ -38,8 +38,10 @@ public class ToolBiz {
     private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
     public String ping(){
-        return "1102-c";
+        return "1105";
     }
+
+
 
     public String getWebSocketState(String exptId){
         Map<Channel, AccountInfo> map=null;

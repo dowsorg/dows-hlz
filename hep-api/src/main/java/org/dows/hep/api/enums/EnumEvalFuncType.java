@@ -32,6 +32,11 @@ public enum EnumEvalFuncType {
     public boolean isPeriodEnd(){
         return this==PERIODEnd;
     }
+
+    public boolean isNewPeriod(){
+        return isNewPeriod(this);
+    }
+
     public static EnumEvalFuncType of(Integer code){
         return Arrays.stream( EnumEvalFuncType.values())
                 .filter(i->i.getCode().equals(code))
