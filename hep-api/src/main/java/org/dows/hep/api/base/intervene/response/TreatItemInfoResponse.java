@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.dows.hep.api.base.indicator.response.IndicatorExpressionResponseRs;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -57,6 +58,13 @@ public class TreatItemInfoResponse{
 
     @Schema(title = "指标公式列表(一般两级公式source=5 一般四级公式source=6)")
     private List<IndicatorExpressionResponseRs> expresssions;
+
+
+    @Schema(title = "用量下限")
+    private BigDecimal minWeight;
+
+    @Schema(title = "用量上限")
+    private BigDecimal maxWeight;
 
 
 

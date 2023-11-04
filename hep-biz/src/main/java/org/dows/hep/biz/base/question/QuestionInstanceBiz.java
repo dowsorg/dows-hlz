@@ -242,16 +242,32 @@ public class QuestionInstanceBiz {
      * @开始时间:
      * @创建时间: 2023年4月18日 上午10:45:07
      */
-    public List<QuestionInstanceEntity> listByIds(List<String> questionInstanceIds) {
+    public List<QuestionInstanceEntity> listByIds(Collection<String> questionInstanceIds) {
         if (Objects.isNull(questionInstanceIds)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
 
         return questionInstanceService.lambdaQuery()
+                .eq(QuestionInstanceEntity::getAppId, baseBiz.getAppId())
+                .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
+                .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
+                .eq(QuestionInstanceEntity::getBizCode, QuestionAccessAuthEnum.PUBLIC_VIEWING.name())
                 .in(QuestionInstanceEntity::getQuestionInstanceId, questionInstanceIds)
                 .list();
     }
 
+    public List<QuestionInstanceEntity> listByQuestionCategIds (Collection<String> questionCategIds){
+        if (Objects.isNull(questionCategIds)) {
+            throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
+        }
+        return questionInstanceService.lambdaQuery()
+                .eq(QuestionInstanceEntity::getAppId, baseBiz.getAppId())
+                .eq(QuestionInstanceEntity::getVer, baseBiz.getLastVer())
+                .eq(QuestionInstanceEntity::getQuestionInstancePid, baseBiz.getQuestionInstancePid())
+                .eq(QuestionInstanceEntity::getBizCode, QuestionAccessAuthEnum.PUBLIC_VIEWING.name())
+                .in(QuestionInstanceEntity::getQuestionCategId,questionCategIds)
+                .list();
+    }
     /**
      * @param
      * @return

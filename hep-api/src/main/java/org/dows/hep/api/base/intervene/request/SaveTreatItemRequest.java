@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dows.hep.api.base.intervene.vo.IndicatorExpressionVO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -53,6 +54,12 @@ public class SaveTreatItemRequest {
 
     @Schema(title = "指标公式列表(一般两级公式source=5 一般四级公式source=6)")
     private List<IndicatorExpressionVO> expresssions;
+
+    @Schema(title = "用量下限")
+    private BigDecimal minWeight;
+
+    @Schema(title = "用量上限")
+    private BigDecimal maxWeight;
 
 
 }

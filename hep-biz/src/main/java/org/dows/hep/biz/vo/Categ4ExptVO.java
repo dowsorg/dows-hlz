@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.base.intervene.vo.FoodCategExtendVO;
 
 import java.util.List;
 
@@ -41,6 +42,9 @@ public class Categ4ExptVO {
 
     @Schema(title = "扩展")
     private String spec;
+
+    @Schema(title = "扩展属性，上下限")
+    private FoodCategExtendVO extend;
 
 
     @Schema(title = "子类别json")

@@ -73,10 +73,15 @@ public enum CategCacheFactory {
                     .getByIndicatorFuncId(appId,null,
                             TreatItemEntity::getTreatItemId,
                             TreatItemEntity::getTreatItemName,
-                            TreatItemEntity::getInterveneCategId),row->CategVO.builder()
+                            TreatItemEntity::getInterveneCategId,
+                            TreatItemEntity::getMinWeight,
+                            TreatItemEntity::getMaxWeight),row->CategVO.builder()
                     .categId(row.getTreatItemId())
                     .categName(row.getTreatItemName())
                     .categPid(row.getInterveneCategId())
+                    .extend(new FoodCategExtendVO()
+                            .setMin(BigDecimalUtil.formatDecimal(row.getMinWeight(), MINWeight4TreatItem))
+                            .setMax(BigDecimalUtil.formatDecimal(row.getMaxWeight(), MAXWeight4TreatItem)))
                     .appId(appId)
                     .build()));
             return rst;
@@ -93,6 +98,9 @@ public enum CategCacheFactory {
     private volatile CategCache categCache;
 
     private volatile ExperimentCategCache exptCategCache;
+
+    private final static String MAXWeight4TreatItem="1000";
+    private final static String MINWeight4TreatItem="0";
 
 
     CategCacheFactory(EnumCategFamily categFamily,EnumSnapshotType snapshotType, long expireInMinutes) {

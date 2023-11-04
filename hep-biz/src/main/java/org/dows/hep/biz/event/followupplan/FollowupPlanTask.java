@@ -167,21 +167,42 @@ public class FollowupPlanTask extends BaseEventTask {
             if(!item.isTriggering()){
                 continue;
             }
+            //item.setTriggering(calcTriggeringTime(stat, exptColl, item));
             item.setTriggering(calcTriggeringTime(stat, exptColl, item.getTodoDay()));
             item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item));
             if (null == item.getDoingTime()) {
                 continue;
             }
             LocalDateTime triggeringTime =item.getDoingTime();
-            if(triggeringTime.compareTo(ldtNow)<0){
+            /*if(triggeringTime.compareTo(ldtNow)<0){
                 triggeringTime =calcTriggeringTime(stat, exptColl, item.getNextTodoDay());
                 item.setNextTodoDay(calcNextTodoDay(stat, exptColl, item.saveNextTodoDay()));
-            }
+            }*/
             if (triggeringTime.compareTo(nextTime) < 0) {
                 nextTime = triggeringTime;
             }
         }
         return nextTime.isEqual(LocalDateTime.MAX) ? null : nextTime;
+    }
+
+    LocalDateTime calcTriggeringTime(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl,FollowupPlanRow row){
+        final ExperimentTimePoint timePoint=stat.curTimePoint.get();
+        if(ShareUtil.XObject.anyEmpty(timePoint,row.getTodoDay())){
+            return null;
+        }
+        final int todoDay=row.getTodoDay();
+        if(exptColl.getTotalDays()< todoDay){
+            return null;
+        }
+
+        final int dueDays=Math.max(30,row.getEntity().getDueDays());
+        row.setNextTodoDay(dueDays+todoDay).saveNextTodoDay();
+        if(todoDay<= timePoint.getGameDay()){
+            return timePoint.getRealTime();
+        }
+        Integer rawSeconds=  exptColl.getRawSecondsByGameDay(todoDay);
+        return exptColl.getSandStartTime().plusSeconds(rawSeconds+timePoint.getCntPauseSeconds());
+
     }
     LocalDateTime calcTriggeringTime(FollowupPlanRunStat stat, ExperimentSettingCollection exptColl,Integer todoDays){
         final ExperimentTimePoint timePoint=stat.curTimePoint.get();
@@ -211,6 +232,9 @@ public class FollowupPlanTask extends BaseEventTask {
             if(curDay<nextTodoDay){
                 break;
             }
+        }
+        if(row.getTodoDay()<= timePoint.getGameDay()){
+            nextTodoDay+=dueDays;
         }
         if(nextTodoDay<=exptColl.getTotalDays()){
             return nextTodoDay;
