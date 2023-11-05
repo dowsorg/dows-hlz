@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dows.hep.api.base.question.QuestionTypeEnum;
 import org.dows.hep.api.base.question.response.QuestionSectionResponse;
 import org.dows.hep.api.tenant.casus.CaseQuestionSelectModeEnum;
-import org.dows.hep.api.tenant.casus.request.CaseQuestionnaireRequest;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
 * @description 
@@ -56,6 +57,22 @@ public class CaseQuestionnaireResponse{
     private Date dt;
 
     @Schema(title = "随机添加方式")
-    private List<CaseQuestionnaireRequest.RandomMode> randomModeList;
+    private List<RandomModeResponse> randomModeList;
+    @Data
+    @NoArgsConstructor
+    @Schema(name = "RandomMode Response对象", title = "随机添加方式Response")
+    public static class RandomModeResponse {
+        @Schema(title = "知识体系")
+        private String l1CategId;
+
+        @Schema(title = "知识类别")
+        private String l2CategId;
+
+        @Schema(title = "选中题目数量")
+        private Map<QuestionTypeEnum, Integer> numMap;
+
+        @Schema(title = "总题目数量")
+        private Map<QuestionTypeEnum, Integer> maxNumMap;
+    }
 
 }
