@@ -135,8 +135,9 @@ public class FromSnapshotLoader extends BaseSpelLoader {
                     experimentId,refExperimentId4ExpressionRef,String.join(",", reasonIds),source);*/
             return rst;
         }
+        Integer castSource=EnumIndicatorExpressionSource.of(source).isEventSource()?source:null;
         final List<String> expressionIds=ShareUtil.XCollection.map(rowsExpressionRef, SnapCaseIndicatorExpressionRefEntity::getIndicatorExpressionId);
-        List<SnapCaseIndicatorExpressionEntity> rowsExpression= snapCaseIndicatorExpressionDao.getByExpressionId(refExperimentId4Expression,expressionIds,null,
+        List<SnapCaseIndicatorExpressionEntity> rowsExpression= snapCaseIndicatorExpressionDao.getByExpressionId(refExperimentId4Expression,expressionIds,castSource,
                 SnapCaseIndicatorExpressionEntity::getCaseIndicatorExpressionId,
                 SnapCaseIndicatorExpressionEntity::getCasePrincipalId,
                 SnapCaseIndicatorExpressionEntity::getSource,

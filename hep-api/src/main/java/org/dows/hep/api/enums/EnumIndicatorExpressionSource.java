@@ -58,6 +58,12 @@ public enum EnumIndicatorExpressionSource {
             .orElse(NONE);
   }
 
+  public boolean isEventSource(){
+    return this==EMERGENCY_TRIGGER_CONDITION
+            ||this==EMERGENCY_INFLUENCE_INDICATOR
+            ||this==EMERGENCY_ACTION_INFLUENCE_INDICATOR;
+  }
+
   public static EnumIndicatorExpressionSource getBySource(Integer source) {
     if (Objects.isNull(source)) {
       return null;
