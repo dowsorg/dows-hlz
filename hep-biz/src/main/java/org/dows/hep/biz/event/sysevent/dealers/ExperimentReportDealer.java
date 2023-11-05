@@ -2,8 +2,6 @@ package org.dows.hep.biz.event.sysevent.dealers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dows.hep.api.enums.EnumExperimentState;
-import org.dows.hep.api.enums.EnumWebSocketType;
 import org.dows.hep.biz.dao.ExperimentTimerDao;
 import org.dows.hep.biz.eval.EvalScoreRankBiz;
 import org.dows.hep.biz.event.ExperimentSettingCache;
@@ -16,11 +14,9 @@ import org.dows.hep.biz.user.experiment.ExperimentScoringBiz;
 import org.dows.hep.biz.user.experiment.ExperimentTimerBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentSysEventEntity;
-import org.dows.hep.entity.ExperimentTimerEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -53,33 +49,10 @@ public class ExperimentReportDealer extends BaseEventDealer {
             return false;
         }
 
-        List<ExperimentTimerEntity> rowsTimer=null;
-        if(exptColl.hasSandMode()) {
-            Map<Integer, ExperimentTimerEntity> mapTimers = experimentTimerDao.getMapByExperimentId(appId, experimentInstanceId, null,
-                    ExperimentTimerEntity::getId,
-                    ExperimentTimerEntity::getExperimentTimerId,
-                    ExperimentTimerEntity::getPeriod,
-                    ExperimentTimerEntity::getState);
-            mapTimers.values().forEach(item -> {
-                item.setState(EnumExperimentState.FINISH.getState());
-            });
-            rowsTimer=mapTimers.values().stream().toList();
-            mapTimers.clear();
-        }
-
-        // 保存或更新实验计时器
-        if(!experimentTimerBiz.saveOrUpdateExperimentTimeExperimentState(experimentInstanceId,rowsTimer, EnumExperimentState.FINISH)){
-            rst.append("failUpdateExptState[%s]",experimentInstanceId);
-            return false;
-        }
-        this.pushTimeState(rst, ExperimentCacheKey.create(appId,experimentInstanceId), exptColl, EnumWebSocketType.FLOW_SAND_END , row);
-        //experimentScoringBiz.getRank(experimentInstanceId);
-        evalScoreRankBiz.getRank(experimentInstanceId);
-
         final String accountId="admin";
         final boolean regenerate=false;
-        exptReportFacadeBiz.exportExptReport(experimentInstanceId,accountId , true, regenerate, regenerate);
         exptReportFacadeBiz.exportGroupReport(experimentInstanceId, null, accountId, regenerate, regenerate);
+        exptReportFacadeBiz.exportExptReport(experimentInstanceId,accountId , true, regenerate, regenerate);
         return true;
 
     }
@@ -89,7 +62,7 @@ public class ExperimentReportDealer extends BaseEventDealer {
         if(exptColl.hasSandMode()) {
             return List.of(buildEvent(exptColl, exptColl.getPeriods(),
                     EnumSysEventDealType.EXPERIMENTReport,
-                    EnumSysEventTriggerType.EXPERIMENTReport));
+                    EnumSysEventTriggerType.SANDEnd));
         }
         return null;
     }
