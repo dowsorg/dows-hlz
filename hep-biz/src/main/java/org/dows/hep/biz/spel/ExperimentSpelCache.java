@@ -88,7 +88,7 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
         if(null==cached){
             return fromSnapshotLoader.withReasonId(experimentId,experimentPersonId,reasonId,source,sources);
         }
-        final SpelCacheKey spelCacheKey=SpelCacheKey.create(experimentPersonId,reasonId,source);
+        final SpelCacheKey spelCacheKey=SpelCacheKey.create(experimentId,experimentPersonId,reasonId,source);
         List<SpelInput> inputs=cached.get(spelCacheKey);
         if(ShareUtil.XObject.notEmpty(inputs)){
             return inputs.get(0);
@@ -112,7 +112,7 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
         final List<SpelInput> rst=new ArrayList<>();
         final List<String> missReasonIds=new ArrayList<>();
         for(String reasonId:reasonIds){
-            SpelCacheKey spelCacheKey=SpelCacheKey.create(experimentPersonId,reasonId,source);
+            SpelCacheKey spelCacheKey=SpelCacheKey.create(experimentId,experimentPersonId,reasonId,source);
             List<SpelInput> inputs=cached.get(spelCacheKey);
             if(ShareUtil.XObject.notEmpty(inputs)){
                 rst.addAll(inputs);
@@ -224,17 +224,17 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
     private List<SpelInput> fillInput(CacheData rst,String experimentId, String personId, Collection<String> reasonIds, EnumIndicatorExpressionSource source,Integer... sources){
         List<SpelInput> inputs=fromSnapshotLoader.withReasonId(experimentId,personId,reasonIds, source.getSource(),sources);
         inputs.forEach(input-> {
-            rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(personId, input.getReasonId(),
+            rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(experimentId, personId, input.getReasonId(),
                             Optional.ofNullable(input.getSource()).map(EnumIndicatorExpressionSource::getSource).orElse(null)), k -> new ArrayList<>())
                     .add(input);
         });
         reasonIds.forEach(reasonId->{
-            rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(personId,reasonId,source.getSource()),k->List.of(new SpelInput(source).setReasonId(reasonId)));
+            rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(experimentId,personId,reasonId,source.getSource()),k->List.of(new SpelInput(source).setReasonId(reasonId)));
             if(null==sources||sources.length==0){
                 return;
             }
             for(Integer item:sources){
-                rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(personId,reasonId,item),k->List.of(new SpelInput(item).setReasonId(reasonId)));
+                rst.mapReasonInput.computeIfAbsent(SpelCacheKey.create(experimentId,personId,reasonId,item),k->List.of(new SpelInput(item).setReasonId(reasonId)));
             }
         });
         return inputs;
@@ -275,13 +275,16 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
     @Accessors(chain = true)
     public static class SpelCacheKey {
 
+        private String experimentId;
+
         private String experimentPersonId;
         private String reasonId;
 
         private Integer source;
 
-        public static SpelCacheKey create(String experimentPersonId,String reasonId,Integer source){
+        public static SpelCacheKey create(String experimentId, String experimentPersonId,String reasonId,Integer source){
             return new SpelCacheKey()
+                    .setExperimentId(experimentId)
                     .setExperimentPersonId(experimentPersonId)
                     .setReasonId(reasonId)
                     .setSource(source);
@@ -295,6 +298,9 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
 
             SpelCacheKey cacheKey = (SpelCacheKey) o;
 
+            if (!Objects.equals(experimentId, cacheKey.experimentId)) {
+                return false;
+            }
             if (!Objects.equals(experimentPersonId, cacheKey.experimentPersonId)) {
                 return false;
             }
@@ -306,7 +312,7 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
 
         @Override
         public int hashCode() {
-            return Objects.hash(experimentPersonId, reasonId, source);
+            return Objects.hash(experimentId, experimentPersonId, reasonId, source);
         }
     }
 
