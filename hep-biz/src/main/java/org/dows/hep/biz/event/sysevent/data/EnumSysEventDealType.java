@@ -35,7 +35,7 @@ public enum EnumSysEventDealType {
     PERIODEnd(23,"单期结束",23, PeriodEndDealer.class),
 
     SANDEnd(99,"实验报告",99, SandEndDealer.class),
-    EXPERIMENTReport(101,"实验报告",101, SandEndDealer.class),
+    EXPERIMENTReport(101,"实验报告",101, ExperimentReportDealer.class),
 
     ;
     private final Integer code;
