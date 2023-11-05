@@ -14,6 +14,7 @@ import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -110,6 +111,6 @@ public class SpelPersonContext extends StandardEvaluationContext {
                     .orElse(str);
         }
         str=null==str?"":str.trim();
-        return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str).setScale(2) : str;
+        return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str).setScale(2, RoundingMode.HALF_UP) : str;
     }
 }

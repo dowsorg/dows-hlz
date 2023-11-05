@@ -32,6 +32,7 @@ import org.dows.hep.biz.base.question.QuestionSectionItemBiz;
 import org.dows.hep.biz.tenant.casus.handler.CaseQuestionnaireFactory;
 import org.dows.hep.biz.tenant.casus.handler.CaseQuestionnaireHandler;
 import org.dows.hep.entity.*;
+import org.dows.hep.service.CaseOrgQuestionnaireService;
 import org.dows.hep.service.CaseQuestionnaireService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -53,7 +54,7 @@ public class TenantCaseQuestionnaireBiz {
     private final QuestionSectionItemBiz questionSectionItemBiz;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final CaseQuestionnaireService caseQuestionnaireService;
-
+    private final CaseOrgQuestionnaireService caseOrgQuestionnaireService;
     /**
      * @param
      * @return
@@ -303,7 +304,14 @@ public class TenantCaseQuestionnaireBiz {
         if (ids == null || ids.isEmpty()) {
             return Boolean.FALSE;
         }
-
+        List<CaseOrgQuestionnaireEntity> list = caseOrgQuestionnaireService.lambdaQuery()
+                .eq(CaseOrgQuestionnaireEntity::getDeleted, false)
+                .in(CaseOrgQuestionnaireEntity::getCaseQuestionnaireId, ids)
+                .list();
+        //试卷被使用不能删除
+        if (!CollectionUtils.isEmpty(list)){
+            throw new BizException(QuestionESCEnum.CANNOT_DEL_REF_DATA);
+        }
         LambdaQueryWrapper<CaseQuestionnaireEntity> remWrapper = new LambdaQueryWrapper<CaseQuestionnaireEntity>()
                 .in(CaseQuestionnaireEntity::getCaseQuestionnaireId, ids);
         return caseQuestionnaireService.remove(remWrapper);
