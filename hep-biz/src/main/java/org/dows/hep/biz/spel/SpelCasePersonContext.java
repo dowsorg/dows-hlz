@@ -11,6 +11,7 @@ import org.dows.hep.entity.CaseIndicatorRuleEntity;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -94,6 +95,6 @@ public class SpelCasePersonContext extends StandardEvaluationContext {
 
     private Object wrapVal( String str) {
         str=null==str?"":str.trim();
-        return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str).setScale(2)  : str;
+        return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str).setScale(2, RoundingMode.HALF_UP)  : str;
     }
 }
