@@ -3,12 +3,14 @@ package org.dows.hep.biz.eval.data;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.dows.hep.api.core.ExptOrgFuncRequest;
 import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.biz.calc.RiskModelHealthIndexVO;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -35,6 +37,9 @@ public class EvalPersonOnceData {
 
     @Schema(title = "指标列表")
     private final ConcurrentMap<String,EvalIndicatorValues> mapIndicators=new ConcurrentHashMap<>();
+
+    @Schema(title = "判断操作")
+    private final ConcurrentMap<String,Map<String, BigDecimal>> mapJudgeItems=new ConcurrentHashMap<>();
 
     @Schema(title = "兼容旧版指标列表")
     private final ConcurrentMap<String, ExperimentIndicatorValRsEntity> oldMapIndicators=new ConcurrentHashMap<>();
@@ -76,6 +81,17 @@ public class EvalPersonOnceData {
         mapPeriodMoney.put(header.getPeriods(), moneyVals);
         return true;
     }
+    public Map<String,BigDecimal> getJudgeItems(ExptOrgFuncRequest req){
+        return mapJudgeItems.get(getJudgeItemsKey(req));
+    }
+    public boolean putJudgeItems(ExptOrgFuncRequest req, Map<String,BigDecimal> judgeItems){
+        mapJudgeItems.put(getJudgeItemsKey(req),judgeItems);
+        return true;
+    }
+    private String getJudgeItemsKey(ExptOrgFuncRequest req) {
+        return String.format("%s-%s-%s-%s",req.getExperimentGroupId() , req.getExperimentPersonId(),
+                req.getExperimentOrgId(), req.getIndicatorFuncId());
+    }
 
     public EvalPersonOnceData flip(int evalNo,EnumEvalFuncType funcType){
         EvalPersonOnceData rst=new EvalPersonOnceData();
@@ -92,6 +108,7 @@ public class EvalPersonOnceData {
 
         );
         rst.getMapPeriodMoney().putAll(this.getMapPeriodMoney());
+        rst.getMapJudgeItems().putAll(this.getMapJudgeItems());
         rst.setRisks(ShareUtil.XCollection.map(risks,i->
                 CopyWrapper.create(EvalRiskValues::new).endFrom(i)));
         getMapIndicators().forEach((k,v)->rst.getMapIndicators().put(k, v.flip(funcType)));

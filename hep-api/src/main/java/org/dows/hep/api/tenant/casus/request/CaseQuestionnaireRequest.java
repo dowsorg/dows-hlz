@@ -54,8 +54,11 @@ public class CaseQuestionnaireRequest{
         @Schema(title = "知识类别")
         private String l2CategId;
 
-        @Schema(title = "题目数量")
+        @Schema(title = "编辑题目数量")
         private Map<QuestionTypeEnum, Integer> numMap;
+
+        @Schema(title = "总题目数量")
+        private Map<QuestionTypeEnum, Integer> maxNumMap;
     }
 
 }

@@ -131,7 +131,7 @@ public class PersonBasedEventTask extends BaseEventTask{
         }
         if(ShareUtil.XCollection.notEmpty(triggeringEvents)) {
             try {
-                ExperimentEventRules.Instance().saveTriggeredTimeEvent(triggeringEvents, false);
+                ExperimentEventRules.Instance().saveTriggeredTimeEvent(triggeringEvents, true);
                 runStat.doneCounter.addAndGet(triggeringEvents.size());
             } catch (Exception ex) {
                 triggeringEvents.forEach(i -> i.setTriggerTime(null));

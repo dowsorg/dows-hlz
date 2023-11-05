@@ -36,6 +36,8 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
     public final static String HASHkey4Risks="__risks";
 
     public final static String HASHkey4Money="__money";
+
+    public final static String HASHkey4JudgeItems="__judgeItems";
     final static String SPLITRisks="~~";
 
     @Override
@@ -56,6 +58,9 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
             }
             if(HASHkey4Money.equals(k)){
                 rst.getMapPeriodMoney().putAll(ShareUtil.XObject.defaultIfNull(JacksonUtil.fromJsonSilence(v, new TypeReference<>() {}),Collections.emptyMap()));
+            }
+            if(HASHkey4JudgeItems.equals(k)){
+                rst.getMapJudgeItems().putAll(ShareUtil.XObject.defaultIfNull(JacksonUtil.fromJsonSilence(v, new TypeReference<>() {}),Collections.emptyMap()));
             }
             EvalIndicatorValues obj=EvalIndicatorValuesCodec.Instance().fromRDString(v);
             if(null==obj){
@@ -80,6 +85,9 @@ public class EvalPersonOnceDataCodec implements IRDMapCodec<EvalPersonOnceData>{
         }
         if(null!=obj.getMapPeriodMoney()){
             rst.put(HASHkey4Money, JacksonUtil.toJsonSilence(obj.getMapPeriodMoney(),true));
+        }
+        if(null!=obj.getMapJudgeItems()) {
+            rst.put(HASHkey4JudgeItems, JacksonUtil.toJsonSilence(obj.getMapJudgeItems(), true));
         }
         if (null != obj.getMapIndicators()) {
             obj.getMapIndicators().values().forEach(item -> rst.put(item.getIndicatorId(),
