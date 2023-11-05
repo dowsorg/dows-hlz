@@ -30,6 +30,7 @@ import org.dows.hep.service.QuestionInstanceService;
 import org.dows.hep.service.QuestionOptionsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -243,7 +244,7 @@ public class QuestionInstanceBiz {
      * @创建时间: 2023年4月18日 上午10:45:07
      */
     public List<QuestionInstanceEntity> listByIds(Collection<String> questionInstanceIds) {
-        if (Objects.isNull(questionInstanceIds)) {
+        if (CollectionUtils.isEmpty(questionInstanceIds)) {
             throw new BizException(QuestionESCEnum.PARAMS_NON_NULL);
         }
 

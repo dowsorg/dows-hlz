@@ -72,8 +72,8 @@ public class TenantCaseQuestionnaireBiz {
         if (BeanUtil.isEmpty(caseQuestionnaire)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
-        this.checkQuestionnaireRequest(caseQuestionnaire);
         this.deletedQuestionItemByCaseQuestionnaireId(caseQuestionnaire.getCaseQuestionnaireId());
+        this.checkQuestionnaireRequest(caseQuestionnaire);
         CaseQuestionnaireEntity caseQuestionnaireEntity = convertRequest2Entity(caseQuestionnaire);
         caseQuestionnaireService.saveOrUpdate(caseQuestionnaireEntity);
 
@@ -452,7 +452,13 @@ public class TenantCaseQuestionnaireBiz {
             return;
         }
         List<QuestionSectionItemEntity> questionSectionItemEntityList = questionSectionItemBiz.queryBySectionId(questionSectionId);
-        Set<String> questionInstanceIdSet = questionSectionItemEntityList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(questionSectionItemEntityList)){
+            return;
+        }
+        List<String> questionInstanceIdSet = questionSectionItemEntityList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).toList();
+        if (CollectionUtils.isEmpty(questionInstanceIdSet)){
+            return;
+        }
         //选中的题目
         List<QuestionInstanceEntity> questionInstanceList = questionInstanceBiz.listByIds(questionInstanceIdSet);
         //总题目数量
