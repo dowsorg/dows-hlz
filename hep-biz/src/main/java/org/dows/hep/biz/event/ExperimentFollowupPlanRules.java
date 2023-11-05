@@ -80,10 +80,11 @@ public class ExperimentFollowupPlanRules {
                 .setNoticeSrcType(EnumExperimentOrgNoticeType.FOLLOWUP.getCode())
                 .setNoticeSrcId(src.getExperimentFollowupPlanId())
                 .setEventActions(new StringBuilder(Optional.ofNullable(rowNotice.getEventActions()).orElse(""))
-                        .append(" {day:").append(timePoint.getGameDay())
-                        .append(" time:").append(timePoint.getRealTime())
-                        .append(" org:").append(rowNotice.getExperimentOrgId())
-                        .append(" push:").append(pushNoticeFlag)
+                        .append(" {d:").append(timePoint.getGameDay())
+                        .append(" t:").append(timePoint.getRealTime())
+                        .append(" n:").append(src.getTodoDay())
+                        .append(" g:").append(rowNotice.getExperimentOrgId())
+                        .append(" p:").append(pushNoticeFlag)
                         .append(" },")
                         .toString());
        /* if(pushNoticeFlag){

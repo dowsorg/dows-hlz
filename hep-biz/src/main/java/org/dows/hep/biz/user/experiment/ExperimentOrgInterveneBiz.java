@@ -337,7 +337,8 @@ public class ExperimentOrgInterveneBiz{
     }
 
     public SaveExptTreatResponse saveExptTreatPlan( SaveExptTreatRequest saveTreat, HttpServletRequest request){
-        StringBuilder sb=new StringBuilder().append("EVALTRACE--saveExptTreatPlan");
+        StringBuilder sb=new StringBuilder();
+        long ts=logCostTime(sb,"EVALTRACE--saveExptTreatPlan--");
         try {
 
             ExptRequestValidator validator = ExptRequestValidator.create(saveTreat);
@@ -361,7 +362,7 @@ public class ExperimentOrgInterveneBiz{
                     .throwMessage("请选择项目");
             //校验登录
             LoginContextVO voLogin = ShareBiz.getLoginUser(request);
-
+            ts=logCostTime(sb, "1-checkParam",ts);
             //校验挂号
             final LocalDateTime ldtNow = LocalDateTime.now();
             final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
@@ -369,6 +370,7 @@ public class ExperimentOrgInterveneBiz{
             ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(validator)
                     //.requireOrgFlowRunning(timePoint.getPeriod());
                     .checkOrgFlowRunning(timePoint.getPeriod());
+            ts=logCostTime(sb, "2-checkFlow",ts);
             //校验扣费
             final List<ExptTreatPlanItemVO> newItems = new ArrayList<>();
             for (int i = saveTreat.getTreatItems().size() - 1; i >= 0; i--) {
@@ -402,7 +404,7 @@ public class ExperimentOrgInterveneBiz{
                     .moneyChange(cost.getValue().negate())
                     .assertEnough(true)
                     .build());
-
+            ts=logCostTime(sb, "3-checkCost",ts);
 
             //计算每次操作应该返回的报销金额
             //BigDecimal reimburse = getExperimentPersonRestitution(cost.getValue(), saveTreat.getExperimentPersonId());
@@ -421,7 +423,7 @@ public class ExperimentOrgInterveneBiz{
                     .restitution(reimburse)
                     .period(timePoint.getPeriod())
                     .build();
-
+            ts=logCostTime(sb, "4-getRefund",ts);
             //操作记录
             IndicatorFuncEntity defOrgFunc = validator.getIndicatorFunc();
             OperateOrgFuncEntity rowOrgFunc = createRowOrgFunc(validator)
@@ -453,6 +455,7 @@ public class ExperimentOrgInterveneBiz{
             } catch (Exception ex) {
                 AssertUtil.justThrow(String.format("记录数据编制失败：%s", ex.getMessage()), ex);
             }
+            ts=logCostTime(sb, "5-funcRecord",ts);
 
 
             //挂号报告
@@ -492,7 +495,7 @@ public class ExperimentOrgInterveneBiz{
                     }
                     return true;
                 });
-
+                ts=logCostTime(sb, "6-saveFuncReocrd",ts);
                 try {
                     if (ConfigExperimentFlow.SWITCH2EvalCache) {
 
@@ -516,7 +519,7 @@ public class ExperimentOrgInterveneBiz{
                             validator.getExperimentInstanceId(), validator.getExperimentPersonId()), ex);
                     AssertUtil.justThrow(String.format("功能点结算失败：%s", ex.getMessage()), ex);
                 }
-
+                ts=logCostTime(sb, "7-evalFunc",ts);
 
                 try {
                     report = orgReportComposer.composeReport(validator, flowValidator.updateFlowOperate(timePoint), timePoint, node);
@@ -526,6 +529,7 @@ public class ExperimentOrgInterveneBiz{
                 }
                 saveFlow.setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());
                 operateFlowDao.tranSave(saveFlow, List.of(saveFlowSnap), false);
+                ts=logCostTime(sb, "8-orgReport",ts);
 
             } else {
                 succFlag = operateOrgFuncDao.tranSave(rowOrgFunc, List.of(rowOrgFuncSnap), false, () -> {
@@ -537,6 +541,7 @@ public class ExperimentOrgInterveneBiz{
                     }
                     return true;
                 });
+                ts=logCostTime(sb, "6-saveFuncReocrd",ts);
             }
 
 
@@ -544,9 +549,13 @@ public class ExperimentOrgInterveneBiz{
                     .setSuccess(succFlag)
                     .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId())
                     .setReportInfo(report);
-        }finally {
+        }catch (Exception ex){
+            ts=logCostTime(sb,String.format("error-%s", ex.getMessage()),ts);
             log.error(sb.toString());
+            throw ex;
+        }finally {
             log.info(sb.toString());
+            sb.setLength(0);
         }
     }
 
@@ -654,7 +663,15 @@ public class ExperimentOrgInterveneBiz{
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
         return Long.valueOf(sdf.format(dt));
     }
-
+    private long logCostTime(StringBuilder sb,String start){
+        sb.append(start);
+        return System.currentTimeMillis();
+    }
+    private long logCostTime(StringBuilder sb,String func,long ts){
+        long newTs=System.currentTimeMillis();
+        sb.append(" ").append(func).append(":").append((newTs - ts));
+        return newTs;
+    }
     //endregion
 
 

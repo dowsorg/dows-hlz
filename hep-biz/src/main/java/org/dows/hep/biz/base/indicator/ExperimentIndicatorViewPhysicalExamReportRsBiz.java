@@ -79,6 +79,8 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
         .currentVal(experimentIndicatorViewPhysicalExamReportRsEntity.getCurrentVal())
         .unit(experimentIndicatorViewPhysicalExamReportRsEntity.getUnit())
         .resultExplain(experimentIndicatorViewPhysicalExamReportRsEntity.getResultExplain())
+        .indicatorCategoryId(experimentIndicatorViewPhysicalExamReportRsEntity.getIndicatorCategoryId())
+        .indicatorCategoryName(experimentIndicatorViewPhysicalExamReportRsEntity.getIndicatorCategoryName())
         .build();
   }
 
@@ -327,7 +329,7 @@ public class ExperimentIndicatorViewPhysicalExamReportRsBiz {
               .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getIndicatorFuncId, indicatorFuncId)
               .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getExperimentPersonId, experimentPersonId)
               .eq(ExperimentIndicatorViewPhysicalExamReportRsEntity::getOperateFlowId, operateFlowId)
-              .orderByDesc(ExperimentIndicatorViewPhysicalExamReportRsEntity::getDt)
+              .orderByDesc(ExperimentIndicatorViewPhysicalExamReportRsEntity::getDt,ExperimentIndicatorViewPhysicalExamReportRsEntity::getIndicatorCategoryId)
               .list()
               .stream()
               .map(ExperimentIndicatorViewPhysicalExamReportRsBiz::experimentPhysicalExamReport2ResponseRs)

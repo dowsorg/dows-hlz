@@ -67,6 +67,13 @@ public class ExperimentIndicatorViewPhysicalExamReportRsEntity {
   @Schema(title = "结果解读（这里是指标的结果值，并非体格检查配置的）")
   private String resultExplain;
 
+  @Schema(title = "第一层目录id")
+  private String indicatorCategoryId;
+
+  @Schema(title = "第一层目录名称")
+  private String indicatorCategoryName;
+
+
   @JsonIgnore
   @TableLogic
   @TableField(fill = FieldFill.INSERT)
@@ -76,4 +83,6 @@ public class ExperimentIndicatorViewPhysicalExamReportRsEntity {
   @TableField(fill = FieldFill.INSERT)
   @Schema(title = "时间戳")
   private Date dt;
+
+
 }
