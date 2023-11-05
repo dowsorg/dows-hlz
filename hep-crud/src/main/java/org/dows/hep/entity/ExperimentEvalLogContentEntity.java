@@ -51,6 +51,11 @@ public class ExperimentEvalLogContentEntity  implements CrudEntity {
     @Schema(title = "健康指数计算内容")
     private String healthIndexContent;
 
+    @Schema(title = "判断操作内容")
+    private String judgeItemsContent;
+
+
+
     @JsonIgnore
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

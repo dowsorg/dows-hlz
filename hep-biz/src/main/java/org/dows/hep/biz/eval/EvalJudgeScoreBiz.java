@@ -11,6 +11,7 @@ import org.dows.hep.biz.spel.meta.SpelEvalResult;
 import org.dows.hep.biz.spel.meta.SpelInput;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.entity.ExperimentJudgeScoreLogEntity;
+import org.dows.hep.entity.ExperimentPersonEntity;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -35,6 +36,8 @@ public class EvalJudgeScoreBiz {
     private final int SCALEScore=2;
 
     private final RoundingMode ROUNDINGModeScore=RoundingMode.HALF_UP;
+
+    private final EvalPersonCache evalPersonCache;
 
     //region 保存判断操作得分
     public boolean saveJudgeScore4Func(ExptRequestValidator validator, String operateFlowId, ExperimentTimePoint timePoint,
@@ -86,8 +89,16 @@ public class EvalJudgeScoreBiz {
         if (ShareUtil.XObject.isEmpty(judgeItems)) {
             return Collections.emptyMap();
         }
+        return evalJudgeScore4Func(getJudgeScoreContext(experimentPersonId), experimentId, experimentPersonId, judgeItems, expressionSource);
+    }
+    private SpelPersonContext getJudgeScoreContext(String experimentPersonId){
+        return new SpelPersonContext().setVariables(experimentPersonId, null, true);
+    }
+    public Map<String,  BigDecimal[]> evalJudgeScore4Func(SpelPersonContext context, String experimentId, String experimentPersonId, Map<String,BigDecimal> judgeItems, EnumIndicatorExpressionSource expressionSource) {
+        if (ShareUtil.XObject.isEmpty(judgeItems)) {
+            return Collections.emptyMap();
+        }
         Map<String, BigDecimal[]> rst = new HashMap<>();
-        final SpelPersonContext context = new SpelPersonContext().setVariables(experimentPersonId, null, true);
         List<SpelInput> inputs = spelEngine.loadFromSpelCache()
                 .withReasonId(experimentId, experimentPersonId, judgeItems.keySet(), expressionSource.getSource(), EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE.getSource())
                 .getInput();
@@ -130,15 +141,17 @@ public class EvalJudgeScoreBiz {
             return rst;
         }
         if(rst.size()==1){
-            return evalJudgeScore4PeriodSingle(rowsScoreLog);
+            return evalJudgeScore4PeriodSingle(experimentId,rowsScoreLog);
         }
         Map<String, Map<String, List<BigDecimal>>> mapGroupScore = new HashMap<>();
         rowsScoreLog.forEach(i -> {
             mapGroupScore.computeIfAbsent(i.getExperimentGroupId(), k -> new HashMap<>())
-                    .computeIfAbsent(String.format("%s-%s-%s", i.getExperimentPersonId(), i.getExperimentOrgId(), i.getIndicatorFuncId()), k -> new ArrayList<>())
+                    .computeIfAbsent(String.format("%s-%s-%s-%s",i.getExperimentGroupId(), i.getExperimentPersonId(), i.getExperimentOrgId(), i.getIndicatorFuncId()), k -> new ArrayList<>())
                     .add(ShareUtil.XObject.defaultIfNull(i.getScore(), BigDecimal.ZERO));
         });
+
         mapGroupScore.forEach((groupId, funcSocres) -> {
+            autoFillScores(funcSocres, experimentId, groupId, false);
             BigDecimalOptional total = BigDecimalOptional.zero();
             funcSocres.values().forEach(scores -> total.add(getAvg(scores)));
             rst.put(groupId, total);
@@ -159,7 +172,7 @@ public class EvalJudgeScoreBiz {
         return rst;
     }
 
-    public Map<String,BigDecimalOptional> evalJudgeScore4PeriodSingle(List<ExperimentJudgeScoreLogEntity> rowsScoreLog){
+    public Map<String,BigDecimalOptional> evalJudgeScore4PeriodSingle(String experimentId, List<ExperimentJudgeScoreLogEntity> rowsScoreLog){
         Map<String,List<BigDecimal>>[] dst=new Map[2];
         dst[0]=new HashMap<>();
         dst[1]=new HashMap<>();
@@ -171,6 +184,7 @@ public class EvalJudgeScoreBiz {
                             .min(BigDecimal.ZERO)
                             .getValue(SCALEScore));
         }
+        autoFillScores(dst[pos],experimentId,null,true);
         int loopNum=3;
         while (loopNum-->0){
             Map<String,List<BigDecimal>> vDst=dst[1-pos];
@@ -186,6 +200,45 @@ public class EvalJudgeScoreBiz {
         dst[0].clear();
         dst[1].clear();
         return rst;
+    }
+
+
+    private void autoFillScores(Map<String,List<BigDecimal>> mapGroupScores,String experimentId,String experimentGroupId, boolean singleFlag) {
+        Collection<ExperimentPersonEntity> persons = ShareUtil.XObject.notEmpty(experimentGroupId)
+                ? ExperimentPersonCache.Instance().getPersonsByGroupId(experimentId, experimentGroupId)
+                : ExperimentPersonCache.Instance().getMapPersons(experimentId).values();
+        final Map<String, Map<String, BigDecimal>> mapTodo = new HashMap<>();
+        persons.forEach(person -> {
+            mapTodo.clear();
+            evalPersonCache.getCurHolder(experimentId, person.getExperimentPersonId()).getJudgeItems()
+                    .forEach((key, items) -> {
+                        if (mapGroupScores.containsKey(key)) {
+                            return;
+                        }
+                        mapTodo.put(key, items);
+                    });
+            if (mapTodo.size() == 0) {
+                return;
+            }
+            SpelPersonContext context = getJudgeScoreContext(person.getExperimentPersonId());
+            mapTodo.forEach((k, v) -> {
+                Map<String, BigDecimal[]> mapJudgeScores = evalJudgeScore4Func(context, experimentId, person.getExperimentPersonId(),
+                        v, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE);
+                BigDecimalOptional totalScore = BigDecimalOptional.zero();
+                for (BigDecimal[] item : mapJudgeScores.values()) {
+                    if (singleFlag) {
+                        totalScore.add(item[1]);
+                    } else {
+                        totalScore.add(item[0]);
+                    }
+                }
+                if (singleFlag) {
+                    totalScore.div(BigDecimal.valueOf(mapJudgeScores.size()), SCALEScore);
+                }
+                mapGroupScores.computeIfAbsent(k, x -> new ArrayList<>())
+                        .add(totalScore.getValue(SCALEScore));
+            });
+        });
     }
 
 

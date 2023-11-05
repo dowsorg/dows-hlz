@@ -19,6 +19,7 @@ import org.dows.hep.api.user.experiment.vo.ExptOrgReportNodeVO;
 import org.dows.hep.biz.dao.OperateFlowDao;
 import org.dows.hep.biz.eval.EvalJudgeScoreBiz;
 import org.dows.hep.biz.eval.EvalPersonBiz;
+import org.dows.hep.biz.eval.EvalPersonCache;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.orgreport.OrgReportComposer;
 import org.dows.hep.biz.util.*;
@@ -59,6 +60,8 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
 
   private final EvalJudgeScoreBiz evalJudgeScoreBiz;
 
+  private final EvalPersonCache evalPersonCache;
+
   public static ExperimentHealthGuidanceReportResponseRs experimentHealthGuidanceReport2ResponseRs(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity experimentIndicatorJudgeHealthGuidanceReportRsEntity) {
     if (Objects.isNull(experimentIndicatorJudgeHealthGuidanceReportRsEntity)) {
       return null;
@@ -96,6 +99,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
     ExptRequestValidator exptValidator = ExptRequestValidator.create(funcRequest)
             .checkExperimentPerson()
             .checkExperimentOrg();
+    funcRequest.setExperimentGroupId(exptValidator.getExperimentGroupId());
     final LocalDateTime ldtNow = LocalDateTime.now();
     final Date dateNow = ShareUtil.XDate.localDT2Date(ldtNow);
     ExperimentTimePoint timePoint = exptValidator.getTimePoint(true, ldtNow, true);
@@ -215,6 +219,7 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
               .throwMessage("操作准确度得分保存失败");
       return true;
     });
+    evalPersonCache.getCurHolder(experimentId,experimentPersonId).putJudgeItems(funcRequest,mapJudgeItems);
     return report;
 
   }
