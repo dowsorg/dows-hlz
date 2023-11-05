@@ -58,4 +58,5 @@ public class CaseQuestionnaireResponse{
     @Schema(title = "随机添加方式")
     private List<CaseQuestionnaireRequest.RandomMode> randomModeList;
 
+
 }
