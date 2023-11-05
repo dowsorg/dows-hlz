@@ -176,7 +176,7 @@ public class TenantCaseQuestionnaireBiz {
             return  caseQuestionnaireResponse;
         }
 
-        List<CaseQuestionnaireResponse.RandomModeResponse> randomModeList = new ArrayList<>();
+        List<CaseQuestionnaireRequest.RandomMode> randomModeList = new ArrayList<>();
         this.convertRandomModeResponseList(randomModeList, entity.getQuestionSectionId());
         BeanUtil.copyProperties(entity, caseQuestionnaireResponse);
         caseQuestionnaireResponse.setRandomModeList(randomModeList);
@@ -434,7 +434,7 @@ public class TenantCaseQuestionnaireBiz {
         });
     }
 
-    private void convertRandomModeResponseList(List<CaseQuestionnaireResponse.RandomModeResponse> randomModeList, String questionSectionId) {
+    private void convertRandomModeResponseList(List<CaseQuestionnaireRequest.RandomMode> randomModeList, String questionSectionId) {
         if (StringUtils.isBlank(questionSectionId)) {
             return;
         }
@@ -451,20 +451,20 @@ public class TenantCaseQuestionnaireBiz {
         this.convertRandomModeResponseList(randomModeList, questionCategIdMap,maQuestionCategIdMap);
     }
 
-    private void convertRandomModeResponseList(List<CaseQuestionnaireResponse.RandomModeResponse> randomModeList,
+    private void convertRandomModeResponseList(List<CaseQuestionnaireRequest.RandomMode> randomModeList,
                                        Map<String,List<QuestionInstanceEntity>> questionCategIdMap,
                                        Map<String,List<QuestionInstanceEntity>> maxQuestionCategIdMap) {
         if (CollectionUtils.isEmpty(questionCategIdMap) || randomModeList == null) {
             return;
         }
         questionCategIdMap.forEach((questionCategId, questionInstanceChildList) -> {
-            CaseQuestionnaireResponse.RandomModeResponse randomMode = new CaseQuestionnaireResponse.RandomModeResponse();
+            CaseQuestionnaireRequest.RandomMode randomMode = new CaseQuestionnaireRequest.RandomMode();
             this.convertRandomModeResponse(questionCategId, randomMode, questionInstanceChildList,maxQuestionCategIdMap.get(questionCategId));
             randomModeList.add(randomMode);
         });
     }
 
-    private void convertRandomModeResponse(String questionCategId, CaseQuestionnaireResponse.RandomModeResponse randomMode,
+    private void convertRandomModeResponse(String questionCategId, CaseQuestionnaireRequest.RandomMode randomMode,
                       List<QuestionInstanceEntity> questionInstanceChildList,
                       List<QuestionInstanceEntity> maxQuestionInstanceChildList) {
         if (StringUtils.isBlank(questionCategId) || randomMode == null) {
