@@ -137,9 +137,7 @@ public class EvalJudgeScoreBiz {
                 ExperimentJudgeScoreLogEntity::getScore,
                 ExperimentJudgeScoreLogEntity::getSingleScore
         );
-        if(ShareUtil.XObject.isEmpty(rowsScoreLog)){
-            return rst;
-        }
+
         if(rst.size()==1){
             return evalJudgeScore4PeriodSingle(experimentId,rowsScoreLog);
         }
@@ -149,6 +147,7 @@ public class EvalJudgeScoreBiz {
                     .computeIfAbsent(String.format("%s-%s-%s-%s",i.getExperimentGroupId(), i.getExperimentPersonId(), i.getExperimentOrgId(), i.getIndicatorFuncId()), k -> new ArrayList<>())
                     .add(ShareUtil.XObject.defaultIfNull(i.getScore(), BigDecimal.ZERO));
         });
+        rst.keySet().forEach(groupId->mapGroupScore.computeIfAbsent(groupId, k->new HashMap<>()));
 
         mapGroupScore.forEach((groupId, funcSocres) -> {
             autoFillScores(funcSocres, experimentId, groupId, false);
