@@ -38,7 +38,7 @@ public class ToolBiz {
     private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
     public String ping(){
-        return "1105";
+        return "1105-a";
     }
 
 
@@ -103,6 +103,6 @@ public class ToolBiz {
 
     public void raiseevent(RsCalculatePersonRequestRs req)  {
         PersonBasedEventTask.runPersonBasedEventAsync(req.getAppId(), req.getExperimentId(),
-                Optional.ofNullable(req.getPersonIdSet()).map(i->i.toArray((String[])null)).orElse(null));
+                Optional.ofNullable(req.getPersonIdSet()).map(i->i.toArray(new String[0])).orElse(null));
     }
 }
