@@ -9,6 +9,7 @@ import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentFollowupPlanEntity;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -74,8 +75,8 @@ public class FollowupPlanRow {
     }
 
     public FollowupPlanRow setTriggered(ExperimentTimePoint timePoint){
-        doneTime=timePoint.getRealTime();
-        entity.setDoneTime(ShareUtil.XDate.localDT2Date(timePoint.getRealTime()))
+        doneTime=LocalDateTime.now();
+        entity.setDoneTime(new Date())
                 .setDoneDay(timePoint.getGameDay())
                 .setDoneTimes(Optional.ofNullable( entity.getDoneTimes()).orElse(0)+1);
         return this;
