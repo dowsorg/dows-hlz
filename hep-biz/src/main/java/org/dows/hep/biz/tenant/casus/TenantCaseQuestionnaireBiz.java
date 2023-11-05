@@ -475,6 +475,7 @@ public class TenantCaseQuestionnaireBiz {
         randomMode.setL1CategId(questionCategory.getQuestionCategPid());
         Map<QuestionTypeEnum, Integer> numMap = new HashMap<>();
         this.convertNumMap(numMap, questionInstanceChildList);
+        randomMode.setNumMap(numMap);
         Map<QuestionTypeEnum, Integer> maxNumMap = new HashMap<>();
         this.convertNumMap(maxNumMap, maxQuestionInstanceChildList);
         randomMode.setMaxNumMap(maxNumMap);
