@@ -17,6 +17,7 @@ import org.dows.hep.api.user.experiment.vo.ExptJudgeGoalItemVO;
 import org.dows.hep.biz.base.indicator.JudgeGoalBiz;
 import org.dows.hep.biz.dao.OperateOrgFuncDao;
 import org.dows.hep.biz.eval.EvalJudgeScoreBiz;
+import org.dows.hep.biz.eval.EvalPersonCache;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.LoginContextVO;
@@ -47,6 +48,8 @@ public class ExperimentJudgeBiz {
 
     private final EvalJudgeScoreBiz evalJudgeScoreBiz;
 
+    private final EvalPersonCache evalPersonCache;
+
     public List<JudgeGoalResponse> listJudgeGoal(FindInterveneList4ExptRequest req){
         ExptRequestValidator.create(req).checkExperimentInstanceId();
         FindJudgeGoalRequest castReq= FindJudgeGoalRequest.builder()
@@ -66,6 +69,7 @@ public class ExperimentJudgeBiz {
                 .checkExperimentPerson()
                 .checkExperimentOrg()
                 .checkExperimentInstanceId();
+        req.setExperimentGroupId(validator.getExperimentGroupId());
 
         req.setGoalItems(ShareUtil.XObject.defaultIfNull(req.getGoalItems(), Collections.emptyList()));
         AssertUtil.trueThenThrow(req.getGoalItems().stream()
@@ -123,6 +127,7 @@ public class ExperimentJudgeBiz {
                     .throwMessage("操作准确度得分保存失败");
             return true;
         });
+        evalPersonCache.getCurHolder(validator.getExperimentInstanceId(),validator.getExperimentPersonId()).putJudgeItems(req,mapJudgeItems);
         return new SaveExptOperateResponse()
                 .setSuccess(succFlag)
                 .setOperateOrgFuncId(rowOrgFunc.getOperateOrgFuncId());

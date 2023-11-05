@@ -8,6 +8,7 @@ import org.dows.hep.api.core.ExptOrgFuncRequest;
 import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
 import org.dows.hep.api.enums.EnumString;
 import org.dows.hep.biz.eval.EvalJudgeScoreBiz;
+import org.dows.hep.biz.eval.EvalPersonCache;
 import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.entity.ExperimentIndicatorJudgeRiskFactorReportRsEntity;
@@ -36,6 +37,8 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
   private final IdGenerator idGenerator;
 
   private final EvalJudgeScoreBiz evalJudgeScoreBiz;
+
+  private final EvalPersonCache evalPersonCache;
 
   public static ExperimentRiskFactorReportResponseRs experimentRiskFactorReport2ResponseRs(ExperimentIndicatorJudgeRiskFactorReportRsEntity experimentIndicatorJudgeRiskFactorReportRsEntity) {
     if (Objects.isNull(experimentIndicatorJudgeRiskFactorReportRsEntity)) {
@@ -70,6 +73,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
             .setAppId(appId);
     ExptRequestValidator exptValidator = ExptRequestValidator.create(funcRequest)
             .checkExperimentPerson();
+    funcRequest.setExperimentGroupId(exptValidator.getExperimentGroupId());
     final LocalDateTime ldtNow = LocalDateTime.now();
     ExperimentTimePoint timePoint = exptValidator.getTimePoint(true, ldtNow, true);
     ExptOrgFlowValidator flowValidator = ExptOrgFlowValidator.create(exptValidator)
@@ -134,6 +138,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
     AssertUtil.falseThenThrow(evalJudgeScoreBiz.saveJudgeScore4Func(exptValidator, flowValidator.getOperateFlowId(), timePoint,
                     mapJudgeItems, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE))
             .throwMessage("操作准确度得分保存失败");
+    evalPersonCache.getCurHolder(experimentId,experimentPersonId).putJudgeItems(funcRequest,mapJudgeItems);
     experimentIndicatorJudgeRiskFactorReportRsService.saveOrUpdateBatch(experimentIndicatorJudgeRiskFactorReportRsEntityList);
   }
 

@@ -3,6 +3,7 @@ package org.dows.hep.biz.eval;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.crud.api.CrudContextHolder;
+import org.dows.hep.api.core.ExptOrgFuncRequest;
 import org.dows.hep.api.enums.EnumEvalFuncType;
 import org.dows.hep.api.enums.EnumIndicatorType;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
@@ -151,6 +152,30 @@ public class EvalPersonOnceHolder {
         cached.syncMoney(moneyVals);
         return moneyVals;
     }
+
+    public Map<String,Map<String,BigDecimal>> getJudgeItems(){
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return Collections.emptyMap();
+        }
+        return cached.getMapJudgeItems();
+    }
+    public Map<String,BigDecimal> getJudgeItems(ExptOrgFuncRequest req){
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return Collections.emptyMap();
+        }
+        return cached.getJudgeItems(req);
+    }
+
+    public void putJudgeItems(ExptOrgFuncRequest req, Map<String,BigDecimal> judgeItems){
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return;
+        }
+        cached.putJudgeItems(req, judgeItems);
+    }
+
 
     public EvalIndicatorValues getIndicator(String indicatorId){
         EvalPersonOnceData cached=get();
@@ -426,7 +451,9 @@ public class EvalPersonOnceHolder {
                 .setEvalNo(logEval.getEvalNo())
                 .setAppId(logEval.getAppId())
                 .setIndicatorContent(JacksonUtil.toJsonSilence(sortIndicators, true))
-                .setHealthIndexContent(JacksonUtil.toJsonSilence(data.getEvalRisks(), true));
+                .setHealthIndexContent(JacksonUtil.toJsonSilence(data.getEvalRisks(), true))
+                .setJudgeItemsContent(JacksonUtil.toJsonSilence(data.getMapJudgeItems(), true));
+
 
 
         List<EvalIndicatorValues> watched=getWatchIndicators(data);
@@ -545,12 +572,16 @@ public class EvalPersonOnceHolder {
             rst.getMapPeriodMoney().putAll(ShareUtil.XObject.defaultIfNull(JacksonUtil.fromJsonSilence(rowLog.getPeriodMoney(), new TypeReference<>() {}),Collections.emptyMap()));
         }
         ExperimentEvalLogContentEntity rowLogContent=experimentEvalLogDao.getByExperimentEvalLogId(rowLog.getExperimentEvalLogId(),
-                ExperimentEvalLogContentEntity::getIndicatorContent);
+                ExperimentEvalLogContentEntity::getIndicatorContent,
+                ExperimentEvalLogContentEntity::getJudgeItemsContent);
         if(ShareUtil.XObject.allNotEmpty(rowLogContent,()->rowLogContent.getIndicatorContent())){
             List<EvalIndicatorValues> indicators=JacksonUtil.fromJsonSilence(rowLogContent.getIndicatorContent(),new TypeReference<>() {
             });
             indicators.forEach(item->rst.getMapIndicators().put(item.getIndicatorId(), item));
 
+        }
+        if(ShareUtil.XObject.allNotEmpty(rowLogContent,()->rowLogContent.getJudgeItemsContent())){
+            rst.getMapJudgeItems().putAll(ShareUtil.XObject.defaultIfNull(JacksonUtil.fromJsonSilence(rowLogContent.getJudgeItemsContent(), new TypeReference<>() {}),Collections.emptyMap()));
         }
         return rst;
 

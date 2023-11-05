@@ -70,7 +70,7 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         return rst.setExpressions(expressionItems);
     }
 
-    private Set<EnumIndicatorExpressionSource> rawSources=Set.of(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR,
+    protected Set<EnumIndicatorExpressionSource> rawSources=Set.of(EnumIndicatorExpressionSource.INDICATOR_JUDGE_RISK_FACTOR,
             EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE,
             EnumIndicatorExpressionSource.INDICATOR_JUDGE_REFINDICATOR,
             EnumIndicatorExpressionSource.INDICATOR_JUDGE_GOAL_CHECKRULE,
