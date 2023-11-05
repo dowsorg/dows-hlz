@@ -160,7 +160,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
     return experimentIndicatorJudgeRiskFactorReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getPeriod, periods)
+        //.eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getPeriod, periods)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId, operateFlowId)

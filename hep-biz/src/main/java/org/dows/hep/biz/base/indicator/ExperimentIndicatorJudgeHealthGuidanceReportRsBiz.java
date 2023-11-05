@@ -23,10 +23,7 @@ import org.dows.hep.biz.event.data.ExperimentTimePoint;
 import org.dows.hep.biz.orgreport.OrgReportComposer;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.biz.vo.LoginContextVO;
-import org.dows.hep.entity.ExperimentIndicatorJudgeHealthGuidanceReportRsEntity;
-import org.dows.hep.entity.ExperimentIndicatorJudgeHealthGuidanceRsEntity;
-import org.dows.hep.entity.OperateFlowEntity;
-import org.dows.hep.entity.OperateFlowSnapEntity;
+import org.dows.hep.entity.*;
 import org.dows.hep.service.ExperimentIndicatorJudgeHealthGuidanceReportRsService;
 import org.dows.hep.service.ExperimentIndicatorJudgeHealthGuidanceRsService;
 import org.dows.sequence.api.IdGenerator;
@@ -240,22 +237,29 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
   }
 
   public List<ExperimentHealthGuidanceReportResponseRs> get(String appId, String experimentId, String indicatorFuncId, String experimentPersonId, String experimentOrgId, Integer periods) {
-    String operateFlowId = ShareBiz.checkRunningOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
-    if(ShareUtil.XObject.isEmpty(operateFlowId)){
+    String operateFlowId = ShareBiz.checkExistingOperateFlowId(appId, experimentId, experimentOrgId, experimentPersonId);
+    if (ShareUtil.XObject.isEmpty(operateFlowId)) {
       return Collections.emptyList();
     }
+    List<ExperimentIndicatorJudgeHealthGuidanceReportRsEntity> rows = experimentIndicatorJudgeHealthGuidanceReportRsService.lambdaQuery()
+            .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getAppId, appId)
+            .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getExperimentId, experimentId)
+            //.eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getPeriod, periods)
+            .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getIndicatorFuncId, indicatorFuncId)
+            .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getExperimentPersonId, experimentPersonId)
+            .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getOperateFlowId, operateFlowId)
+            .orderByAsc(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getDt)
+            .list();
+    Integer count = rows.stream().max(Comparator.comparingInt(i -> Optional.ofNullable(i.getCount()).orElse(0)))
+            .map(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getCount)
+            .orElse(null);
+    if (null != count) {
+      rows = rows.stream().filter(i -> count.equals(i.getCount())).collect(Collectors.toList());
+    }
 
-    return experimentIndicatorJudgeHealthGuidanceReportRsService.lambdaQuery()
-        .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getAppId, appId)
-        .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getExperimentId, experimentId)
-        .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getPeriod, periods)
-        .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getIndicatorFuncId, indicatorFuncId)
-        .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getExperimentPersonId, experimentPersonId)
-        .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getOperateFlowId, operateFlowId)
-        .orderByAsc(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getDt)
-        .list()
-        .stream()
-        .map(ExperimentIndicatorJudgeHealthGuidanceReportRsBiz::experimentHealthGuidanceReport2ResponseRs)
-        .collect(Collectors.toList());
+    return rows
+            .stream()
+            .map(ExperimentIndicatorJudgeHealthGuidanceReportRsBiz::experimentHealthGuidanceReport2ResponseRs)
+            .collect(Collectors.toList());
   }
 }
