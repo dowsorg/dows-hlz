@@ -290,7 +290,7 @@ public class ExptSchemeReportHandler implements ExptReportHandler<ExptSchemeRepo
             logoStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getLogo()).getInputStream()));
             coverStr = Base64.encodeBytes(IOUtils.toByteArray(new ClassPathResource(findSoftProperties.getCover()).getInputStream()));
         } catch (IOException e) {
-            log.error("导出实验报告时，获取logo和cover图片资源异常");
+            log.error("导出实验报告时，获取logo和cover图片资源异常",e);
             throw new BizException("导出实验报告时，获取logo和cover图片资源异常");
         }
 
