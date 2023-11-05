@@ -17,6 +17,7 @@ public enum QuestionESCEnum implements StatusCode {
     QUESTION_CLONED_IDENTIFIER_NON_NULL(42104, "被克隆对象标识符不能为空"),
     QUESTION_SECTION_GENERATION_MODE_NON_NULL(43000, "试卷生成方式不能为空"),
     QUESTION_SECTION_DIMENSION_SCORE_RANGE_ERROR(43001, "试卷维度分值范围错误"),
+    QUESTION_ASSIGNED_DEL_REF_DATA(42003,"已经分配的试卷不能删除"),
 
 
     ;
