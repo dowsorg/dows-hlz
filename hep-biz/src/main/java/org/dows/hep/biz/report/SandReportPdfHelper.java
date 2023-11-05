@@ -64,13 +64,17 @@ public class SandReportPdfHelper {
         if (StrUtil.isBlank(resultStr)) {
             return result;
         }
-        JSONObject jsonObject = JSONUtil.parseObj(resultStr);
-        String path = (String) jsonObject.get("path");
-        if (StrUtil.isBlank(path)) {
-            return result;
+        try {
+            JSONObject jsonObject = JSONUtil.parseObj(resultStr);
+            String path = (String) jsonObject.get("path");
+            if (StrUtil.isBlank(path)) {
+                return result;
+            }
+            result.setPath(path);
+        }catch (Exception ex){
+            log.error(String.format( "PDFTreace--[%s-%s] viewUrl:%s uploadPath:%s",exptInstanceId,exptGroupId,viewUrl,uploadPath),ex);
+            throw ex;
         }
-
-        result.setPath(path);
         result.setName(uploadPath.getFileName().toString());
         return result;
     }

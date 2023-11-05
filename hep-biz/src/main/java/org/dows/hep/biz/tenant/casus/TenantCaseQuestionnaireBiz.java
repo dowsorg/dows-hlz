@@ -34,6 +34,7 @@ import org.dows.hep.biz.tenant.casus.handler.CaseQuestionnaireHandler;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.CaseOrgQuestionnaireService;
 import org.dows.hep.service.CaseQuestionnaireService;
+import org.dows.hep.service.QuestionSectionItemService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -52,6 +53,7 @@ public class TenantCaseQuestionnaireBiz {
     private final QuestionCategBiz questionCategBiz;
     private final QuestionSectionBiz questionSectionBiz;
     private final QuestionSectionItemBiz questionSectionItemBiz;
+    private final QuestionSectionItemService questionSectionItemService;
     private final QuestionInstanceBiz questionInstanceBiz;
     private final CaseQuestionnaireService caseQuestionnaireService;
     private final CaseOrgQuestionnaireService caseOrgQuestionnaireService;
@@ -70,6 +72,7 @@ public class TenantCaseQuestionnaireBiz {
         if (BeanUtil.isEmpty(caseQuestionnaire)) {
             throw new BizException(CaseESCEnum.PARAMS_NON_NULL);
         }
+        this.deletedQuestionItemByCaseQuestionnaireId(caseQuestionnaire.getCaseQuestionnaireId());
         this.checkQuestionnaireRequest(caseQuestionnaire);
         CaseQuestionnaireEntity caseQuestionnaireEntity = convertRequest2Entity(caseQuestionnaire);
         caseQuestionnaireService.saveOrUpdate(caseQuestionnaireEntity);
@@ -384,6 +387,16 @@ public class TenantCaseQuestionnaireBiz {
         return questionSectionBiz.disabledSectionQuestion(questionSectionId, questionSectionItemId);
     }
 
+    //删除试卷下面题目
+    private void deletedQuestionItemByCaseQuestionnaireId(String caseQuestionnaireId) {
+        if (StringUtils.isBlank(caseQuestionnaireId)) {
+            return;
+        }
+        CaseQuestionnaireEntity questionnaire = getById(caseQuestionnaireId);
+        List<QuestionSectionItemEntity> questionSectionItemEntityList = questionSectionItemBiz.queryBySectionId(questionnaire.getQuestionSectionId());
+        Set<Long> questionSectionItemIdSet = questionSectionItemEntityList.stream().map(QuestionSectionItemEntity::getId).collect(Collectors.toSet());
+        questionSectionItemService.removeBatchByIds(questionSectionItemIdSet);
+    }
     //校验题目
     private CaseQuestionnaireRequest checkQuestionnaireRequest(CaseQuestionnaireRequest request) {
         List<CaseQuestionnaireRequest.RandomMode> randomModeList = request.getRandomModeList();
@@ -439,7 +452,13 @@ public class TenantCaseQuestionnaireBiz {
             return;
         }
         List<QuestionSectionItemEntity> questionSectionItemEntityList = questionSectionItemBiz.queryBySectionId(questionSectionId);
-        Set<String> questionInstanceIdSet = questionSectionItemEntityList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(questionSectionItemEntityList)){
+            return;
+        }
+        List<String> questionInstanceIdSet = questionSectionItemEntityList.stream().map(QuestionSectionItemEntity::getQuestionInstanceId).toList();
+        if (CollectionUtils.isEmpty(questionInstanceIdSet)){
+            return;
+        }
         //选中的题目
         List<QuestionInstanceEntity> questionInstanceList = questionInstanceBiz.listByIds(questionInstanceIdSet);
         //总题目数量
