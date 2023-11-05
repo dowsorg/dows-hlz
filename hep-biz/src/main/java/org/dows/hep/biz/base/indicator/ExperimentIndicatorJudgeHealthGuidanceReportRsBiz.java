@@ -241,23 +241,30 @@ public class ExperimentIndicatorJudgeHealthGuidanceReportRsBiz {
     if (ShareUtil.XObject.isEmpty(operateFlowId)) {
       return Collections.emptyList();
     }
-    List<ExperimentIndicatorJudgeHealthGuidanceReportRsEntity> rows = experimentIndicatorJudgeHealthGuidanceReportRsService.lambdaQuery()
+    ExperimentIndicatorJudgeHealthGuidanceReportRsEntity row =experimentIndicatorJudgeHealthGuidanceReportRsService.lambdaQuery()
             .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getAppId, appId)
             .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getExperimentId, experimentId)
-            //.eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getPeriod, periods)
+            .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getIndicatorFuncId, indicatorFuncId)
+            .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getExperimentPersonId, experimentPersonId)
+            .orderByDesc(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getOperateFlowId, ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getCount)
+            .select(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getOperateFlowId,ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getCount)
+            .last(EnumString.LIMIT_1.getStr())
+            .one();
+    if (Objects.isNull(row)) {
+      return new ArrayList<>();
+    }
+    operateFlowId=row.getOperateFlowId();
+    Integer count = row.getCount();
+
+    return experimentIndicatorJudgeHealthGuidanceReportRsService.lambdaQuery()
+            .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getAppId, appId)
+            .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getExperimentId, experimentId)
             .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getIndicatorFuncId, indicatorFuncId)
             .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getExperimentPersonId, experimentPersonId)
             .eq(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getOperateFlowId, operateFlowId)
+            .eq(null!=count, ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getCount, count)
             .orderByAsc(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getDt)
-            .list();
-    Integer count = rows.stream().max(Comparator.comparingInt(i -> Optional.ofNullable(i.getCount()).orElse(0)))
-            .map(ExperimentIndicatorJudgeHealthGuidanceReportRsEntity::getCount)
-            .orElse(null);
-    if (null != count) {
-      rows = rows.stream().filter(i -> count.equals(i.getCount())).collect(Collectors.toList());
-    }
-
-    return rows
+            .list()
             .stream()
             .map(ExperimentIndicatorJudgeHealthGuidanceReportRsBiz::experimentHealthGuidanceReport2ResponseRs)
             .collect(Collectors.toList());

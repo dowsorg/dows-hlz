@@ -145,17 +145,16 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
     ExperimentIndicatorJudgeRiskFactorReportRsEntity experimentIndicatorJudgeRiskFactorReportRsEntity = experimentIndicatorJudgeRiskFactorReportRsService.lambdaQuery()
             .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
             .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentId, experimentId)
-            //.eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getPeriod, periods)
             .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getIndicatorFuncId, indicatorFuncId)
             .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentPersonId, experimentPersonId)
-            .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId, operateFlowId)
-            .orderByDesc(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getCount)
-            .select(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getCount)
+            .orderByDesc(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId, ExperimentIndicatorJudgeRiskFactorReportRsEntity::getCount)
+            .select(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId,ExperimentIndicatorJudgeRiskFactorReportRsEntity::getCount)
             .last(EnumString.LIMIT_1.getStr())
             .one();
     if (Objects.isNull(experimentIndicatorJudgeRiskFactorReportRsEntity)) {
       return new ArrayList<>();
     }
+    operateFlowId=experimentIndicatorJudgeRiskFactorReportRsEntity.getOperateFlowId();
     Integer count = experimentIndicatorJudgeRiskFactorReportRsEntity.getCount();
     return experimentIndicatorJudgeRiskFactorReportRsService.lambdaQuery()
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getAppId, appId)
@@ -164,7 +163,7 @@ public class ExperimentIndicatorJudgeRiskFactorReportRsBiz {
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getIndicatorFuncId, indicatorFuncId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getExperimentPersonId, experimentPersonId)
         .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getOperateFlowId, operateFlowId)
-        .eq(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getCount, count)
+        .eq(null!=count, ExperimentIndicatorJudgeRiskFactorReportRsEntity::getCount, count)
         .orderByAsc(ExperimentIndicatorJudgeRiskFactorReportRsEntity::getDt)
         .list()
         .stream()
