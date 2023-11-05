@@ -210,10 +210,11 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
             fillInput(rst, experimentId, null, judgeRiskFactorIds, EnumIndicatorExpressionSource.INDICATOR_JUDGE_CHECKRULE,EnumIndicatorExpressionSource.INDICATOR_JUDGE_REFINDICATOR.getSource());
             ts=logCostTime(sb, "10-judgeSpels",ts);
 
-        }catch (Exception ex){
-            ts=logCostTime(sb, String.format("error:%s", ex.getMessage()));
-            log.error(String.format("SPELTRACE--load--error exptKey[%s]",key), ex);
-        }finally {
+        } catch (Exception ex) {
+            ts = logCostTime(sb, String.format("error-%s %s",key, ex.getMessage()), ts);
+            log.error(sb.toString());
+            throw ex;
+        } finally {
             log.info(sb.toString());
             sb.setLength(0);
         }

@@ -62,7 +62,9 @@ public class FollowupPlanRow {
         return null!=this.getTodoDay();
     }
     public boolean canTrigger(LocalDateTime now) {
-        return null != this.getDoingTime() && this.getDoingTime().compareTo(now) <= 0;
+        return null != this.getDoingTime()
+                && this.getDoingTime().compareTo(now) <= 0
+                && (null == this.getDoneTime() || this.getDoneTime().compareTo(this.getDoingTime()) < 0);
     }
 
     public FollowupPlanRow setTriggering(LocalDateTime ldt){

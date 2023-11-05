@@ -201,11 +201,15 @@ public class EvalHealthIndexBiz {
                 CompletableFuture.allOf(futures).join();
             }
             ts=logCostTime(sb,"10-evalend", ts);
+        }catch (Exception ex){
+            ts=logCostTime(sb,String.format("error-%s", ex.getMessage()),ts);
+            log.error(sb.toString());
+            throw ex;
         }finally {
             log.info(sb.toString());
-            log.error(sb.toString());
             sb.setLength(0);
         }
+
 
     }
 
