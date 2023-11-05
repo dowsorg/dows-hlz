@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class ExperimentReportTrigger implements ISysEventTrigger {
+public class SandEndTrigger implements ISysEventTrigger {
     @Override
     public ExperimentTimePoint getTriggerTime(ExperimentSettingCollection exptColl, Integer period, long cntPauseSeconds) {
         ExperimentTimePoint rst=new ExperimentTimePoint();

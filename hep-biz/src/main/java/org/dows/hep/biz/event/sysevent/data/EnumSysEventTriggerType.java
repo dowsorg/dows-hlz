@@ -32,7 +32,8 @@ public enum EnumSysEventTriggerType {
     SANDStart(21, "沙盘开始", SandStartTrigger.class),
     PERIODStart(22, "单期开始", PeriodStartTrigger.class),
     PERIODEnd(23, "单期结束", PeriodEndTrigger.class),
-    EXPERIMENTReport(99, "实验报告", ExperimentReportTrigger.class),
+    SANDEnd(99, "实验报告", SandEndTrigger.class),
+
     ;
     private Integer code;
     private String name;
