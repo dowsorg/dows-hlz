@@ -56,36 +56,39 @@ public class EvalHealthIndexAdvBiz {
     private final SpelEngine spelEngine;
 
     //region
-    public void evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs req)  {
-        StringBuilder sb=new StringBuilder();
-        long ts=logCostTime(sb,"EVALTRACE--evalHP--");
+    public void evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs req) {
+        StringBuilder sb = new StringBuilder();
+        long ts = logCostTime(sb, "EVALTRACE--evalHP--");
         try {
             final String experimentId = req.getExperimentId();
             Set<String> experimentPersonIdSet = experimentPersonCache.getPersondIdSet(experimentId, req.getExperimentPersonIds());
             if (ShareUtil.XObject.isEmpty(experimentPersonIdSet)) {
                 return;
             }
-            ts=logCostTime(sb,"1-personid", ts);
-            Collection<SnapCrowdsInstanceEntity> crowds=evalCrowdCache.getCrowds(experimentId);
-            ts=logCostTime(sb,"2-crowds", ts);
+            ts = logCostTime(sb, "1-personid", ts);
+            Collection<SnapCrowdsInstanceEntity> crowds = evalCrowdCache.getCrowds(experimentId);
+            ts = logCostTime(sb, "2-crowds", ts);
 
             final int CONCURRENTNum = 1;
             if (CONCURRENTNum <= 1 || experimentPersonIdSet.size() < CONCURRENTNum) {
-                evalPersonHealthIndex(req, experimentPersonIdSet,crowds);
+                evalPersonHealthIndex(req, experimentPersonIdSet, crowds);
             } else {
                 List<List<String>> groups = ShareUtil.XCollection.split(List.copyOf(experimentPersonIdSet), CONCURRENTNum);
                 CompletableFuture[] futures = new CompletableFuture[groups.size()];
                 int pos = 0;
                 for (List<String> personIds : groups) {
-                    futures[pos++] = CompletableFuture.runAsync(() -> evalPersonHealthIndex(req, personIds,crowds),
+                    futures[pos++] = CompletableFuture.runAsync(() -> evalPersonHealthIndex(req, personIds, crowds),
                             EvalPersonExecutor.Instance().getThreadPool());
                 }
                 CompletableFuture.allOf(futures).join();
             }
-            ts=logCostTime(sb,"3-eval", ts);
-        }finally {
-            log.info(sb.toString());
+            ts = logCostTime(sb, "3-eval", ts);
+        } catch (Exception ex) {
+            ts=logCostTime(sb,String.format("error-%s", ex.getMessage()),ts);
             log.error(sb.toString());
+            throw ex;
+        } finally {
+            log.info(sb.toString());
             sb.setLength(0);
         }
 
@@ -112,12 +115,15 @@ public class EvalHealthIndexAdvBiz {
         final List<EvalRiskValues> voRisks = new ArrayList<>();
         SpelPersonContext context = new SpelPersonContext().setVariables(experimentPersonId, null);
         //Map<String, SpelEvalSumResult> mapSum=new HashMap<>();
+        StringBuilder sbTrace=new StringBuilder("HPExTrace--");
+        sbTrace.append(" crowdsSize:").append(crowds.size());
         crowds.forEach(hitCrowd->{
             final String crowdId=hitCrowd.getCrowdsId();
             if(!spelEngine.loadFromSpelCache().withReasonId(experimentId,experimentPersonId,crowdId, EnumIndicatorExpressionSource.CROWDS.getSource())
                     .check(context)){
                 return;
             }
+            sbTrace.append(" crowd:").append(hitCrowd.getName());
             List<SnapRiskModelEntity> hitRiskModels= evalCrowdCache.getRiskModelByCrowdId(experimentId, crowdId);
             if(ShareUtil.XObject.isEmpty(hitRiskModels)){
                 return;
@@ -128,8 +134,8 @@ public class EvalHealthIndexAdvBiz {
                 if (ShareUtil.XObject.isEmpty(inputs)) {
                     return;
                 }
+                sbTrace.append(" risk:").append(hitRisk.getName());
                 final String experimentPersonRiskModelId = idGenerator.nextIdStr();
-
                 final List<RiskFactorScoreVO> vosFactorScore = new ArrayList<>();
                 inputs.forEach(input -> {
                     SpelEvalResult evalRst = spelEngine.loadWith(input).eval(context);
@@ -190,6 +196,16 @@ public class EvalHealthIndexAdvBiz {
         });
 
         BigDecimal personHealthIndex = EvalHealthIndexUtil.evalHealthIndex(vosHealthIndex, false);
+        if(personHealthIndex.compareTo(BigDecimal.ONE)<=0){
+            String age=evalHolder.get().getMapIndicators().values()
+                    .stream()
+                    .filter(i->i.getIndicatorName().equals("年龄"))
+                    .findFirst()
+                            .map(EvalIndicatorValues::getCurVal)
+                                    .orElse("NA");
+            sbTrace.append(" 年龄:").append(age);
+            log.error(sbTrace.append("\n").toString());
+        }
         vosHealthIndex.forEach(i->Optional.of(i.getRiskFactors()).ifPresent(v->v.sort(Comparator.comparing(iv->Optional.ofNullable(iv.getRiskFactorName()).orElse("")))));
         evalHolder.get().setEvalRisks(vosHealthIndex).setRisks(voRisks);
         evalHolder.putCurVal(personIndicatorIdCache.getSysIndicatorId(experimentPersonId, EnumIndicatorType.HEALTH_POINT),

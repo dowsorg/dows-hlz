@@ -54,6 +54,7 @@ public class ExperimentCacheExecutor {
         public void run() {
             StringBuilder sb=new StringBuilder();
             long ts=logCostTime(sb,"SPELTRACE--load--");
+            boolean errFlag=false;
             for(String experimentId:experimentIds){
                 ExperimentCacheKey key=ExperimentCacheKey.create(APPId,experimentId);
                 try{
@@ -63,13 +64,16 @@ public class ExperimentCacheExecutor {
                     ExperimentSpelCache.Instance().loadingCache().get(key);
 
                 }catch (Exception ex){
-                    ts=logCostTime(sb,String.format("loaderror %s %s", experimentId,ex.getMessage()),ts);
+                    errFlag=true;
+                    ts=logCostTime(sb,String.format("error-%s %s", experimentId,ex.getMessage()),ts);
                     log.error(String.format("SPELTRACE--load--error exptKey[%s]",key), ex);
                 }
                 ts=logCostTime(sb,String.format("loaded %s", experimentId),ts);
             }
             log.info(sb.toString());
-            log.error(sb.toString());
+            if(errFlag) {
+                log.error(sb.toString());
+            }
 
         }
 
