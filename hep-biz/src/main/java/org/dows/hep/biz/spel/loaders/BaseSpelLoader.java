@@ -122,14 +122,15 @@ public abstract class BaseSpelLoader implements ISpelLoad {
         }
         String[] splitVals=vals.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr());
         List<String> missIds=new ArrayList<>();
-        for(int i=0;i<splitVals.length;i++){
+        for(int i=0;i<splitNames.length;i++){
             String name=splitNames[i];
             String[] splits=name.split(EnumString.INDICATOR_EXPRESSION_SPLIT.getStr());
             boolean lastFlag=splits.length>1&&splits[1].endsWith("1");
             String raw=splitVals[i];
             String fix= PersonIndicatorIdCache.Instance().getIndicatorIdBySourceId(exptPersonId,raw);
             if(ShareUtil.XObject.isEmpty(fix)){
-                missIds.add(fix);
+                missIds.add(raw);
+                splitVals[i]= SpelVarKeyFormatter.getVariableKey(raw,lastFlag);
             }else{
                 splitVals[i]= SpelVarKeyFormatter.getVariableKey(fix,lastFlag);
             }
@@ -153,7 +154,7 @@ public abstract class BaseSpelLoader implements ISpelLoad {
             return rawExpression;
         }
         String[] splitVals=vals.split(EnumString.INDICATOR_EXPRESSION_LIST_SPLIT.getStr());
-        for(int i=0;i<splitVals.length;i++){
+        for(int i=0;i<splitNames.length;i++){
             String name=splitNames[i];
             String[] splits=name.split(EnumString.INDICATOR_EXPRESSION_SPLIT.getStr());
             boolean lastFlag=splits.length>1&&splits[1].endsWith("1");
