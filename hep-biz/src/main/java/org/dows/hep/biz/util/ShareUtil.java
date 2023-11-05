@@ -213,6 +213,9 @@ public class ShareUtil {
         }
 
         public static <T,R> Set<R> toSet(Collection<T> src,Function<? super T, ? extends R> mapper ){
+            if(isEmpty(src)){
+                return new HashSet<>(0);
+            }
             return src.stream().map(mapper).collect(Collectors.toSet());
         }
         public static <T, K> Map<K, T> toMap(Collection<T> src, Function<? super T, ? extends K> keyMapper) {

@@ -61,9 +61,10 @@ public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
         try{
             return load(key);
         }catch (Exception ex){
+            ts=logCostTime(sb,String.format("error-%s",ex.getMessage()),ts);
             return exceptionally(key, ex);
         }finally {
-            ts=logCostTime(sb,"loadEnd",ts);
+            logCostTime(sb,"loadEnd",ts);
             log.info(sb.toString());
             sb.setLength(0);
         }
@@ -74,9 +75,10 @@ public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
         try{
             return continueLoad(key,curVal);
         }catch (Exception ex){
+            ts=logCostTime(sb,String.format("error-%s",ex.getMessage()),ts);
             return exceptionally(key, ex);
         }finally {
-            ts=logCostTime(sb,"continueEnd",ts);
+            logCostTime(sb,"continueEnd",ts);
             log.info(sb.toString());
             sb.setLength(0);
         }

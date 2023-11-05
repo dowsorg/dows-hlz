@@ -94,6 +94,6 @@ public class SpelCasePersonContext extends StandardEvaluationContext {
 
     private Object wrapVal( String str) {
         str=null==str?"":str.trim();
-        return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str) : str;
+        return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str).setScale(2)  : str;
     }
 }

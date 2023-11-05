@@ -5,15 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.hep.api.config.ConfigExperimentFlow;
 import org.dows.hep.biz.dao.ExperimentIndicatorValRsDao;
 import org.dows.hep.biz.eval.EvalPersonCache;
+import org.dows.hep.biz.eval.EvalPersonOnceHolder;
+import org.dows.hep.biz.eval.data.EvalIndicatorValues;
+import org.dows.hep.biz.eval.data.EvalPersonOnceData;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentIndicatorInstanceRsEntity;
 import org.dows.hep.entity.ExperimentIndicatorValRsEntity;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author : wuzl
@@ -25,12 +27,17 @@ import java.util.Optional;
 public class SpelPersonContext extends StandardEvaluationContext {
 
     public SpelPersonContext(){
-        this(SpelVarKeyFormatter.PREFIX);
+        this(false, SpelVarKeyFormatter.PREFIX);
     }
-    public SpelPersonContext(String varPrefix){
+    public SpelPersonContext(boolean useLastHolder){
+        this(useLastHolder, SpelVarKeyFormatter.PREFIX);
+    }
+    public SpelPersonContext(boolean useLastHolder,String varPrefix){
+        this.useLastHolder=useLastHolder;
         this.varPrefix=varPrefix;
     }
     protected final String varPrefix;
+    private final boolean useLastHolder;
 
 
     public SpelPersonContext setVariables(String experimentPersonId,Integer period){
@@ -55,13 +62,19 @@ public class SpelPersonContext extends StandardEvaluationContext {
         try {
             Collection<String> indicatorIds = PersonIndicatorIdCache.Instance().getIndicatorIds(experimentPersonId);
 
-            if(ConfigExperimentFlow.SWITCH2EvalCache) {
-                EvalPersonCache.Instance().getCurHolder(experimentPersonId).get().getMapIndicators().values().forEach(i -> {
-                    if(useBaseIndicatorId){
-                        String baseIndicatorId=Optional.ofNullable(PersonIndicatorIdCache.Instance().getIndicatorById(experimentPersonId, i.getIndicatorId()))
+            if (ConfigExperimentFlow.SWITCH2EvalCache) {
+                Map<String, EvalIndicatorValues> mapIndicators = Optional.ofNullable(useLastHolder
+                                ? EvalPersonCache.Instance().getPointer(experimentPersonId).getLastHolder()
+                                : EvalPersonCache.Instance().getPointer(experimentPersonId).getCurHolder())
+                        .map(EvalPersonOnceHolder::get)
+                        .map(EvalPersonOnceData::getMapIndicators)
+                        .orElse(new ConcurrentHashMap<>());
+                mapIndicators.values().forEach(i -> {
+                    if (useBaseIndicatorId) {
+                        String baseIndicatorId = Optional.ofNullable(PersonIndicatorIdCache.Instance().getIndicatorById(experimentPersonId, i.getIndicatorId()))
                                 .map(ExperimentIndicatorInstanceRsEntity::getIndicatorInstanceId)
                                 .orElse("");
-                        if(ShareUtil.XObject.isEmpty(baseIndicatorId)){
+                        if (ShareUtil.XObject.isEmpty(baseIndicatorId)) {
                             return;
                         }
                         setVariable(SpelVarKeyFormatter.getVariableKey(baseIndicatorId, false), wrapVal(experimentPersonId, i.getIndicatorId(), i.getCurVal()));
@@ -72,14 +85,14 @@ public class SpelPersonContext extends StandardEvaluationContext {
                     setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorId(), true), wrapVal(experimentPersonId, i.getIndicatorId(), i.getLastVal()));
                 });
 
-            }else {
+            } else {
                 List<ExperimentIndicatorValRsEntity> rowsVal = SpringUtil.getBean(ExperimentIndicatorValRsDao.class)
                         .getByExperimentIdAndIndicatorIds(null, indicatorIds, period,
                                 ExperimentIndicatorValRsEntity::getIndicatorInstanceId,
                                 ExperimentIndicatorValRsEntity::getCurrentVal);
-                rowsVal.forEach(i->{
-                    setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorInstanceId(),false), wrapVal(experimentPersonId,i.getIndicatorInstanceId(), i.getCurrentVal()));
-                    setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorInstanceId(),true), wrapVal(experimentPersonId,i.getIndicatorInstanceId(), i.getCurrentVal()));
+                rowsVal.forEach(i -> {
+                    setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorInstanceId(), false), wrapVal(experimentPersonId, i.getIndicatorInstanceId(), i.getCurrentVal()));
+                    setVariable(SpelVarKeyFormatter.getVariableKey(i.getIndicatorInstanceId(), true), wrapVal(experimentPersonId, i.getIndicatorInstanceId(), i.getCurrentVal()));
                 });
                 rowsVal.clear();
             }
@@ -96,7 +109,7 @@ public class SpelPersonContext extends StandardEvaluationContext {
                     .map(ExperimentIndicatorInstanceRsEntity::getDef)
                     .orElse(str);
         }
-        str=str.trim();
-        return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str) : str;
+        str=null==str?"":str.trim();
+        return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str).setScale(2) : str;
     }
 }

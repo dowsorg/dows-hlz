@@ -3,13 +3,8 @@ package org.dows.hep.biz.eval;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.dows.framework.api.util.ReflectUtil;
 import org.dows.hep.api.base.indicator.request.*;
-import org.dows.hep.api.enums.EnumEvalFuncType;
-import org.dows.hep.api.enums.EnumIndicatorExpressionSource;
-import org.dows.hep.api.enums.EnumIndicatorType;
-import org.dows.hep.api.enums.EnumOrgFeeType;
+import org.dows.hep.api.enums.*;
 import org.dows.hep.biz.base.indicator.ExperimentIndicatorInstanceRsBiz;
 import org.dows.hep.biz.base.indicator.RsExperimentIndicatorInstanceBiz;
 import org.dows.hep.biz.dao.ExperimentEvalLogDao;
@@ -122,6 +117,7 @@ public class EvalPersonBiz {
                             .setPeriodInitVal(item.getIndicatorInstance().getDef())
                     );
                 });
+                indicators.sort(Comparator.comparing(i->Optional.ofNullable(i.getIndicatorName()).orElse("")));
                 ExperimentEvalLogContentEntity rowEvalContent=new ExperimentEvalLogContentEntity()
                         .setEvalNo(0)
                         .setExperimentEvalLogId(rowEval.getExperimentEvalLogId())
@@ -212,6 +208,8 @@ public class EvalPersonBiz {
                             .orElse(currentVal))
                     .unit(unit)
                     .resultExplain(experimentIndicatorViewPhysicalExamRsEntity.getResultAnalysis())
+                    .indicatorCategoryId(experimentIndicatorViewPhysicalExamRsEntity.getIndicatorCategoryId())
+                    .indicatorCategoryName(experimentIndicatorViewPhysicalExamRsEntity.getIndicatorCategoryName())
                     .build();
             experimentIndicatorViewPhysicalExamReportRsEntityList.add(experimentIndicatorViewPhysicalExamReportRsEntity);
         });
@@ -309,8 +307,8 @@ public class EvalPersonBiz {
         List<ExperimentIndicatorViewSupportExamReportRsEntity> experimentIndicatorViewSupportExamReportRsEntityList = new ArrayList<>();
         SpelPersonContext context = new SpelPersonContext().setVariables(experimentPersonId, null);
         final EvalPersonOnceHolder evalHolder = EvalPersonCache.Instance().getCurHolder(experimentId,experimentPersonId);
-        experimentIndicatorViewSupportExamRsEntityList.forEach(experimentIndicatorViewSupportExamRsEntity -> {
-            String indicatorInstanceId = experimentIndicatorViewSupportExamRsEntity.getIndicatorInstanceId();
+        experimentIndicatorViewSupportExamRsEntityList.forEach(item -> {
+            String indicatorInstanceId = item.getIndicatorInstanceId();
             String currentVal = "";
             String unit = null;
             int scale=2;
@@ -332,6 +330,8 @@ public class EvalPersonBiz {
                 }
 
             }
+            String[] categIds= item.getIndicatorCategoryIdArray().split(EnumString.COMMA.getStr());
+            String[] categNames= item.getIndicatorCategoryNameArray().split(EnumString.COMMA.getStr());
             ExperimentIndicatorViewSupportExamReportRsEntity experimentIndicatorViewSupportExamReportRsEntity = ExperimentIndicatorViewSupportExamReportRsEntity
                     .builder()
                     .experimentIndicatorViewSupportExamReportId(idGenerator.nextIdStr())
@@ -341,12 +341,14 @@ public class EvalPersonBiz {
                     .indicatorFuncId(indicatorFuncId)
                     .experimentPersonId(experimentPersonId)
                     .operateFlowId(operateFlowId)
-                    .name(experimentIndicatorViewSupportExamRsEntity.getName())
-                    .fee(experimentIndicatorViewSupportExamRsEntity.getFee())
+                    .name(item.getName())
+                    .fee(item.getFee())
                     .currentVal(Optional.ofNullable(BigDecimalOptional.valueOf(resultExplainAtomicReference.get()).getString(scale, RoundingMode.HALF_UP))
                             .orElse(currentVal))
                     .unit(unit)
-                    .resultExplain(experimentIndicatorViewSupportExamRsEntity.getResultAnalysis())
+                    .resultExplain(item.getResultAnalysis())
+                    .indicatorCategoryId(categIds[categIds.length-1])
+                    .indicatorCategoryName(categNames[categNames.length-1])
                     .build();
             experimentIndicatorViewSupportExamReportRsEntityList.add(experimentIndicatorViewSupportExamReportRsEntity);
         });
@@ -400,14 +402,15 @@ public class EvalPersonBiz {
      */
 
     public void evalOrgFunc(RsExperimentCalculateFuncRequest req) {
-        StringBuilder sb=new StringBuilder("EVALTRACE--evalFunc--");
+
+        StringBuilder sb=new StringBuilder();
+        long ts=logCostTime(sb,"EVALTRACE--evalFunc--");
         try {
             String appId = req.getAppId();
             String experimentId = req.getExperimentId();
             Integer periods = req.getPeriods();
             Set<String> personIds = Set.of(req.getExperimentPersonId());
 
-            long ts=System.currentTimeMillis();
             evalPersonIndicatorBiz.evalPersonIndicator(RsCalculatePersonRequestRs
                     .builder()
                     .appId(appId)
@@ -429,8 +432,13 @@ public class EvalPersonBiz {
             ts=logCostTime(sb,"2-hp",ts);
 
             PersonBasedEventTask.runPersonBasedEventAsync(appId, experimentId,req.getExperimentPersonId());
-        }finally {
+        }catch (Exception ex){
+            ts=logCostTime(sb,String.format("error-%s", ex.getMessage()),ts);
             log.error(sb.toString());
+            throw ex;
+        }finally {
+            log.info(sb.toString());
+            sb.setLength(0);
         }
 
 
@@ -439,10 +447,15 @@ public class EvalPersonBiz {
      * 期数翻转
      * @param req
      */
-    public void evalPeriodEnd(RsCalculatePeriodsRequest req)  {
-        final String appId = req.getAppId();
-        final String experimentId = req.getExperimentId();
-        final Integer periods = req.getPeriods();
+    public void evalPeriodEnd(RsCalculatePeriodsRequest req) {
+        StringBuilder sb = new StringBuilder();
+        long ts = logCostTime(sb, "EVALTRACE--evalPeriod--");
+
+        try {
+            final String appId = req.getAppId();
+            final String experimentId = req.getExperimentId();
+            final Integer periods = req.getPeriods();
+
 
         /*personStatiscBiz.refundFunds(ExperimentPersonRequest.builder()
                 .experimentInstanceId(experimentId)
@@ -450,32 +463,50 @@ public class EvalPersonBiz {
                 .periods(periods)
                 .build());*/
 
-        evalPersonMoneyBiz.saveRefunds(experimentId, periods, null);
+            evalPersonMoneyBiz.saveRefunds(experimentId, periods, null);
+            ts = logCostTime(sb, "1-refunds", ts);
 
-        evalPersonIndicatorBiz.evalPersonIndicator(RsCalculatePersonRequestRs
-                .builder()
-                .appId(appId)
-                .experimentId(experimentId)
-                .periods(periods)
-                .personIdSet(null)
-                .funcType(EnumEvalFuncType.PERIODEnd)
-                .silence(true)
-                .build());
-        evalHealthIndexBiz.evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
-                .builder()
-                .appId(appId)
-                .experimentId(experimentId)
-                .periods(periods)
-                .funcType(EnumEvalFuncType.PERIODEnd)
-                .build());
+            evalPersonIndicatorBiz.evalPersonIndicator(RsCalculatePersonRequestRs
+                    .builder()
+                    .appId(appId)
+                    .experimentId(experimentId)
+                    .periods(periods)
+                    .personIdSet(null)
+                    .funcType(EnumEvalFuncType.PERIODEnd)
+                    .silence(true)
+                    .build());
+            ts = logCostTime(sb, "2-evalIndicator", ts);
 
-        evalScoreRankBiz.saveOrUpd(experimentId, periods);
+            evalHealthIndexBiz.evalPersonHealthIndex(ExperimentRsCalculateAndCreateReportHealthScoreRequestRs
+                    .builder()
+                    .appId(appId)
+                    .experimentId(experimentId)
+                    .periods(periods)
+                    .funcType(EnumEvalFuncType.PERIODEnd)
+                    .build());
+            ts = logCostTime(sb, "3-evalHP", ts);
 
-        PersonBasedEventTask.runPersonBasedEventAsync(appId,experimentId);
+            evalScoreRankBiz.saveOrUpd(experimentId, periods);
+            ts = logCostTime(sb, "4-evalScore", ts);
+
+            PersonBasedEventTask.runPersonBasedEventAsync(appId, experimentId);
+            ts = logCostTime(sb, "5-runEvent", ts);
+        } catch (Exception ex) {
+            ts = logCostTime(sb, String.format("error-%s", ex.getMessage()), ts);
+            log.error(sb.toString());
+            throw ex;
+        } finally {
+            log.info(sb.toString());
+            sb.setLength(0);
+        }
 
     }
+    private long logCostTime(StringBuilder sb,String start){
+        sb.append(this.getClass().getName()).append("--").append(start);
+        return System.currentTimeMillis();
+    }
 
-    long logCostTime(StringBuilder sb,String func,long ts){
+    private long logCostTime(StringBuilder sb,String func,long ts){
         long newTs=System.currentTimeMillis();
         sb.append(" ").append(func).append(":").append((newTs-ts));
         return newTs;

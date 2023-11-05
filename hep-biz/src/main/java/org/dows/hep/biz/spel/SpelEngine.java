@@ -348,17 +348,33 @@ public class SpelEngine {
 
         @Override
         public boolean check(StandardEvaluationContext context) {
-            return SpelEngine.Instance().check(this.target, context);
+            try {
+                return SpelEngine.Instance().check(this.target, context);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", target), ex);
+                throw ex;
+            }
+
         }
 
         @Override
         public SpelEvalResult evalDeltaSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
-            return SpelEngine.Instance().evalDeltaSum(this.target, context, mapSum);
+            try {
+                return SpelEngine.Instance().evalDeltaSum(this.target, context, mapSum);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", target), ex);
+                throw ex;
+            }
         }
 
         @Override
         public SpelEvalResult evalSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
-            return SpelEngine.Instance().evalSum(this.target, context, mapSum);
+            try {
+                return SpelEngine.Instance().evalSum(this.target, context, mapSum);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", target), ex);
+                throw ex;
+            }
         }
 
 
@@ -378,22 +394,47 @@ public class SpelEngine {
 
         @Override
         public List<SpelCheckResult> check(StandardEvaluationContext context) {
-            return SpelEngine.Instance().check(this.target, context);
+            try {
+                return SpelEngine.Instance().check(this.target, context);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", getInputsString(target)), ex);
+                throw ex;
+            }
         }
 
         @Override
         public List<SpelEvalResult> evalSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
-            return SpelEngine.Instance().evalSum(this.target, context, mapSum);
+            try {
+                return SpelEngine.Instance().evalSum(this.target, context, mapSum);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", getInputsString(target)), ex);
+                throw ex;
+            }
         }
 
         @Override
         public List<SpelEvalResult> evalDeltaSum(StandardEvaluationContext context, Map<String, SpelEvalSumResult> mapSum) {
-            return SpelEngine.Instance().evalDeltaSum(this.target, context, mapSum);
+            try {
+                return SpelEngine.Instance().evalDeltaSum(this.target, context, mapSum);
+            }catch (Exception ex){
+                log.error(String.format("EVALError %s", getInputsString(target)), ex);
+                throw ex;
+            }
         }
 
         @Override
         public List<SpelInput> getInput() {
             return target;
+        }
+
+        private String getInputsString(List<SpelInput> inputs){
+            if(ShareUtil.XObject.isEmpty(inputs)){
+                return "NA";
+            }
+            StringBuilder sb=new StringBuilder("SpelInputs");
+            inputs.forEach(i-> i.buildString(sb).append(","));
+            return sb.toString();
+
         }
     }
 
