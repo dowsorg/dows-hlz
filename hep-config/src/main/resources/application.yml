@@ -23,8 +23,8 @@ spring:
     application:
         name: dows-hep
     profiles:
-        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket,hep-cache,hep-mongodb,hep-pdf
-        active: dev
+        include: hep-app,hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket,hep-cache,hep-mongodb,hep-pdf
+        active: prd
 
     jackson:
         default-property-inclusion: always

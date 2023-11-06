@@ -11,6 +11,7 @@ import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentPersonEntity;
 import org.dows.hep.entity.OperateCostEntity;
+import org.dows.hep.properties.ScoreSettingsProperties;
 import org.dows.sequence.api.IdGenerator;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,20 @@ public class EvalPersonMoneyBiz {
     private final ExperimentIndicatorInstanceRsBiz experimentIndicatorInstanceRsBiz;
 
     private final ExperimentPersonCache experimentPersonCache;
+
+    private final ScoreSettingsProperties scoreSettingsProperties;
+    private BigDecimal cfgMinScore(){
+        BigDecimal dft=BigDecimal.ZERO;
+        return Optional.ofNullable(scoreSettingsProperties)
+                .map(i->BigDecimalUtil.tryParseDecimal(i.getMoneyScoreMin(),dft))
+                .orElse(dft);
+    }
+    private BigDecimal cfgMaxScore(){
+        BigDecimal dft=BigDecimalUtil.ONEHundred;
+        return Optional.ofNullable(scoreSettingsProperties)
+                .map(i->BigDecimalUtil.tryParseDecimal(i.getMoneyScoreMax(),dft))
+                .orElse(dft);
+    }
 
     public Map<String, BigDecimalOptional> evalMoneyScore4Period(String experimentId,Integer periods) {
         Map<String, BigDecimalOptional> rst = new HashMap<>();
@@ -69,20 +84,20 @@ public class EvalPersonMoneyBiz {
     private BigDecimal getMoneyScore(BigDecimal money,BigDecimal lastMoney) {
 
         if (ShareUtil.XObject.anyEmpty(money, lastMoney)) {
-            return BigDecimal.ZERO;
+            return cfgMinScore();
         }
         if (lastMoney.compareTo(BigDecimal.ZERO) <= 0) {
-            return BigDecimal.ZERO;
+            return cfgMinScore();
         }
         if(money.compareTo(lastMoney)>=0){
-            return BigDecimalUtil.ONEHundred;
+            return cfgMaxScore();
         }
         return BigDecimalOptional.valueOf(money)
                 .min(BigDecimal.ZERO)
                 .mul(BigDecimalUtil.ONEHundred)
                 .div(lastMoney, SCALE)
-                .min(BigDecimal.ZERO)
-                .max(BigDecimalUtil.ONEHundred)
+                .min(cfgMinScore())
+                .max(cfgMaxScore())
                 .getValue(SCALE);
     }
 
