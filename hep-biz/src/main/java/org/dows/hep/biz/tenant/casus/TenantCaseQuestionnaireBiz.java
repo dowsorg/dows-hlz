@@ -180,7 +180,7 @@ public class TenantCaseQuestionnaireBiz {
         }
 
         List<CaseQuestionnaireRequest.RandomMode> randomModeList = new ArrayList<>();
-        this.convertRandomModeResponseList(randomModeList, entity.getQuestionSectionId());
+        this.convertRandomModeResponseList(randomModeList, entity.getQuestionSectionId(),entity.getCaseInstanceId());
         BeanUtil.copyProperties(entity, caseQuestionnaireResponse);
         caseQuestionnaireResponse.setRandomModeList(randomModeList);
         return caseQuestionnaireResponse;
@@ -447,7 +447,7 @@ public class TenantCaseQuestionnaireBiz {
         });
     }
 
-    private void convertRandomModeResponseList(List<CaseQuestionnaireRequest.RandomMode> randomModeList, String questionSectionId) {
+    private void convertRandomModeResponseList(List<CaseQuestionnaireRequest.RandomMode> randomModeList, String questionSectionId,String caseInstanceId) {
         if (StringUtils.isBlank(questionSectionId)) {
             return;
         }
@@ -461,31 +461,43 @@ public class TenantCaseQuestionnaireBiz {
         }
         //选中的题目
         List<QuestionInstanceEntity> questionInstanceList = questionInstanceBiz.listByIds(questionInstanceIdSet);
-        //总题目数量
         Set<String> questionCategIdSet = questionInstanceList.stream().map(QuestionInstanceEntity::getQuestionCategId).collect(Collectors.toSet());
+        //总题目数量
         List<QuestionInstanceEntity> maxQuestionInstanceList = questionInstanceBiz.listByQuestionCategIds(questionCategIdSet);
-
+        //剩余总题目
+        List<QuestionInstanceEntity>  remainderQuestionInstanceList = new ArrayList<>();
+        //已选题目id集
+        List<String> questionInstanceIds = listQuestionIdOfCaseInstance(caseInstanceId);
+        if (!CollectionUtils.isEmpty(questionInstanceIds)) {
+            //去掉案例已经选中题目
+            remainderQuestionInstanceList.addAll(maxQuestionInstanceList.stream().filter(questionInstanceEntity ->
+                    !questionInstanceIds.contains(questionInstanceEntity.getQuestionInstanceId())).toList());
+            //加上本试卷已选题目
+            remainderQuestionInstanceList.addAll(questionInstanceList);
+        }else{//否则就是最多题目
+            remainderQuestionInstanceList.addAll(maxQuestionInstanceList);
+        }
         Map<String, List<QuestionInstanceEntity>> questionCategIdMap = questionInstanceList.stream().collect(Collectors.groupingBy(QuestionInstanceEntity::getQuestionCategId));
-        Map<String, List<QuestionInstanceEntity>> maQuestionCategIdMap =maxQuestionInstanceList.stream().collect(Collectors.groupingBy(QuestionInstanceEntity::getQuestionCategId));
-        this.convertRandomModeResponseList(randomModeList, questionCategIdMap,maQuestionCategIdMap);
+        Map<String, List<QuestionInstanceEntity>> remainderQuestionCategIdMap = remainderQuestionInstanceList.stream().collect(Collectors.groupingBy(QuestionInstanceEntity::getQuestionCategId));
+        this.convertRandomModeResponseList(randomModeList, questionCategIdMap,remainderQuestionCategIdMap);
     }
 
     private void convertRandomModeResponseList(List<CaseQuestionnaireRequest.RandomMode> randomModeList,
                                        Map<String,List<QuestionInstanceEntity>> questionCategIdMap,
-                                       Map<String,List<QuestionInstanceEntity>> maxQuestionCategIdMap) {
+                                       Map<String,List<QuestionInstanceEntity>> remainderQuestionCategIdMap) {
         if (CollectionUtils.isEmpty(questionCategIdMap) || randomModeList == null) {
             return;
         }
         questionCategIdMap.forEach((questionCategId, questionInstanceChildList) -> {
             CaseQuestionnaireRequest.RandomMode randomMode = new CaseQuestionnaireRequest.RandomMode();
-            this.convertRandomModeResponse(questionCategId, randomMode, questionInstanceChildList,maxQuestionCategIdMap.get(questionCategId));
+            this.convertRandomModeResponse(questionCategId, randomMode, questionInstanceChildList,remainderQuestionCategIdMap.get(questionCategId));
             randomModeList.add(randomMode);
         });
     }
 
     private void convertRandomModeResponse(String questionCategId, CaseQuestionnaireRequest.RandomMode randomMode,
                       List<QuestionInstanceEntity> questionInstanceChildList,
-                      List<QuestionInstanceEntity> maxQuestionInstanceChildList) {
+                      List<QuestionInstanceEntity> remainderQuestionInstanceChildList) {
         if (StringUtils.isBlank(questionCategId) || randomMode == null) {
             return;
         }
@@ -495,9 +507,9 @@ public class TenantCaseQuestionnaireBiz {
         Map<QuestionTypeEnum, Integer> numMap = new HashMap<>();
         this.convertNumMap(numMap, questionInstanceChildList);
         randomMode.setNumMap(numMap);
-        Map<QuestionTypeEnum, Integer> maxNumMap = new HashMap<>();
-        this.convertNumMap(maxNumMap, maxQuestionInstanceChildList);
-        randomMode.setMaxNumMap(maxNumMap);
+        Map<QuestionTypeEnum, Integer> remainderNumMap = new HashMap<>();
+        this.convertNumMap(remainderNumMap, remainderQuestionInstanceChildList);
+        randomMode.setMaxNumMap(remainderNumMap);
     }
 
     private void convertRandomMode(String questionCategId, CaseQuestionnaireRequest.RandomMode randomMode, List<QuestionInstanceEntity> questionInstanceChildList) {
