@@ -23,7 +23,7 @@ spring:
     application:
         name: hep-admin
     profiles:
-        include: hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket,hep-pdf,hep-mongodb
+        include: hep-app,hep-mysql,hep-mybatis,hep-mvc,hep-oss,hep-apidoc,hep-redisson,hep-findsoft,hep-websocket,hep-pdf,hep-mongodb
         active: dev
 
     jackson:

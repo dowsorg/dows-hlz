@@ -10,6 +10,7 @@ import org.dows.hep.biz.util.BigDecimalOptional;
 import org.dows.hep.biz.util.BigDecimalUtil;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.ExperimentPersonEntity;
+import org.dows.hep.properties.ScoreSettingsProperties;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -27,6 +28,20 @@ public class EvalCompetitiveScoreBiz {
     private final ExperimentPersonCache experimentPersonCache;
     private final EvalPersonCache evalPersonCache;
 
+
+    private final ScoreSettingsProperties scoreSettingsProperties;
+    private BigDecimal cfgMinScore(){
+        BigDecimal dft=BigDecimal.ZERO;
+        return Optional.ofNullable(scoreSettingsProperties)
+                .map(i->BigDecimalUtil.tryParseDecimal(i.getHpScoreMin(),dft))
+                .orElse(dft);
+    }
+    private BigDecimal cfgMaxScore(){
+        BigDecimal dft=BigDecimalUtil.ONEHundred;
+        return Optional.ofNullable(scoreSettingsProperties)
+                .map(i->BigDecimalUtil.tryParseDecimal(i.getHpScoreMax(),dft))
+                .orElse(dft);
+    }
     private BigDecimal MINHPScore=BigDecimal.ZERO;
     private BigDecimal MAXHPScore=BigDecimal.valueOf(100L);
 
@@ -127,16 +142,16 @@ public class EvalCompetitiveScoreBiz {
             return curSocre;
         }
         if(maxScore.compareTo(curSocre)<=0){
-            return MAXHPScore;
+            return cfgMaxScore();
         }
         if(curSocre.compareTo(minScore)<=0){
-            return MINHPScore;
+            return cfgMinScore();
         }
         return BigDecimalOptional.valueOf(curSocre)
                 .sub(minScore)
-                .mul(MAXHPScore.subtract(MINHPScore))
+                .mul(cfgMaxScore().subtract(cfgMinScore()))
                 .div(maxScore.subtract(minScore), SCALEScore)
-                .add(MINHPScore)
+                .add(cfgMinScore())
                 .getValue(SCALEScore);
 
     }
