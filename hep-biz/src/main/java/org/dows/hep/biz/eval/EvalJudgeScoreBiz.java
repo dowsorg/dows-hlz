@@ -271,7 +271,7 @@ public class EvalJudgeScoreBiz {
             maxScore=curSocre;
         }
         if(minScore.compareTo(maxScore)==0){
-            return cfgMaxScore();
+            return cfgMinScore();
         }
         if(maxScore.compareTo(curSocre)<=0){
             return cfgMaxScore();
