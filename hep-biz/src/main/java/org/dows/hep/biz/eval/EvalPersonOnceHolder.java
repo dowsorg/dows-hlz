@@ -243,16 +243,16 @@ public class EvalPersonOnceHolder {
         return putCurVal(indicatorId, val,saveToRD);
     }
 
-    public boolean putCurVal(String indicatorId, String val, boolean saveToRD){
-        if(ShareUtil.XObject.isEmpty(indicatorId)){
+    public boolean putCurVal(String indicatorId, String val, boolean saveToRD) {
+        if (ShareUtil.XObject.isEmpty(indicatorId) || null == val) {
             return false;
         }
-        EvalIndicatorValues values=getIndicator(indicatorId);
-        if(null==values){
+        EvalIndicatorValues values = getIndicator(indicatorId);
+        if (null == values) {
             return false;
         }
         values.setCurVal(val);
-        if(saveToRD){
+        if (saveToRD) {
             saveToRD(values);
         }
         return true;
@@ -261,9 +261,16 @@ public class EvalPersonOnceHolder {
         if(ShareUtil.XObject.isEmpty(mapVals)){
             return false;
         }
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return false;
+        }
         Map<String,EvalIndicatorValues> map=new ConcurrentHashMap<>();
         mapVals.forEach((k,v)->{
-            EvalIndicatorValues values=getIndicator(k);
+            if(null==v) {
+                return;
+            }
+            EvalIndicatorValues values=cached.getMapIndicators().get(k);
             if(null==values){
                 return;
             }

@@ -3,6 +3,7 @@ package org.dows.hep.biz.user.experiment;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.uim.AccountInfo;
+import org.dows.hep.api.base.indicator.request.CaseRsCalculateHealthScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
 import org.dows.hep.api.base.indicator.request.RsCalculatePersonRequestRs;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
@@ -37,8 +38,10 @@ public class ToolBiz {
 
     private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
+    private final EvalCaseHealthIndexBiz evalCaseHealthIndexBiz;
+
     public String ping(){
-        return "1106";
+        return "1107";
     }
 
 
@@ -88,6 +91,10 @@ public class ToolBiz {
         evalPersonBiz.evalPeriodEnd(req);
     }
 
+    public void evalCasePersonHP(CaseRsCalculateHealthScoreRequestRs req){
+        evalCaseHealthIndexBiz.evalCasePersonHealthIndex(req);
+    }
+
     public void evalPeriodEndScore(RsCalculatePeriodsRequest req){
         evalScoreRankBiz.saveOrUpd(req.getExperimentId(),req.getPeriods());
     }
@@ -101,7 +108,7 @@ public class ToolBiz {
 
     }
 
-    public void raiseevent(RsCalculatePersonRequestRs req)  {
+    public void raiseEvent(RsCalculatePersonRequestRs req)  {
         PersonBasedEventTask.runPersonBasedEventAsync(req.getAppId(), req.getExperimentId(),
                 Optional.ofNullable(req.getPersonIdSet()).map(i->i.toArray(new String[0])).orElse(null));
     }
