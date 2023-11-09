@@ -24,6 +24,7 @@ import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.indicator.CaseIndicatorInstanceBiz;
 import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
+import org.dows.hep.biz.extend.uim.XOrgBiz;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
 import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
@@ -75,6 +76,8 @@ public class OrgBiz {
 
     private final XAccountInstanceApi xAccountInstanceApi;
 
+    private final XOrgBiz xOrgBiz;
+
     /**
      * @param
      * @return
@@ -87,6 +90,7 @@ public class OrgBiz {
      */
     @DSTransactional
     public String addClass(AccountOrgRequest request, String accountId, String loginId) {
+        xOrgBiz.checkExitsClassName(request);
         //1、生成随机code
         String orgCode = createCode(7);
         request.setOrgCode(orgCode);
@@ -145,6 +149,7 @@ public class OrgBiz {
      */
     @DSTransactional
     public Boolean editClass(AccountOrgRequest request, String accountId) {
+        xOrgBiz.checkExitsClassName(request);
         //1、修改机构
         Boolean flag1 = accountOrgApi.updateAccountOrgByOrgId(request);
         //2、更新团队负责人

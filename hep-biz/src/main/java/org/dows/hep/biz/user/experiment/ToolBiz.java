@@ -11,6 +11,7 @@ import org.dows.hep.biz.eval.*;
 import org.dows.hep.biz.event.PersonBasedEventTask;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.websocket.HepClientManager;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -40,8 +41,10 @@ public class ToolBiz {
 
     private final EvalCaseHealthIndexBiz evalCaseHealthIndexBiz;
 
-    public String ping(){
-        return "1107";
+    private final RedissonClient redissonClient;
+
+    public String ping() {
+        return "1109";
     }
 
 

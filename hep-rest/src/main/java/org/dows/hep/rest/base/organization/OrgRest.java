@@ -17,6 +17,7 @@ import org.dows.hep.api.user.organization.request.CaseOrgRequest;
 import org.dows.hep.api.user.organization.response.CaseOrgResponse;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.base.person.PersonManageExtBiz;
+import org.dows.hep.biz.extend.uim.XOrgBiz;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
@@ -36,6 +37,8 @@ import java.util.concurrent.ExecutionException;
 public class OrgRest {
     private final OrgBiz orgBiz;
     private final PersonManageExtBiz personManageExtBiz;
+
+    private final XOrgBiz xOrgBiz;
     /**
      * 班级 列表
      * @param
@@ -44,7 +47,8 @@ public class OrgRest {
     @Operation(summary = "班级列表")
     @PostMapping("v1/baseOrg/org/listClasss")
     public IPage<AccountOrgResponse> listClasss(@RequestBody AccountOrgRequest request,@Nullable @RequestParam String accountId) {
-        return orgBiz.listClasss(request,accountId);
+        //return orgBiz.listClasss(request,accountId);
+        return xOrgBiz.listClasss(request,accountId);
     }
 
     /**

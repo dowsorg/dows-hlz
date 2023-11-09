@@ -53,7 +53,7 @@ public class EvalPersonOnceCacheKey {
     }
 
     public String getKeyString(){
-        return String.format("%s-%s", experimentPersonId,getEvalHash());
+        return String.format("%s:%s-%s",experimentInstanceId, experimentPersonId,getEvalHash());
     }
 
     @Override
