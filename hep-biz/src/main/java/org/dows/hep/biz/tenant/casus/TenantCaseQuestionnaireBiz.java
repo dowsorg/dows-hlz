@@ -414,6 +414,9 @@ public class TenantCaseQuestionnaireBiz {
             return request;
         }
         Set<String> questionCategIdSet = randomModeList.stream().map(CaseQuestionnaireRequest.RandomMode::getL2CategId).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(questionCategIdSet)){
+            return request;
+        }
         List<QuestionInstanceEntity> questionInstanceList = questionInstanceBiz.listByQuestionCategIds(questionCategIdSet);
         Map<String, List<QuestionInstanceEntity>> questionCategIdMap = questionInstanceList.stream().collect(Collectors.groupingBy(QuestionInstanceEntity::getQuestionCategId));
         // questionCategId
@@ -472,6 +475,9 @@ public class TenantCaseQuestionnaireBiz {
         //选中的题目
         List<QuestionInstanceEntity> questionInstanceList = questionInstanceBiz.listByIds(questionInstanceIdSet);
         Set<String> questionCategIdSet = questionInstanceList.stream().map(QuestionInstanceEntity::getQuestionCategId).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(questionCategIdSet)){
+            return;
+        }
         //总题目数量
         List<QuestionInstanceEntity> maxQuestionInstanceList = questionInstanceBiz.listByQuestionCategIds(questionCategIdSet);
         //剩余总题目
