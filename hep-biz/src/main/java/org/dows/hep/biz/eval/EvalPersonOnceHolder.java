@@ -178,6 +178,9 @@ public class EvalPersonOnceHolder {
 
 
     public EvalIndicatorValues getIndicator(String indicatorId){
+        if(ShareUtil.XObject.isEmpty(indicatorId)){
+            return null;
+        }
         EvalPersonOnceData cached=get();
         if(null==cached){
             return null;

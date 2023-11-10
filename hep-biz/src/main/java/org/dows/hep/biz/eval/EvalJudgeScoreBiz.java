@@ -12,6 +12,7 @@ import org.dows.hep.biz.spel.meta.SpelInput;
 import org.dows.hep.biz.util.*;
 import org.dows.hep.entity.ExperimentJudgeScoreLogEntity;
 import org.dows.hep.entity.ExperimentPersonEntity;
+import org.dows.hep.properties.ScoreSettingsProperties;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -30,8 +31,19 @@ public class EvalJudgeScoreBiz {
 
     private final SpelEngine spelEngine;
 
-    private BigDecimal MINJudgeScore =BigDecimal.ZERO;
-    private BigDecimal MAXJudgeScore =BigDecimal.valueOf(100L);
+    private final ScoreSettingsProperties scoreSettingsProperties;
+    private BigDecimal cfgMinScore(){
+        BigDecimal dft=BigDecimal.ZERO;
+        return Optional.ofNullable(scoreSettingsProperties)
+                .map(i->BigDecimalUtil.tryParseDecimal(i.getJudgeScoreMin(),dft))
+                .orElse(dft);
+    }
+    private BigDecimal cfgMaxScore(){
+        BigDecimal dft=BigDecimalUtil.ONEHundred;
+        return Optional.ofNullable(scoreSettingsProperties)
+                .map(i->BigDecimalUtil.tryParseDecimal(i.getJudgeScoreMax(),dft))
+                .orElse(dft);
+    }
 
     private final int SCALEScore=2;
 
@@ -128,7 +140,7 @@ public class EvalJudgeScoreBiz {
     //region 期数翻转小组得分
     public Map<String,BigDecimalOptional> evalJudgeScore4Period(String experimentId,Integer period) {
         Map<String, BigDecimalOptional> rst = new HashMap<>();
-        ExperimentPersonCache.Instance().getGroups(experimentId).forEach(i->rst.put(i.getExperimentGroupId(),BigDecimalOptional.valueOf( MINJudgeScore)));
+        ExperimentPersonCache.Instance().getGroups(experimentId).forEach(i->rst.put(i.getExperimentGroupId(),BigDecimalOptional.valueOf(cfgMinScore())));
         List<ExperimentJudgeScoreLogEntity> rowsScoreLog = experimentJudgeScoreLogDao.getAllByPeriod(experimentId, period,
                 ExperimentJudgeScoreLogEntity::getExperimentGroupId,
                 ExperimentJudgeScoreLogEntity::getExperimentOrgId,
@@ -259,19 +271,19 @@ public class EvalJudgeScoreBiz {
             maxScore=curSocre;
         }
         if(minScore.compareTo(maxScore)==0){
-            return MAXJudgeScore;
+            return cfgMinScore();
         }
         if(maxScore.compareTo(curSocre)<=0){
-            return MAXJudgeScore;
+            return cfgMaxScore();
         }
         if(curSocre.compareTo(minScore)<=0){
-            return MINJudgeScore;
+            return cfgMinScore();
         }
         return BigDecimalOptional.valueOf(curSocre)
                 .sub(minScore)
-                .mul(MAXJudgeScore.subtract(MINJudgeScore))
+                .mul(cfgMaxScore().subtract(cfgMinScore()))
                 .div(maxScore.subtract(minScore), SCALEScore)
-                .add(MINJudgeScore)
+                .add(cfgMinScore())
                 .getValue(SCALEScore);
 
     }

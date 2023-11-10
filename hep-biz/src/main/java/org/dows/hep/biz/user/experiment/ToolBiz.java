@@ -38,7 +38,7 @@ public class ToolBiz {
     private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
     public String ping(){
-        return "1105-a";
+        return "1106";
     }
 
 

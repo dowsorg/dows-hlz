@@ -1,2 +1,13 @@
+score-settings:
+
+  hp-score-min: 30
+  hp-score-max: 100
+
+  money-score-min: 0
+  money-score-max: 100
+
+  judge-score-min: 30
+  judge-score-max: 100
+
 
 
