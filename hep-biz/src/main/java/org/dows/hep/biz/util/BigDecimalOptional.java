@@ -142,27 +142,45 @@ public class BigDecimalOptional {
 
     //region divide
     public BigDecimalOptional divOptional(BigDecimal other){
-        value=BigDecimalUtil.divOptional(value,other);
+        BigDecimal v=BigDecimalUtil.divOptional(value,other);
+        if(null!=v){
+            value=v;
+        }
         return this;
     }
     public BigDecimalOptional divOptional(BigDecimal other, int scale) {
-        value = BigDecimalUtil.divOptional(value, other, scale);
+        BigDecimal v=BigDecimalUtil.divOptional(value, other, scale);
+        if(null!=v){
+            value=v;
+        }
         return this;
     }
     public BigDecimalOptional divOptional(BigDecimal other, int scale,RoundingMode roundingMode){
-        value=BigDecimalUtil.divOptional(value,other,scale,roundingMode);
+        BigDecimal v=BigDecimalUtil.divOptional(value,other,scale,roundingMode);
+        if(null!=v){
+            value=v;
+        }
         return this;
     }
     public BigDecimalOptional div(BigDecimal other){
-        value=BigDecimalUtil.div(value,other);
+        BigDecimal v=BigDecimalUtil.div(value,other);
+        if(null!=v){
+            value=v;
+        }
         return this;
     }
     public BigDecimalOptional div(BigDecimal other, int scale){
-        value=BigDecimalUtil.div(value,other,scale);
+        BigDecimal v=BigDecimalUtil.div(value,other,scale);
+        if(null!=v){
+            value=v;
+        }
         return this;
     }
     public BigDecimalOptional div(BigDecimal other, int scale,RoundingMode roundingMode) {
-        value = BigDecimalUtil.div(value, other, scale, roundingMode);
+        BigDecimal v = BigDecimalUtil.div(value, other, scale, roundingMode);
+        if(null!=v){
+            value=v;
+        }
         return this;
     }
     //endregion

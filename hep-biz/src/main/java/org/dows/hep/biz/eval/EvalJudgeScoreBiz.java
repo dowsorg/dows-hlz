@@ -243,7 +243,7 @@ public class EvalJudgeScoreBiz {
                         totalScore.add(item[0]);
                     }
                 }
-                if (singleFlag) {
+                if (singleFlag&&mapJudgeScores.size()>0) {
                     totalScore.div(BigDecimal.valueOf(mapJudgeScores.size()), SCALEScore);
                 }
                 mapGroupScores.computeIfAbsent(k, x -> new ArrayList<>())
