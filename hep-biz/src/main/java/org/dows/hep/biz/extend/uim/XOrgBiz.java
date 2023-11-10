@@ -53,8 +53,12 @@ public class XOrgBiz {
         return rst;
     }
 
-    public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request, String accountId){
-        return coreBiz.listTeacherOrStudent(request, getOrgIds(accountId));
+    public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request, String accountId) {
+        return listTeacherOrStudent(request, accountId, null, null);
+    }
+
+    public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request, String accountId,String sortField,Integer sortDesc){
+        return coreBiz.listTeacherOrStudent(request, getOrgIds(accountId), sortField, sortDesc);
     }
 
     @DS("uim")
@@ -203,7 +207,7 @@ public class XOrgBiz {
 
 
 
-        public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request,  Set<String> orgIds ) {
+        public IPage<AccountInstanceResponse> listTeacherOrStudent(AccountInstanceRequest request,  Set<String> orgIds , String sortField,Integer sortDesc) {
             AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(request.getRoleName()))
                     .throwMessage("请选择教师或学生列表");
             IPage<AccountInstanceResponse> rst = Page.of(request.getPageNo(), request.getPageSize());
@@ -336,6 +340,20 @@ public class XOrgBiz {
             mapAccount.clear();
             mapGroup.clear();
             mapUser.clear();
+            if(ShareUtil.XObject.notEmpty(sortField)){
+                boolean isDesc=Optional.ofNullable(sortDesc).orElse(0)>0;
+                switch (sortField.toLowerCase()){
+                    case "username"->{
+                        if(isDesc){
+                            data.sort(Comparator.comparing(i->Optional.ofNullable( i.getUserName()).orElse(""),Comparator.reverseOrder()));
+                        }else {
+                            data.sort(Comparator.comparing(i -> Optional.ofNullable(i.getUserName()).orElse("")));
+                        }
+                    }
+
+                }
+            }
+
             return rst.setRecords(data)
                     .setCurrent(pageAccount.getCurrent())
                     .setSize(pageAccount.getSize())

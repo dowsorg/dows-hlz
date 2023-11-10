@@ -206,9 +206,11 @@ public class PersonManageRest {
     @Operation(summary =  "获取教师/学生列表")
     @PostMapping("v1/basePerson/person/listTeacherOrStudent")
     public IPage<AccountInstanceResponse> listTeacherOrStudent(@RequestBody AccountInstanceRequest request,
-                                                               @Nullable @RequestParam String accountId){
+                                                               @Nullable @RequestParam String accountId,
+                                                               @Nullable @RequestParam String sortField,
+                                                               @Nullable @RequestParam Integer sortDesc){
         //return personManageBiz.listTeacherOrStudent(request,accountId);
-        return xOrgBiz.listTeacherOrStudent(request,accountId);
+        return xOrgBiz.listTeacherOrStudent(request,accountId,sortField,sortDesc);
     }
 
     /**
