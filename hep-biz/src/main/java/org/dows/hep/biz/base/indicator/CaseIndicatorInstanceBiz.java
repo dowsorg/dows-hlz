@@ -956,6 +956,9 @@ public class CaseIndicatorInstanceBiz {
                 log.warn("方法方法CaseIndicatorInstanceBiz.delete对VariableId：{}的CaseIndicatorRule删除失败", cfCheckCaseIndicatorInstanceId);
                 throw new IndicatorInstanceException(EnumESC.CASE_INDICATOR_INSTANCE_ID_RULE_IS_ILLEGAL);
             }
+            caseIndicatorExpressionInfluenceService.lambdaUpdate()
+                    .eq(CaseIndicatorExpressionInfluenceEntity::getIndicatorInstanceId, caseIndicatorInstanceId)
+                    .remove();
         } finally {
             lock.unlock();
         }
