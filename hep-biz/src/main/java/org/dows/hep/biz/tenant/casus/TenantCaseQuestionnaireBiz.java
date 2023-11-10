@@ -174,17 +174,27 @@ public class TenantCaseQuestionnaireBiz {
 
         // get entity
         CaseQuestionnaireEntity entity = getById(caseQuestionnaireId);
-        CaseQuestionnaireResponse  caseQuestionnaireResponse = new CaseQuestionnaireResponse();
         if (BeanUtil.isEmpty(entity)) {
-            return  caseQuestionnaireResponse;
+            return  new CaseQuestionnaireResponse();
         }
+        return BeanUtil.copyProperties(entity, CaseQuestionnaireResponse.class);
+    }
 
+    public CaseQuestionnaireResponse getCaseQuestionnaire1(String caseQuestionnaireId) {
+        if (StrUtil.isBlank(caseQuestionnaireId)) {
+            return new CaseQuestionnaireResponse();
+        }
+        // get entity
+        CaseQuestionnaireEntity entity = getById(caseQuestionnaireId);
+        CaseQuestionnaireResponse caseQuestionnaireResponse = new CaseQuestionnaireResponse();
+        if (BeanUtil.isEmpty(entity)) {
+            return caseQuestionnaireResponse;
+        }
         List<CaseQuestionnaireRequest.RandomMode> randomModeList = new ArrayList<>();
-        this.convertRandomModeResponseList(randomModeList, entity.getQuestionSectionId(),entity.getCaseInstanceId());
+        this.convertRandomModeResponseList(randomModeList, entity.getQuestionSectionId(), entity.getCaseInstanceId());
         BeanUtil.copyProperties(entity, caseQuestionnaireResponse);
         caseQuestionnaireResponse.setRandomModeList(randomModeList);
         return caseQuestionnaireResponse;
-
     }
 
     /**
@@ -265,8 +275,8 @@ public class TenantCaseQuestionnaireBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    public Map<String, List<QuestionResponse>> collectQuestionOfUsableQuestion(CaseQuestionSearchRequest request) {
-        return collectQuestionOfUsableQuestion0(request);
+    public Map<String, List<QuestionResponse>> collectQuestionOfUsableQuestion(CaseQuestionSearchRequest request, boolean random) {
+        return collectQuestionOfUsableQuestion0(request,random);
     }
 
     /**
@@ -279,8 +289,8 @@ public class TenantCaseQuestionnaireBiz {
      * @开始时间:
      * @创建时间: 2023年4月17日 下午8:00:11
      */
-    public Map<String, Long> collectQuestionCountOfUsableQuestion(CaseQuestionSearchRequest request) {
-        Map<String, List<QuestionResponse>> collectList = collectQuestionOfUsableQuestion0(request);
+    public Map<String, Long> collectQuestionCountOfUsableQuestion(CaseQuestionSearchRequest request, boolean random) {
+        Map<String, List<QuestionResponse>> collectList = collectQuestionOfUsableQuestion0(request, random);
         if (collectList.isEmpty()) {
             return new HashMap<>();
         }
@@ -578,7 +588,7 @@ public class TenantCaseQuestionnaireBiz {
         return result;
     }
 
-    private Map<String, List<QuestionResponse>> collectQuestionOfUsableQuestion0(CaseQuestionSearchRequest request) {
+    private Map<String, List<QuestionResponse>> collectQuestionOfUsableQuestion0(CaseQuestionSearchRequest request, boolean random) {
         // default
         HashMap<String, List<QuestionResponse>> result = new HashMap<>();
         result.put(QuestionTypeEnum.RADIO_SELECT.getCode(), new ArrayList<>());
@@ -586,11 +596,14 @@ public class TenantCaseQuestionnaireBiz {
         result.put(QuestionTypeEnum.MATERIAL.getCode(), new ArrayList<>());
 
         // new
-        List<QuestionResponse> questionResponses = listUsableQuestionFromSource0(request);
+        List<QuestionResponse> questionResponses = new ArrayList<>(listUsableQuestionFromSource0(request));
         if (questionResponses.isEmpty()) {
             return result;
         }
-
+        if (random) {
+            //带随机种子随机
+            Collections.shuffle(questionResponses, new Random(Long.parseLong(request.getCaseInstanceId())));
+        }
         Map<String, List<QuestionResponse>> collect = questionResponses.stream()
                 .collect(Collectors.groupingBy(QuestionResponse::getQuestionType));
         result.forEach((key, value) -> {

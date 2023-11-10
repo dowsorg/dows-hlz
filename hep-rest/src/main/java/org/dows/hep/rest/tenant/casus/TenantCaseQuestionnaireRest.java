@@ -59,7 +59,7 @@ public class TenantCaseQuestionnaireRest {
     @Operation(summary = "列出题目类型及对应题目数量")
     @PostMapping("v1/tenantCasus/caseQuestionnaire/getQuestionTypeWithCount")
     public Map<String, Long> questionTypeWithCount(@RequestBody @Validated CaseQuestionSearchRequest request ) {
-        return tenantCaseQuestionnaireBiz.collectQuestionCountOfUsableQuestion(request);
+        return tenantCaseQuestionnaireBiz.collectQuestionCountOfUsableQuestion(request,false);
     }
 
     /**
@@ -81,7 +81,7 @@ public class TenantCaseQuestionnaireRest {
     @Operation(summary = "获取案例问卷")
     @GetMapping("v1/tenantCasus/caseQuestionnaire/getCaseQuestionnaire")
     public CaseQuestionnaireResponse getCaseQuestionnaire(@Validated String caseQuestionnaireId) {
-        return tenantCaseQuestionnaireBiz.getCaseQuestionnaire(caseQuestionnaireId);
+        return tenantCaseQuestionnaireBiz.getCaseQuestionnaire1(caseQuestionnaireId);
     }
 
     /**

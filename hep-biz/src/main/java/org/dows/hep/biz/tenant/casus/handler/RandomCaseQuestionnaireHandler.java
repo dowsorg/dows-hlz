@@ -70,6 +70,6 @@ public class RandomCaseQuestionnaireHandler extends BaseCaseQuestionnaireHandler
                 .caseInstanceId(caseInstanceId)
                 .l2CategId(randomMode.getL2CategId())
                 .l1CategId(randomMode.getL1CategId()).build();
-        return caseQuestionnaireBiz.collectQuestionOfUsableQuestion(request);
+        return caseQuestionnaireBiz.collectQuestionOfUsableQuestion(request,true);
     }
 }
