@@ -13,6 +13,7 @@ import org.dows.hep.api.base.person.response.PersonInstanceResponse;
 import org.dows.hep.api.tenant.casus.request.CasePersonIndicatorFuncRequest;
 import org.dows.hep.biz.base.person.PersonManageBiz;
 import org.dows.hep.biz.base.person.PersonManageExtBiz;
+import org.dows.hep.biz.extend.uim.XOrgBiz;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,8 @@ import java.util.concurrent.ExecutionException;
 public class PersonManageRest {
     private final PersonManageBiz personManageBiz;
     private final PersonManageExtBiz personManageExtBiz;
+
+    private final XOrgBiz xOrgBiz;
     /**
     * 批量删除人物
     * @param
@@ -203,8 +206,11 @@ public class PersonManageRest {
     @Operation(summary =  "获取教师/学生列表")
     @PostMapping("v1/basePerson/person/listTeacherOrStudent")
     public IPage<AccountInstanceResponse> listTeacherOrStudent(@RequestBody AccountInstanceRequest request,
-                                                               @Nullable @RequestParam String accountId){
-        return personManageBiz.listTeacherOrStudent(request,accountId);
+                                                               @Nullable @RequestParam String accountId,
+                                                               @Nullable @RequestParam String sortField,
+                                                               @Nullable @RequestParam Integer sortDesc){
+        //return personManageBiz.listTeacherOrStudent(request,accountId);
+        return xOrgBiz.listTeacherOrStudent(request,accountId,sortField,sortDesc);
     }
 
     /**

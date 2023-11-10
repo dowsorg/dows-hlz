@@ -118,7 +118,7 @@ public class EvalPersonIndicatorAdvBiz {
                         .evalSum(context, mapSum);
             }
 
-            if (ShareUtil.XObject.allNotEmpty(evalRst, () -> evalRst.getVal())) {
+            if (ShareUtil.XObject.noneEmpty(evalRst, () -> evalRst.getVal())) {
                 values.setCurVal(evalRst.getValString());
             }
             evalHolder.syncIndicator(values);

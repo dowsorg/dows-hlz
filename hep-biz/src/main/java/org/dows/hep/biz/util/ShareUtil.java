@@ -57,14 +57,14 @@ public class ShareUtil {
         public static boolean allEmpty(Object obj, Supplier func) {
             return isEmpty(obj) && isEmpty(func.get());
         }
-        public static boolean allNotEmpty(Object... objs) {
+        public static boolean noneEmpty(Object... objs) {
             if(isEmpty(objs)) return false;
             for(Object item:objs){
                 if(isEmpty(item)) return false;
             }
             return true;
         }
-        public static boolean allNotEmpty(Object obj, Supplier func) {
+        public static boolean noneEmpty(Object obj, Supplier func) {
             return notEmpty(obj) && notEmpty(func.get());
         }
 

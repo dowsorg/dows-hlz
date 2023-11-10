@@ -208,7 +208,7 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
         if(ShareUtil.XObject.isEmpty(val)){
             return false;
         }
-        return ShareUtil.XObject.allNotEmpty(val.getMapPersons(),val.getMapGroups(),val.getMapOrgPersons());
+        return ShareUtil.XObject.noneEmpty(val.getMapPersons(),val.getMapGroups(),val.getMapOrgPersons());
     }
 
     @Override

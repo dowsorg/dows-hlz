@@ -108,9 +108,9 @@ public class SpelPersonContext extends StandardEvaluationContext {
         if (ShareUtil.XObject.isEmpty(str)) {
             str = Optional.ofNullable(PersonIndicatorIdCache.Instance().getIndicatorById(experimentPersonId, indicatorId))
                     .map(ExperimentIndicatorInstanceRsEntity::getDef)
-                    .orElse(str);
+                    .map(String::trim)
+                    .orElse("");
         }
-        str=null==str?"":str.trim();
         return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str).setScale(2, RoundingMode.HALF_UP) : str;
     }
 }

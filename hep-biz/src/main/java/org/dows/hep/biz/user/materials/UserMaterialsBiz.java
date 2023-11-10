@@ -22,6 +22,7 @@ import org.dows.hep.biz.base.materials.MaterialsBaseBiz;
 import org.dows.hep.biz.base.materials.MaterialsManageBiz;
 import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.base.person.PersonManageBiz;
+import org.dows.hep.biz.extend.uim.XOrgBiz;
 import org.dows.hep.entity.MaterialsEntity;
 import org.dows.hep.service.MaterialsService;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,8 @@ public class UserMaterialsBiz {
     private final MaterialsManageBiz materialsManageBiz;
     private final PersonManageBiz personManageBiz;
     private final OrgBiz orgBiz;
+
+    private final XOrgBiz xOrgBiz;
 
     /**
      * @param
@@ -111,7 +114,8 @@ public class UserMaterialsBiz {
                 .pageNo(1)
                 .pageSize(10)
                 .build();
-        IPage<AccountInstanceResponse> accountInstanceResponseIPage = personManageBiz.listTeacherOrStudent(request, null);
+        //IPage<AccountInstanceResponse> accountInstanceResponseIPage = personManageBiz.listTeacherOrStudent(request, null);
+        IPage<AccountInstanceResponse> accountInstanceResponseIPage = xOrgBiz.listTeacherOrStudent(request, null);
         List<AccountInstanceResponse> records = accountInstanceResponseIPage.getRecords();
         if (CollUtil.isEmpty(records)) {
             return accountId;
@@ -126,7 +130,8 @@ public class UserMaterialsBiz {
                 .pageSize(10)
                 .orgId(accountInstanceResponse.getOrgId())
                 .build();
-        IPage<AccountOrgResponse> accountOrgResponseIPage = orgBiz.listClasss(orgRequest, null);
+        //IPage<AccountOrgResponse> accountOrgResponseIPage = orgBiz.listClasss(orgRequest, null);
+        IPage<AccountOrgResponse> accountOrgResponseIPage = xOrgBiz.listClasss(orgRequest, null);
         List<AccountOrgResponse> records1 = accountOrgResponseIPage.getRecords();
         if (CollUtil.isEmpty(records1)) {
             return accountId;

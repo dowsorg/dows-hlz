@@ -3,6 +3,7 @@ package org.dows.hep.biz.user.experiment;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import org.dows.framework.api.uim.AccountInfo;
+import org.dows.hep.api.base.indicator.request.CaseRsCalculateHealthScoreRequestRs;
 import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
 import org.dows.hep.api.base.indicator.request.RsCalculatePersonRequestRs;
 import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
@@ -10,6 +11,7 @@ import org.dows.hep.biz.eval.*;
 import org.dows.hep.biz.event.PersonBasedEventTask;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.websocket.HepClientManager;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -37,8 +39,12 @@ public class ToolBiz {
 
     private final EvalPersonMoneyBiz evalPersonMoneyBiz;
 
-    public String ping(){
-        return "1106";
+    private final EvalCaseHealthIndexBiz evalCaseHealthIndexBiz;
+
+    private final RedissonClient redissonClient;
+
+    public String ping() {
+        return "1109";
     }
 
 
@@ -88,6 +94,10 @@ public class ToolBiz {
         evalPersonBiz.evalPeriodEnd(req);
     }
 
+    public void evalCasePersonHP(CaseRsCalculateHealthScoreRequestRs req){
+        evalCaseHealthIndexBiz.evalCasePersonHealthIndex(req);
+    }
+
     public void evalPeriodEndScore(RsCalculatePeriodsRequest req){
         evalScoreRankBiz.saveOrUpd(req.getExperimentId(),req.getPeriods());
     }
@@ -101,7 +111,7 @@ public class ToolBiz {
 
     }
 
-    public void raiseevent(RsCalculatePersonRequestRs req)  {
+    public void raiseEvent(RsCalculatePersonRequestRs req)  {
         PersonBasedEventTask.runPersonBasedEventAsync(req.getAppId(), req.getExperimentId(),
                 Optional.ofNullable(req.getPersonIdSet()).map(i->i.toArray(new String[0])).orElse(null));
     }

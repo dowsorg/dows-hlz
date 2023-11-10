@@ -15,15 +15,16 @@ import org.dows.account.request.AccountInstanceRequest;
 import org.dows.account.response.AccountInstanceResponse;
 import org.dows.account.service.*;
 import org.dows.framework.api.util.ReflectUtil;
+import org.dows.hep.biz.util.CopyWrapper;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.rbac.api.RbacRoleApi;
 import org.dows.user.api.api.UserExtinfoApi;
 import org.dows.user.api.api.UserInstanceApi;
 import org.dows.user.api.request.UserInstanceRequest;
 import org.dows.user.api.response.UserInstanceResponse;
+import org.dows.user.entity.UserInstance;
 import org.dows.user.service.UserCategoryService;
 import org.dows.user.service.UserInstanceService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -335,64 +336,70 @@ public class XAccountInstanceApi {
                 .orderByDesc(AccountInstance::getDt);
         Page<AccountInstance> page = new Page<>(request.getPageNo(), request.getPageSize());
         IPage<AccountInstance> instancePage = accountInstanceService.page(page, queryWrapper);
+
+        Map<String,AccountGroup> mapGroup=new HashMap<>();
+        Map<String,UserInstance> mapUser=new HashMap<>();
+        Map<String,String> mapOwner=new HashMap<>();
+        Map<String,AccountRole> mapRole=new HashMap<>();
+        accountIds=ShareUtil.XCollection.toSet(page.getRecords(),AccountInstance::getAccountId);
+        if(ShareUtil.XObject.notEmpty(accountIds)) {
+            accountGroupService.lambdaQuery()
+                    .in(AccountGroup::getAccountId, accountIds)
+                    .eq(AccountGroup::getDeleted, false)
+                    .select(AccountGroup::getOrgId, AccountGroup::getOrgName, AccountGroup::getAccountId)
+                    .list()
+                    .forEach(i -> mapGroup.computeIfAbsent(i.getAccountId(), k -> i));
+            accountUserService.lambdaQuery()
+                    .in(AccountUser::getAccountId, accountIds)
+                    .eq(AccountUser::getDeleted, false)
+                    .select(AccountUser::getAccountId, AccountUser::getUserId)
+                    .list()
+                    .forEach(i -> mapOwner.put(i.getUserId(), i.getAccountId()));
+            userInstanceService.lambdaQuery()
+                    .in(UserInstance::getUserId, mapOwner.keySet())
+                    .eq(UserInstance::getDeleted, false)
+                    .select(UserInstance::getUserId, UserInstance::getName, UserInstance::getGender)
+                    .list()
+                    .forEach(i -> mapUser.put(mapOwner.get(i.getUserId()), i));
+            accountRoleService.lambdaQuery()
+                    .in(AccountRole::getPrincipalId, accountIds)
+                    .select(AccountRole::getPrincipalId, AccountRole::getRoleName)
+                    .list()
+                    .forEach(i -> mapRole.put(mapOwner.get(i.getPrincipalId()), i));
+
+        }
         //7、属性赋值
         List<AccountInstanceResponse> voList = new ArrayList<>();
         if (instancePage.getRecords() != null && instancePage.getRecords().size() > 0) {
             instancePage.getRecords().forEach(model -> {
                 AccountInstanceResponse vo = new AccountInstanceResponse();
-                BeanUtils.copyProperties(model, vo);
-                vo.setId(model.getId().toString());
-                //7.1、设置姓名、性别
-                //7.1、1 根据accountId获取userId
-                AccountUser user = accountUserService.lambdaQuery()
-                        .eq(AccountUser::getAccountId, model.getAccountId())
-                        .one();
-                if (!ReflectUtil.isObjectNull(user) && user != null) {
-                    UserInstanceResponse instance = userInstanceApi.getUserInstanceByUserId(user.getUserId());
-                    if (!ReflectUtil.isObjectNull(instance)) {
-                        if (StringUtils.isNotEmpty(instance.getName())) {
-                            vo.setUserName(instance.getName());
-                        }
-                        if (StringUtils.isNotEmpty(instance.getGender())) {
-                            vo.setGender(instance.getGender());
-                        }
-                    }
-                }
-                //7.1.2、设置机构信息
-                List<AccountGroup> groupList = accountGroupService.lambdaQuery()
-                        .eq(AccountGroup::getAccountId, model.getAccountId())
-                        .list();
-                if (groupList != null && groupList.size() > 0) {
-                    if (StringUtils.isNotEmpty(groupList.get(0).getOrgName())) {
-                        vo.setOrgName(groupList.get(0).getOrgName());
-                        vo.setOrgId(groupList.get(0).getOrgId());
-                    }
-                    AccountGroupInfo groupInfo = accountGroupInfoService.lambdaQuery()
-                            .eq(AccountGroupInfo::getOrgId, groupList.get(0).getOrgId())
-                            .one();
-                    if (!ReflectUtil.isObjectNull(groupInfo) && groupInfo != null) {
-                        if (StringUtils.isNotEmpty(groupInfo.getGroupInfoId())) {
-                            vo.setGroupInfoId(groupInfo.getGroupInfoId());
-                        }
-                    }
-                }
-                //7.1.3 设置角色信息
-                AccountRole accountRole = accountRoleService.lambdaQuery()
-                        .eq(AccountRole::getPrincipalId, model.getAccountId())
-                        .one();
-                if (!ReflectUtil.isObjectNull(accountRole) && accountRole != null) {
-                    if (StringUtils.isNotEmpty(accountRole.getRoleName())) {
-                        vo.setRoleName(accountRole.getRoleName());
-                    }
-                }
+                CopyWrapper.create(vo).endFrom(model)
+                                .setId(String.valueOf( model.getId()));
+
+                Optional.ofNullable(mapUser.get(model.getAccountId()))
+                        .ifPresent(i -> {
+                            vo.setUserName(i.getName())
+                                    .setGender(i.getGender());
+                        });
+                Optional.ofNullable(mapGroup.get(model.getAccountId()))
+                        .ifPresent(i -> {
+                            vo.setOrgId(i.getOrgId()).setOrgName(i.getOrgName());
+                        });
+                Optional.ofNullable(mapRole.get(model.getAccountId()))
+                        .ifPresent(i -> {
+                            vo.setRoleName(i.getRoleName());
+                        });
+
                 voList.add(vo);
             });
         }
         //8、复制
-        IPage<AccountInstanceResponse> voPage = new Page<>();
-        BeanUtils.copyProperties(instancePage, voPage, new String[]{"records"});
-        voPage.setRecords(voList);
-        return voPage;
+        IPage<AccountInstanceResponse> rst = new Page<>();
+        return rst.setRecords(voList)
+                .setCurrent(instancePage.getCurrent())
+                .setSize(instancePage.getSize())
+                .setTotal(instancePage.getTotal());
+
     }
 
 

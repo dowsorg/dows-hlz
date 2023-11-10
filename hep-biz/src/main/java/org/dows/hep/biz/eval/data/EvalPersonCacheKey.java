@@ -40,4 +40,9 @@ public class EvalPersonCacheKey {
     public int hashCode() {
         return Objects.hash(experimentPersonId);
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s-%s-%s", experimentInstanceId,experimentPersonId,period);
+    }
 }

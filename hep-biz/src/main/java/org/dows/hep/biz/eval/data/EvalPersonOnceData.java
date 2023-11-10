@@ -48,7 +48,7 @@ public class EvalPersonOnceData {
         if(ShareUtil.XObject.anyEmpty(header,mapIndicators)){
             return false;
         }
-        return ShareUtil.XObject.allNotEmpty(header.evalNo,header.syncState);
+        return ShareUtil.XObject.noneEmpty(header.evalNo,header.syncState);
     }
     public boolean isSynced(){
         if(null==header){
