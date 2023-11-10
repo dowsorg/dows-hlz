@@ -43,7 +43,7 @@ public class ExptRequestValidator {
         this.experimentGroupId=experimentGroupId;
         this.experimentOrgId=experimentOrgId;
         this.experimentPersonId=experimentPersonId;
-        if(ShareUtil.XObject.allNotEmpty(appId,experimentInstanceId)){
+        if(ShareUtil.XObject.noneEmpty(appId,experimentInstanceId)){
             SnapshotRequestHolder.setSnapshotRequest(this.appId, experimentInstanceId);
         }
     }

@@ -120,6 +120,11 @@ public class SnapshotRefCache extends BaseLoadingCache<SnapshotRefCache.Snapshot
         public int hashCode() {
             return Objects.hash(appId, snapshotType, md5, experimentInstanceId);
         }
+
+        @Override
+        public String toString() {
+            return String.format("%s-%s-%s-%s", appId,experimentInstanceId,snapshotType, md5);
+        }
     }
 
 

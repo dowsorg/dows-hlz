@@ -287,7 +287,7 @@ public class ExperimentIndicatorViewMonitorFollowupReportRsBiz {
                 .snapTime(dateNow)
                 .build();
         ExperimentMonitorFollowupRsResponse folowupReport=this.get(indicatorFuncId, experimentPersonId, periods);
-        if(ShareUtil.XObject.allNotEmpty(folowupReport,()->folowupReport.getExperimentIndicatorViewMonitorFollowupReportRsResponse())) {
+        if(ShareUtil.XObject.noneEmpty(folowupReport,()->folowupReport.getExperimentIndicatorViewMonitorFollowupReportRsResponse())) {
             ExptOrgReportNodeVO reportNode=new ExptOrgReportNodeVO()
                     .setIndicatorFuncId(exptValidator.getIndicatorFuncId())
                     .setIndicatorFuncName(func.getIndicatorFuncName())

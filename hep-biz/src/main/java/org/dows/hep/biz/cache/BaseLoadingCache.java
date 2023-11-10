@@ -57,7 +57,7 @@ public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
     }
     protected V wrapLoad(K key){
         StringBuilder sb=new StringBuilder();
-        long ts=logCostTime(sb,"loadStart");
+        long ts=logCostTime(sb,String.format("loadStart-%s",key));
         try{
             return load(key);
         }catch (Exception ex){
@@ -71,7 +71,7 @@ public abstract class BaseLoadingCache <K,V> extends BaseManulCache<K,V>{
     }
     protected V wrapContinueLoad(K key,V curVal){
         StringBuilder sb=new StringBuilder();
-        long ts=logCostTime(sb,"continueStart");
+        long ts=logCostTime(sb,String.format("continueStart-%s",key));
         try{
             return continueLoad(key,curVal);
         }catch (Exception ex){

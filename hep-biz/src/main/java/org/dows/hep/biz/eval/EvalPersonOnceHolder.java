@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 public class EvalPersonOnceHolder {
 
     protected final static int RDCACHEExpireSeconds=60 * 60 * 24*7;
-    protected final static String RDCACHEPrefix="eval-person-once:";
+    protected final static String RDCACHEPrefix="hep-eval-person:";
 
     public EvalPersonOnceHolder(EvalPersonOnceCacheKey cacheKey, RedissonClient redissonClient) {
         this.cacheKey=cacheKey;
@@ -243,16 +243,16 @@ public class EvalPersonOnceHolder {
         return putCurVal(indicatorId, val,saveToRD);
     }
 
-    public boolean putCurVal(String indicatorId, String val, boolean saveToRD){
-        if(ShareUtil.XObject.isEmpty(indicatorId)){
+    public boolean putCurVal(String indicatorId, String val, boolean saveToRD) {
+        if (ShareUtil.XObject.isEmpty(indicatorId) || null == val) {
             return false;
         }
-        EvalIndicatorValues values=getIndicator(indicatorId);
-        if(null==values){
+        EvalIndicatorValues values = getIndicator(indicatorId);
+        if (null == values) {
             return false;
         }
         values.setCurVal(val);
-        if(saveToRD){
+        if (saveToRD) {
             saveToRD(values);
         }
         return true;
@@ -261,9 +261,16 @@ public class EvalPersonOnceHolder {
         if(ShareUtil.XObject.isEmpty(mapVals)){
             return false;
         }
+        EvalPersonOnceData cached=get();
+        if(null==cached){
+            return false;
+        }
         Map<String,EvalIndicatorValues> map=new ConcurrentHashMap<>();
         mapVals.forEach((k,v)->{
-            EvalIndicatorValues values=getIndicator(k);
+            if(null==v) {
+                return;
+            }
+            EvalIndicatorValues values=cached.getMapIndicators().get(k);
             if(null==values){
                 return;
             }
@@ -282,7 +289,7 @@ public class EvalPersonOnceHolder {
         if (null == values) {
             return false;
         }
-        values.setChangingVal(val);
+        values.setChangingVal(BigDecimalUtil.add(values.getChangingVal(), val));
         if (saveToRD) {
             saveToRD(values);
         }
@@ -577,13 +584,13 @@ public class EvalPersonOnceHolder {
         ExperimentEvalLogContentEntity rowLogContent=experimentEvalLogDao.getByExperimentEvalLogId(rowLog.getExperimentEvalLogId(),
                 ExperimentEvalLogContentEntity::getIndicatorContent,
                 ExperimentEvalLogContentEntity::getJudgeItemsContent);
-        if(ShareUtil.XObject.allNotEmpty(rowLogContent,()->rowLogContent.getIndicatorContent())){
+        if(ShareUtil.XObject.noneEmpty(rowLogContent,()->rowLogContent.getIndicatorContent())){
             List<EvalIndicatorValues> indicators=JacksonUtil.fromJsonSilence(rowLogContent.getIndicatorContent(),new TypeReference<>() {
             });
             indicators.forEach(item->rst.getMapIndicators().put(item.getIndicatorId(), item));
 
         }
-        if(ShareUtil.XObject.allNotEmpty(rowLogContent,()->rowLogContent.getJudgeItemsContent())){
+        if(ShareUtil.XObject.noneEmpty(rowLogContent,()->rowLogContent.getJudgeItemsContent())){
             rst.getMapJudgeItems().putAll(ShareUtil.XObject.defaultIfNull(JacksonUtil.fromJsonSilence(rowLogContent.getJudgeItemsContent(), new TypeReference<>() {}),Collections.emptyMap()));
         }
         return rst;

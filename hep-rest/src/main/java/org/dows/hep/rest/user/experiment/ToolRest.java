@@ -3,10 +3,7 @@ package org.dows.hep.rest.user.experiment;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dows.hep.api.base.indicator.request.ExperimentRsCalculateAndCreateReportHealthScoreRequestRs;
-import org.dows.hep.api.base.indicator.request.RsCalculatePeriodsRequest;
-import org.dows.hep.api.base.indicator.request.RsCalculatePersonRequestRs;
-import org.dows.hep.api.base.indicator.request.RsExperimentCalculateFuncRequest;
+import org.dows.hep.api.base.indicator.request.*;
 import org.dows.hep.biz.eval.EvalHealthIndexBiz;
 import org.dows.hep.biz.eval.EvalPersonIndicatorBiz;
 import org.dows.hep.biz.snapshot.EnumSnapshotType;
@@ -74,6 +71,12 @@ public class ToolRest {
         toolBiz.evalPeriodEnd(req);
     }
 
+    @Operation(summary = "计算案例人物HP")
+    @PostMapping("v1/tool/evalCasePersonHP")
+    public void evalCasePersonHP(@RequestBody CaseRsCalculateHealthScoreRequestRs req){
+        toolBiz.evalCasePersonHP(req);
+    }
+
     @Operation(summary = "期末翻转-算分")
     @PostMapping("v1/tool/evalPeriodEndScore")
     public void evalPeriodEndScore(@RequestBody RsCalculatePeriodsRequest req)  {
@@ -94,9 +97,9 @@ public class ToolRest {
     }
 
     @Operation(summary = "条件事件触发")
-    @PostMapping("v1/tool/raiseevent")
-    public void raiseevent(@RequestBody RsCalculatePersonRequestRs req)  {
-        toolBiz.raiseevent(req);
+    @PostMapping("v1/tool/raiseEvent")
+    public void raiseEvent(@RequestBody RsCalculatePersonRequestRs req)  {
+        toolBiz.raiseEvent(req);
     }
 
     @Operation(summary = "实验数据复制")

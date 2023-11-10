@@ -36,7 +36,7 @@ public interface IRDStringCodec<T> {
 
     default String toString(String[] vals, int idx){
         if(idx>=vals.length){
-            return null;
+            return "";
         }
         return vals[idx];
     }

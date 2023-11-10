@@ -119,7 +119,7 @@ public class SpelInvoker {
     //region save
 
     public boolean saveIndicator(String experimentPersonId,Collection<SpelEvalResult> evalResults, Collection<SpelEvalSumResult> evalSumResults,Integer periods){
-        log.info("IndicatorDebug..."+JSONUtil.toJsonStr(evalResults));
+        log.info("INDICATORChangeTrace--"+JSONUtil.toJsonStr(evalResults));
         return saveIndicatorChange(experimentPersonId, evalSumResults);
     }
 

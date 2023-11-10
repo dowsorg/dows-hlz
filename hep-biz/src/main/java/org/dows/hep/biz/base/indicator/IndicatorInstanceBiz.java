@@ -356,6 +356,9 @@ public class IndicatorInstanceBiz{
                 log.warn("方法deleteIndicatorInstance对VariableId：{}的IndicatorRule删除失败", indicatorInstanceId);
                 throw new IndicatorInstanceException(EnumESC.VALIDATE_EXCEPTION);
             }
+            indicatorExpressionInfluenceService.lambdaUpdate()
+                    .eq(IndicatorExpressionInfluenceEntity::getIndicatorInstanceId,indicatorInstanceId)
+                    .remove();
         } finally {
             lock.unlock();
         }

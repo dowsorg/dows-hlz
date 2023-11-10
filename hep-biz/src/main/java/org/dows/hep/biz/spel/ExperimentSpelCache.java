@@ -314,6 +314,11 @@ public class ExperimentSpelCache extends BaseLoadingCache<ExperimentCacheKey, Ex
         public int hashCode() {
             return Objects.hash(experimentId, experimentPersonId, reasonId, source);
         }
+
+        @Override
+        public String toString() {
+            return String.format("%s-%s-%s-%s", experimentId,experimentPersonId,reasonId,source);
+        }
     }
 
 }
