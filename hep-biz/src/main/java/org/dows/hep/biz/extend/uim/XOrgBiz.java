@@ -22,6 +22,7 @@ import org.dows.user.entity.UserInstance;
 import org.dows.user.service.UserInstanceService;
 import org.springframework.stereotype.Service;
 
+import java.text.Collator;
 import java.util.*;
 
 /**
@@ -343,11 +344,12 @@ public class XOrgBiz {
             if(ShareUtil.XObject.notEmpty(sortField)){
                 boolean isDesc=Optional.ofNullable(sortDesc).orElse(0)>0;
                 switch (sortField.toLowerCase()){
-                    case "username"->{
-                        if(isDesc){
-                            data.sort(Comparator.comparing(i->Optional.ofNullable( i.getUserName()).orElse(""),Comparator.reverseOrder()));
-                        }else {
-                            data.sort(Comparator.comparing(i -> Optional.ofNullable(i.getUserName()).orElse("")));
+                    case "username"-> {
+                        Comparator cnComparator = Collator.getInstance(java.util.Locale.CHINA);
+                        if (isDesc) {
+                            data.sort((x, y) -> cnComparator.compare(Optional.ofNullable(y.getUserName()).orElse(""), Optional.ofNullable(x.getUserName()).orElse("")));
+                        } else {
+                            data.sort((x, y) -> cnComparator.compare(Optional.ofNullable(x.getUserName()).orElse(""), Optional.ofNullable(y.getUserName()).orElse("")));
                         }
                     }
 
