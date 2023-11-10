@@ -602,7 +602,7 @@ public class TenantCaseQuestionnaireBiz {
         }
         if (random) {
             //带随机种子随机
-            Collections.shuffle(questionResponses, new Random(Long.parseLong(request.getCaseInstanceId())));
+            Collections.shuffle(questionResponses);
         }
         Map<String, List<QuestionResponse>> collect = questionResponses.stream()
                 .collect(Collectors.groupingBy(QuestionResponse::getQuestionType));
