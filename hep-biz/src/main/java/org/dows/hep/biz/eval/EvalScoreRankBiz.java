@@ -115,23 +115,28 @@ public class EvalScoreRankBiz {
             String groupNo = experimentGroupEntity.getGroupNo();
             String groupAlias = experimentGroupEntity.getGroupAlias();
             //知识答题分
-            BigDecimal questionnaireScoreBigDecimal = questionnaireScoreMap.get(experimentGroupId);
-            if (Objects.isNull(questionnaireScoreBigDecimal)) {
-                questionnaireScoreBigDecimal = BigDecimal.ZERO;
-            }
+            BigDecimal questionnaireScoreBigDecimal = BigDecimalOptional.valueOf(questionnaireScoreMap.get(experimentGroupId))
+                    .min(BigDecimal.ZERO)
+                    .getValue(SCALEScore);
+
             //健康竞赛分
             GroupCompetitiveScoreRsResponse groupScore = mapGroupScores.get(experimentGroupId);
             BigDecimal groupCompetitiveScoreBigDecimal = Optional.ofNullable(groupScore)
                     .map(GroupCompetitiveScoreRsResponse::getGroupCompetitiveScore)
-                    .orElse(null);
-            if (Objects.isNull(groupCompetitiveScoreBigDecimal)) {
-                groupCompetitiveScoreBigDecimal = BigDecimal.ZERO;
-            }
+                    .map(BigDecimalOptional::valueOf)
+                    .orElse(BigDecimalOptional.zero())
+                    .min(BigDecimal.ZERO)
+                    .getValue(SCALEScore);
+
             //医疗得分
-            BigDecimal groupIdVGroupMoneyScoreBigDecimal = mapMoneyScore.getOrDefault(experimentGroupId,BigDecimalOptional.zero()).getValue(SCALEScore);
+            BigDecimal groupIdVGroupMoneyScoreBigDecimal =  mapMoneyScore.getOrDefault(experimentGroupId,BigDecimalOptional.zero())
+                    .min(BigDecimal.ZERO)
+                    .getValue(SCALEScore);
 
             //操作准确度得分
-            BigDecimal groupOperateRightScore = mapJudgeSocre.getOrDefault(experimentGroupId, BigDecimalOptional.zero()).getValue(SCALEScore);
+            BigDecimal groupOperateRightScore = mapJudgeSocre.getOrDefault(experimentGroupId, BigDecimalOptional.zero())
+                    .min(BigDecimal.ZERO)
+                    .getValue(SCALEScore);
 
             //权重
             BigDecimal knowledgeWeight = knowledgeWeightAtomicReference.get();

@@ -244,7 +244,8 @@ public class EvalJudgeScoreBiz {
                     }
                 }
                 if (singleFlag&&mapJudgeScores.size()>0) {
-                    totalScore.div(BigDecimal.valueOf(mapJudgeScores.size()), SCALEScore);
+                    totalScore.div(BigDecimal.valueOf(mapJudgeScores.size()), SCALEScore)
+                            .min(BigDecimal.ZERO);
                 }
                 mapGroupScores.computeIfAbsent(k, x -> new ArrayList<>())
                         .add(totalScore.getValue(SCALEScore));
@@ -258,7 +259,9 @@ public class EvalJudgeScoreBiz {
             return BigDecimal.ZERO;
         }
         if(scores.size()==1){
-            return scores.get(0).setScale(SCALEScore, ROUNDINGModeScore);
+            return Optional.ofNullable( scores.get(0))
+                    .orElse(BigDecimal.ZERO)
+                    .setScale(SCALEScore, ROUNDINGModeScore);
         }
         return scores.stream().reduce(BigDecimal.ZERO,BigDecimalUtil::add)
                 .divide(BigDecimalUtil.valueOf(scores.size()),SCALEScore,ROUNDINGModeScore);
