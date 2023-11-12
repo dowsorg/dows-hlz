@@ -773,6 +773,7 @@ public class CaseIndicatorInstanceBiz {
         String indicatorName = createOrUpdateCaseIndicatorInstanceRequestRs.getIndicatorName();
         Integer displayByPercent = createOrUpdateCaseIndicatorInstanceRequestRs.getDisplayByPercent();
         String def = createOrUpdateCaseIndicatorInstanceRequestRs.getDef();
+        def=null==def?"":def.trim();
         String unit = createOrUpdateCaseIndicatorInstanceRequestRs.getUnit();
         Integer core = createOrUpdateCaseIndicatorInstanceRequestRs.getCore();
         Integer food = createOrUpdateCaseIndicatorInstanceRequestRs.getFood();

@@ -213,6 +213,7 @@ public class RsUtilBiz {
         log.error("sIndicatorExpressionBiz.checkCondition.databaseCheckConditionMustBeBoolean field database indicatorInstanceId:{} does not exist", indicatorInstanceId);
         throw new RsIndicatorExpressionException(EnumESC.INDICATOR_EXPRESSION_CHECK_INDICATOR_INSTANCE_ID_DOES_NOT_EXIST);
       }
+      val=null==val?"":val.trim();
       boolean isValDigital = NumberUtils.isCreatable(val);
       if (isValDigital) {
         context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.HALF_UP));
@@ -239,6 +240,7 @@ public class RsUtilBiz {
         log.error("RsIndicatorExpressionBiz.checkCondition.caseCheckConditionMustBeBoolean field case indicatorInstanceId:{} does not exist", indicatorInstanceId);
         throw new RsIndicatorExpressionException(EnumESC.INDICATOR_EXPRESSION_CHECK_INDICATOR_INSTANCE_ID_DOES_NOT_EXIST);
       }
+      val=null==val?"":val.trim();
       boolean isValDigital = NumberUtils.isCreatable(val);
       if (isValDigital) {
         context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.HALF_UP));
@@ -337,6 +339,7 @@ public class RsUtilBiz {
           log.error("RsIndicatorExpressionBiz.checkResult.databaseCheckResultMustBeBoolean field database indicatorInstanceId:{} does not exist", indicatorInstanceId);
           throw new RsIndicatorExpressionException(String.format("检查指标公式结果-结果指标id：%s 不存在", indicatorInstanceId));
         }
+        val=null==val?"":val.trim();
         boolean isValDigital = NumberUtils.isCreatable(val);
         if (isValDigital) {
           context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.HALF_UP));
@@ -363,6 +366,7 @@ public class RsUtilBiz {
           log.error("RsIndicatorExpressionBiz.checkResult.caseCheckResultParse field case caseIndicatorInstanceId:{} does not exist", caseIndicatorInstanceId);
           throw new RsIndicatorExpressionException(String.format("检查指标公式结果-结果指标id：%s 不存在", caseIndicatorInstanceId));
         }
+        val=null==val?"":val.trim();
         boolean isValDigital = NumberUtils.isCreatable(val);
         if (isValDigital) {
           context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(val)).setScale(2, RoundingMode.HALF_UP));

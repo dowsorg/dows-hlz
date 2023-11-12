@@ -160,6 +160,7 @@ public class IndicatorInstanceBiz{
         String min = createOrUpdateIndicatorInstanceRequestRs.getMin();
         String max = createOrUpdateIndicatorInstanceRequestRs.getMax();
         String def = createOrUpdateIndicatorInstanceRequestRs.getDef();
+        def=null==def?"":def.trim();
         Integer valueType=EnumIndicatorValueType.of(createOrUpdateIndicatorInstanceRequestRs.getValueType())
                 .getCode();
 
