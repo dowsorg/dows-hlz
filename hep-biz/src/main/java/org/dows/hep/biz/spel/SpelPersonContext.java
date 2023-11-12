@@ -111,6 +111,7 @@ public class SpelPersonContext extends StandardEvaluationContext {
                     .map(String::trim)
                     .orElse("");
         }
+        str=str.trim();
         return ShareUtil.XObject.isNumber(str) ? new BigDecimal(str).setScale(2, RoundingMode.HALF_UP) : str;
     }
 }
