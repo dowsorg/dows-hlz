@@ -35,7 +35,7 @@ public class ExperimentPersonCache extends BaseLoadingCache<ExperimentCacheKey,E
     }
 
     protected final static int CACHEInitCapacity = 100;
-    protected final static int CACHEMaxSize = 1500;
+    protected final static int CACHEMaxSize = 3000;
     protected final static int CACHEExpireSeconds = 60 * 60*24*7 ;
 
     @Autowired
