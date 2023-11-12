@@ -58,8 +58,20 @@ public class SpelPersonContext extends StandardEvaluationContext {
         return this;
     }
 
+    @Override
+    public void setVariable(String name, Object value) {
+        if(null==name||null==value){
+            return;
+        }
+        try {
+            super.setVariable(name, value);
+        }catch (Exception ex){
+            log.error(String.format("SPELTrace--SpelPersonContext.setVariable name:%s value:%s", name, value), ex);
+        }
 
-    private void loadIndicatorVals(String experimentPersonId,Integer period,boolean useBaseIndicatorId) {
+    }
+
+    private void loadIndicatorVals(String experimentPersonId, Integer period, boolean useBaseIndicatorId) {
         try {
             Collection<String> indicatorIds = PersonIndicatorIdCache.Instance().getIndicatorIds(experimentPersonId);
 

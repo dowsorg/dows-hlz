@@ -280,6 +280,7 @@ public class IndicatorExpressionBiz{
           });
       for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
         String val = kIndicatorInstanceIdVValMap.get(conditionValSplitList.get(i));
+        val=null==val?"":val.trim();
         boolean isValDigital = NumberUtils.isCreatable(val);
         if (isValDigital) {
           context.setVariable(conditionNameSplitList.get(i), Double.parseDouble(val));
@@ -716,6 +717,7 @@ public class IndicatorExpressionBiz{
     return stringBuffer.toString();
   }
   private static boolean v1CheckNumber(String str) {
+    str=null==str?"":str.trim();
     return NumberUtils.isCreatable(str);
   }
   private static boolean v1CheckIndicator(String str) {
@@ -940,6 +942,7 @@ public class IndicatorExpressionBiz{
             });
         for (int i = 0; i <= conditionNameSplitList.size() - 1; i++) {
           String val = kIndicatorInstanceIdVValMap.get(conditionValSplitList.get(i));
+          val=null==val?"":val.trim();
           boolean isValDigital = NumberUtils.isCreatable(val);
           if (isValDigital) {
             context.setVariable(conditionNameSplitList.get(i), Double.parseDouble(val));
