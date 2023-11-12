@@ -47,7 +47,7 @@ public class ExperimentSettingCache extends BaseLoadingCache<ExperimentCacheKey,
     }
 
     protected final static int CACHEInitCapacity = 2;
-    protected final static int CACHEMaxSize = 20;
+    protected final static int CACHEMaxSize = 35;
     protected final static int CACHEExpireSeconds = 60 * 60 * 6;
 
     private ExperimentSettingCache() {

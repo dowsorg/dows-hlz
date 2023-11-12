@@ -26,7 +26,7 @@ public class PersonBasedEventCache extends BaseLoadingCache<ExperimentCacheKey, 
         return s_instance;
     }
     protected final static int CACHEInitCapacity=2;
-    protected final static int CACHEMaxSize=10;
+    protected final static int CACHEMaxSize=35;
     protected final static int CACHEExpireSeconds=60*60*12;
 
     @Autowired
