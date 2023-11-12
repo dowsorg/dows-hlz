@@ -57,6 +57,19 @@ public class SpelCasePersonContext extends StandardEvaluationContext {
         return this;
     }
 
+    @Override
+    public void setVariable(String name, Object value) {
+        if(null==name||null==value){
+            return;
+        }
+        try {
+            super.setVariable(name, value);
+        }catch (Exception ex){
+            log.error(String.format("SPELTrace--SpelCasePersonContext.setVariable name:%s value:%s", name, value), ex);
+        }
+
+    }
+
     private void loadIndicatorVals(String accountId,boolean useBaseIndicatorId) {
         try {
             final Map<String, String> mapCase2BaseId = new HashMap<>();

@@ -841,6 +841,7 @@ public class RsIndicatorExpressionBiz {
           return false;
         }
         String currentVal = indicatorRuleEntity.getDef();
+        currentVal=null==currentVal?"":currentVal.trim();
         boolean isValDigital = NumberUtils.isCreatable(currentVal);
         if (isValDigital) {
           context.setVariable(conditionNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.HALF_UP));
@@ -912,6 +913,7 @@ public class RsIndicatorExpressionBiz {
           return RsUtilBiz.RESULT_DROP;
         }
         String currentVal = indicatorRuleEntity.getDef();
+        currentVal=null==currentVal?"":currentVal.trim();
         boolean isValDigital = NumberUtils.isCreatable(currentVal);
         if (isValDigital) {
           context.setVariable(resultNameSplitList.get(i), BigDecimal.valueOf(Double.parseDouble(currentVal)).setScale(2, RoundingMode.HALF_UP));
