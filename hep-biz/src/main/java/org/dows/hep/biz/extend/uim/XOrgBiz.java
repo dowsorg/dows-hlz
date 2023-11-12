@@ -87,6 +87,9 @@ public class XOrgBiz {
     }
 
     private Map<String,Long> cntTeachers(Set<String> orgIds){
+        if(ShareUtil.XObject.isEmpty(orgIds)){
+            return Collections.emptyMap();
+        }
         return ShareUtil.XCollection.toMap(hepArmService.query()
                 .select("org_id","count(1) id")
                 .in("org_id",orgIds)
@@ -123,7 +126,7 @@ public class XOrgBiz {
             queryWrapper.in(ShareUtil.XObject.notEmpty(orgIds), AccountOrg::getOrgId, orgIds)
                     .eq(StringUtils.isNotEmpty(request.getAppId()), AccountOrg::getAppId, request.getAppId())
                     .eq(request.getOrgType() != null, AccountOrg::getOrgType, request.getOrgType())
-                    .eq(StringUtils.isNotEmpty(request.getOrgName()), AccountOrg::getOrgName, request.getOrgName())
+                    .like(StringUtils.isNotEmpty(request.getOrgName()), AccountOrg::getOrgName, request.getOrgName())
                     .eq(request.getPid() != null, AccountOrg::getPid, request.getPid())
                     .like(StringUtils.isNotEmpty(request.getOrgId()), AccountOrg::getOrgId, request.getOrgId())
                     .like(StringUtils.isNotEmpty(request.getOrgCode()), AccountOrg::getOrgCode, request.getOrgCode())
@@ -364,6 +367,9 @@ public class XOrgBiz {
 
 
         private Map<String,Long> cntAccounts(Set<String> orgIds){
+            if(ShareUtil.XObject.isEmpty(orgIds)){
+                return Collections.emptyMap();
+            }
             return ShareUtil.XCollection.toMap(accountGroupService.query()
                     .select("org_id","count(1) id")
                     .in("org_id",orgIds)
