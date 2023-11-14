@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.oss.api.OssInfo;
 import org.dows.hep.biz.base.oss.OSSBiz;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import java.util.Objects;
 @Tag(name = "OSS文件上传")
 @RequiredArgsConstructor
 @RestController
+@Slf4j
 public class OSSRest {
 
     private final OSSBiz ossBiz;
@@ -52,7 +54,9 @@ public class OSSRest {
             is = file.getInputStream();
             info= ossBiz.upload(is, fileName);
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            log.error("OSSTrace--",fileName ,e);
+
         } finally {
             assert is != null;
             is.close();

@@ -49,7 +49,8 @@ public class HepSocketEndpoint {
 
     @OnError
     public void onError(NettySession nettySession, Throwable throwable) {
-        throwable.printStackTrace();
+        //throwable.printStackTrace();
+        log.error("WSTrace--",throwable);
     }
 
     @OnMessage
