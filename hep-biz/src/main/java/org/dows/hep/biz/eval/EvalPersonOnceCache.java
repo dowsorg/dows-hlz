@@ -22,7 +22,7 @@ public class EvalPersonOnceCache extends BaseLoadingCache<EvalPersonOnceCacheKey
 
     protected final static int CACHEInitCapacity = 500;
     protected final static int CACHEMaxSize = 9000;
-    protected final static int CACHEExpireSeconds = 60 * 60 * 24*7;
+    protected final static int CACHEExpireSeconds = 60 * 60 * 24*3;
 
 
     private EvalPersonOnceCache() {

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dows.framework.api.exceptions.BaseException;
 import org.dows.hep.api.base.indicator.request.RsCopyPersonIndicatorRequestRs;
 import org.dows.hep.api.config.ConfigExperimentFlow;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.*;
 import org.dows.hep.service.*;
 import org.dows.sequence.api.IdGenerator;
@@ -179,8 +180,8 @@ public class CopyPersonBiz {
                                 .experimentId(experimentInstanceId)
                                 .caseId(caseInstanceId)
                                 .indicatorInstanceId(experimentIndicatorInstanceRsEntity.getExperimentIndicatorInstanceId())
-                                .currentVal(experimentIndicatorInstanceRsEntity.getDef())
-                                .initVal(experimentIndicatorInstanceRsEntity.getDef())
+                                .currentVal(ShareUtil.XObject.trim( experimentIndicatorInstanceRsEntity.getDef()))
+                                .initVal(ShareUtil.XObject.trim( experimentIndicatorInstanceRsEntity.getDef()))
                                 .periods(1)
                                 .min(experimentIndicatorInstanceRsEntity.getMin())
                                 .max(experimentIndicatorInstanceRsEntity.getMax())

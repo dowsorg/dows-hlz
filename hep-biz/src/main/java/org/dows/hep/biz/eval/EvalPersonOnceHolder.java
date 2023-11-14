@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EvalPersonOnceHolder {
 
-    protected final static int RDCACHEExpireSeconds=60 * 60 * 24*7;
+    protected final static int RDCACHEExpireSeconds=60 * 60 * 24*3;
     protected final static String RDCACHEPrefix="hep-eval-person:";
 
     public EvalPersonOnceHolder(EvalPersonOnceCacheKey cacheKey, RedissonClient redissonClient) {
