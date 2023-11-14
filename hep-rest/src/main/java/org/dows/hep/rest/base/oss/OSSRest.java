@@ -1,7 +1,6 @@
 package org.dows.hep.rest.base.oss;
 
 import cn.hutool.core.util.StrUtil;
-import com.esotericsoftware.minlog.Log;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

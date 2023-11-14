@@ -44,7 +44,7 @@ public class ToolBiz {
     private final RedissonClient redissonClient;
 
     public String ping() {
-        return "1112";
+        return "1114";
     }
 
 
