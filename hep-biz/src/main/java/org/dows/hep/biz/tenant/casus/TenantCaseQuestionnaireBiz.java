@@ -454,9 +454,11 @@ public class TenantCaseQuestionnaireBiz {
             return;
         }
         numMap.forEach((typeEum, num) -> {
-            int maxNum = maxNumMap.get(typeEum);
-            int result = resultNumMap.get(typeEum);
-            resultNumMap.put(typeEum, Math.min(num + result, maxNum));
+            if (maxNumMap.get(typeEum)!=null) {
+                int maxNum = maxNumMap.get(typeEum);
+                int result = resultNumMap.get(typeEum);
+                resultNumMap.put(typeEum, Math.min(num + result, maxNum));
+            }
         });
     }
 
