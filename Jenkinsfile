@@ -43,7 +43,7 @@ pipeline {
 
         OFFLINE_AS_HOST='192.168.1.60'
         OFFLINE_AS_USERNAME='root'
-        OFFLINE_AS_PWD='findsoft2022!@#'
+        OFFLINE_AS_PWD='findsoft123~'
 
         ONLINE_AS_HOST='139.186.208.204'
         ONLINE_AS_USERNAME='root'
