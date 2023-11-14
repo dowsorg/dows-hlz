@@ -6,7 +6,7 @@ services:
     container_name: api-hep-admin-prd
     environment:
       - TZ=$TZ
-      - JVM_OPTS=-Duser.timezone=GMT+8 -server -Xmx4096m -Xms1024m
+      - JVM_OPTS=-Duser.timezone=GMT+8 -server -Xmx4096m -Xms4096m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dows/saas/hep-admin/logs
       - JAVA_OPTS=-Djasypt.encryptor.password=02700083-9fd9-4b82-a4b4-9177e0560e92 -Dspring.config.location=/dows/saas/hep-admin/configs/ -Dspring.profiles.active=prd
       #- APM=-javaagent:/dows/paas/apm/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=hep-admin-prd -Dskywalking.collector.backend_service=192.168.1.60:11800
     ports:
