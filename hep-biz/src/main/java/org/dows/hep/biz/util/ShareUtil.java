@@ -125,6 +125,13 @@ public class ShareUtil {
             return !ObjectUtils.nullSafeEquals(o1, o2);
         }
 
+        public static String trim(String src){
+            return trim(src,"");
+        }
+        public static String trim(String src,String dft){
+            return null==src?dft:src.trim();
+        }
+
 
     }
 

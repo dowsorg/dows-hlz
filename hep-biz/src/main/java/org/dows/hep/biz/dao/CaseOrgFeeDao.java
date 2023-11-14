@@ -1,10 +1,12 @@
 package org.dows.hep.biz.dao;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.entity.CaseOrgFeeEntity;
 import org.dows.hep.service.CaseOrgFeeService;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,6 +72,9 @@ public class CaseOrgFeeDao extends BaseDao<CaseOrgFeeService, CaseOrgFeeEntity>{
     }
 
     public List<CaseOrgFeeEntity> getFeeList(List<String> orgIds,SFunction<CaseOrgFeeEntity,?>... cols){
+        if(ShareUtil.XObject.isEmpty(orgIds)){
+            return new ArrayList<>();
+        }
         final boolean oneFlag=orgIds.size()==1;
         return service.lambdaQuery()
                 .eq(oneFlag, CaseOrgFeeEntity::getCaseOrgId, orgIds.iterator().next())
