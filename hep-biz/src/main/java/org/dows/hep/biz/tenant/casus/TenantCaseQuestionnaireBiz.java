@@ -454,7 +454,7 @@ public class TenantCaseQuestionnaireBiz {
             return;
         }
         numMap.forEach((typeEum, num) -> {
-            if (maxNumMap.get(typeEum)!=null) {
+            if (num > 0) {
                 int maxNum = maxNumMap.get(typeEum);
                 int result = resultNumMap.get(typeEum);
                 resultNumMap.put(typeEum, Math.min(num + result, maxNum));
