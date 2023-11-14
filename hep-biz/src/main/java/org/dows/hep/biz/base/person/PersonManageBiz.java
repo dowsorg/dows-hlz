@@ -27,8 +27,11 @@ import org.dows.hep.biz.base.org.OrgBiz;
 import org.dows.hep.biz.eval.EvalCaseHealthIndexBiz;
 import org.dows.hep.biz.extend.uim.XAccountInstanceApi;
 import org.dows.hep.biz.tenant.casus.TenantCaseEventBiz;
+import org.dows.hep.biz.util.AssertUtil;
+import org.dows.hep.biz.util.ShareBiz;
 import org.dows.hep.biz.util.ShareUtil;
 import org.dows.hep.biz.util.StatefulJwtUtil;
+import org.dows.hep.biz.vo.LoginContextVO;
 import org.dows.hep.entity.CasePersonEntity;
 import org.dows.hep.entity.CasePersonIndicatorFuncEntity;
 import org.dows.hep.entity.ExperimentInstanceEntity;
@@ -395,6 +398,13 @@ public class PersonManageBiz {
      * @创建时间: 2023/4/20 13:59
      */
     public AccountInstanceResponse getPersonalInformation(String accountId, String appId) {
+        if(ShareUtil.XObject.isEmpty(accountId)){
+            accountId=Optional.ofNullable( ShareBiz.getLoginUser())
+                    .map(LoginContextVO::getAccountId)
+                    .orElse("");
+        }
+        AssertUtil.trueThenThrow(ShareUtil.XObject.isEmpty(accountId))
+                .throwMessage("未找到用户信息，请重新登录");
         //1、获取用户实例和账户实例
         AccountInstanceResponse instance = accountInstanceApi.getPersonalInformationByAccountId(accountId, appId);
         //2、获取账户所属机构
